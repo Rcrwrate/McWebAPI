@@ -22,10 +22,10 @@ include:
 main:
   web_trigger_daily:
     - <<: *daily
-  "crontab: 10 9 * * 1-5":
-    - <<: *daily
-  api_trigger_daily:
-    - <<: *daily
+  # "crontab: 10 9 * * 1-5":
+  #   - <<: *daily
+  # api_trigger_daily:
+  #   - <<: *daily
   push:
     sync:
       imports:
