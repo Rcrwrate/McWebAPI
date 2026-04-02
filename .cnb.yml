@@ -26,8 +26,10 @@ main:
     - <<: *daily
   api_trigger_daily:
     - <<: *daily
-  # push:
-  #   - <<: *daily
+  push:
+    sync:
+      imports:
+        - https://cnb.cool/shirokasoke/keys/-/blob/main/McWebAPISync.yml
 
 $:
   vscode:
@@ -49,9 +51,3 @@ $:
         #   type: vscode:go
         - name: after
           script: bash after.sh
-  
-main:
-  push:
-    sync:
-      imports:
-        - https://cnb.cool/shirokasoke/keys/-/blob/main/McWebAPISync.yml
