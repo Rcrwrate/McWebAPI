@@ -1,3 +1,6 @@
+include: 
+  - "https://cnb.cool/shirokasoke/env/-/blob/main/sync.yml"
+
 .daily: &daily
   - runner:
       tags: cnb:arch:amd64
@@ -46,3 +49,9 @@ $:
         #   type: vscode:go
         - name: after
           script: bash after.sh
+  
+main:
+  push:
+    sync:
+      imports:
+        - https://cnb.cool/shirokasoke/keys/-/blob/main/McWebAPISync.yml
