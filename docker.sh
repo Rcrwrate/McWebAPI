@@ -1,0 +1,2 @@
+docker build --build-arg CNB_REPO_SLUG=$CNB_REPO_SLUG -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest .
+docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
