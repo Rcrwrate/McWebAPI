@@ -1,0 +1,8 @@
+# .cnb/web_trigger.yml
+
+# https://docs.cnb.cool/zh/build/web-trigger.html
+branch:
+  - buttons:
+      - name: build
+        description: build 
+        event: web_trigger_daily
