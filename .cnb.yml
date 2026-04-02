@@ -1,0 +1,48 @@
+.daily: &daily
+  - runner:
+      tags: cnb:arch:amd64
+      cpus: 12
+    services:
+      - docker
+    imports:
+      - https://cnb.cool/shirokasoke/keys/-/blob/main/MCWebAPI.yml
+    docker:
+      image: docker.cnb.cool/shirokasoke/env/pure
+    stages:
+      - name: build env
+        script: bash docker.sh
+    failStages:
+      - name: api build
+        script: bash docker_api.sh
+    
+
+main:
+  web_trigger_daily:
+    - <<: *daily
+  "crontab: 10 9 * * 1-5":
+    - <<: *daily
+  api_trigger_daily:
+    - <<: *daily
+  # push:
+  #   - <<: *daily
+
+$:
+  vscode:
+    - runner:
+        tags: cnb:arch:amd64
+        cpus: 30
+      services:
+        - docker
+      imports:
+        - https://cnb.cool/shirokasoke/keys/-/blob/main/MCWebAPI.yml
+      docker:
+        image: docker.cnb.cool/shirokasoke/mcwebapi
+        volumes:
+          - /workspace/run/server:copy-on-write
+      stages:
+        - name: prepare
+          script: bash prepare.sh
+        # - name: vscode go
+        #   type: vscode:go
+        - name: after
+          script: bash after.sh
