@@ -32,6 +32,7 @@ public class ClassUtils {
      * @param obj 输入对象
      * @return ObjectNode 包含 extends 和 implements 两个数组
      */
+    @Deprecated
     public static ObjectNode getClassInfo(Object obj) {
         ObjectNode result = mapper.createObjectNode();
         ArrayNode extendsArray = mapper.createArrayNode();
