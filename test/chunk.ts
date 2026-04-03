@@ -30,10 +30,11 @@ interface ChunkActionResponse {
 }
 
 const API_BASE = 'http://localhost:40002';
+const auth = "AUTH"
 
 async function listChunks(): Promise<ChunkListResponse> {
     console.log('获取强制加载区块列表...');
-    const response = await fetch(`${API_BASE}/chunk/force`);
+    const response = await fetch(`${API_BASE}/chunk/force`, { headers: { "Authorization": "Bearer " + auth } });
     const data = await response.json();
     console.log('当前加载的区块数:', data.totalLoaded);
     if (data.chunks && data.chunks.length > 0) {
@@ -47,7 +48,8 @@ async function listChunks(): Promise<ChunkListResponse> {
 async function loadChunk(x: number, z: number, dimension = 0, duration = 60): Promise<ChunkActionResponse> {
     console.log(`\n加载区块: 坐标(${x}, ${z}), 维度: ${dimension}, 持续: ${duration}秒`);
     const response = await fetch(`${API_BASE}/chunk/force?action=load&x=${x}&z=${z}&dim=${dimension}&duration=${duration}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { "Authorization": auth }
     });
     const data = await response.json();
     if (data.success) {
@@ -64,7 +66,8 @@ async function loadChunk(x: number, z: number, dimension = 0, duration = 60): Pr
 async function unloadChunk(x: number, z: number, dimension = 0): Promise<ChunkActionResponse> {
     console.log(`\n卸载区块: 坐标(${x}, ${z}), 维度: ${dimension}`);
     const response = await fetch(`${API_BASE}/chunk/force?action=unload&x=${x}&z=${z}&dim=${dimension}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { "Authorization": auth }
     });
     const data = await response.json();
     if (data.success) {
