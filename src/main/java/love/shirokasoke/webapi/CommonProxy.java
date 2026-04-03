@@ -8,6 +8,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import love.shirokasoke.webapi.server.Auth;
 import love.shirokasoke.webapi.server.WebServer;
 
 public class CommonProxy {
@@ -40,8 +41,8 @@ public class CommonProxy {
     // register server commands in this event handler (Remove if not needed)
     public void serverStarting(FMLServerStartingEvent event) {
         MyMod.LOG.info("Server Starting");
+        Auth.setup(Config.authUrlPrefixes);
         WebServer.start(Config.httpPort, Config.nThreads);
-
     }
 
     public void serverStarted(FMLServerStartedEvent event) {
