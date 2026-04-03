@@ -88,7 +88,6 @@ jobs:
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
     - name: Run manual build steps
       if: matrix.build-mode == 'manual'
-      continue-on-error: true
       shell: bash
       run: |
         sudo apt install -y gnupg ca-certificates curl
@@ -107,7 +106,6 @@ jobs:
 
     - name: Upload build
       if: matrix.build-mode == 'manual'
-      continue-on-error: true
       uses: actions/upload-artifact@v4
       with:
         name: ${{ github.run_id }}
