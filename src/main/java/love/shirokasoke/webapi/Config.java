@@ -15,8 +15,8 @@ public class Config {
     public static int itemThreadBatchSize = 100;
     public static boolean itemThreadEnable = true;
 
-    public static String authToken = null;
-    public static String[] authUrlPrefixes = new String[] { "POST|setblock" };
+    public static String authToken = "";
+    public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
@@ -49,7 +49,7 @@ public class Config {
             "authUrlPrefixes",
             "security",
             authUrlPrefixes,
-            "List of URL prefixes (e.g., 'POST|setblock') which need auth");
+            "List of URL prefixes (e.g., '/setblock|GET|POST', '/chunk/force|GET|POST') which need auth");
 
         if (configuration.hasChanged()) {
             configuration.save();

@@ -45,6 +45,14 @@ public interface RouteHandler extends HttpHandler {
         String uri = exchange.getRequestURI()
             .toString();
 
+        if (!Auth.auth(
+            uri,
+            method,
+            exchange.getRequestHeaders()
+                .get("Authorization"))) {
+            sendErrorResponse(exchange, 401, "not auth");
+            return;
+        }
         try {
             run(exchange);
             long duration = System.currentTimeMillis() - startTime;
