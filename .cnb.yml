@@ -41,7 +41,7 @@ $:
       imports:
         - https://cnb.cool/shirokasoke/keys/-/blob/main/MCWebAPI.yml
       docker:
-        image: shirokasoke/mcwebapi
+        image: docker.io/shirokasoke/mcwebapi:latest
         volumes:
           - /workspace/run/server:copy-on-write
       stages:
