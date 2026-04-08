@@ -14,6 +14,7 @@ public class init {
 
     public static void i() {
         RouteRegistry.register(new ChunksHandler());
+        RouteRegistry.register(new ChunkHandler());
         RouteRegistry.register(new ChunkForceHandler());
 
         // 注册 chunk loading 回调
