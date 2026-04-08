@@ -28,8 +28,10 @@ public class ChunksHandler implements RouteHandler {
         for (WorldServer world : server.worldServers) {
             if (world == null) continue;
             ObjectNode dimNode = data.putObject(String.valueOf(world.provider.dimensionId));
+            dimNode.put("name", world.provider.getDimensionName());
 
             IChunkProvider pro = world.getChunkProvider();
+
             ClassUtils.getClassInfo(pro, dimNode);
 
             if (pro instanceof ChunkProviderServer) {
