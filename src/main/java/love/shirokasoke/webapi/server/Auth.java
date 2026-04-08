@@ -33,7 +33,7 @@ public class Auth {
      */
     public static boolean auth(String uri, String method, List<String> Authorization) {
         if (Config.authToken != null && !Config.authToken.isEmpty() && !cache.isEmpty() && needAuth(uri, method)) {
-            if (Authorization == null || Authorization.isEmpty()) {
+            if (Authorization == null || Authorization.size() != 1) {
                 return false;
             }
             // 检查 Authorization header 中是否有匹配的 token
