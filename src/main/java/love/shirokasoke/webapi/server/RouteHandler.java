@@ -2,6 +2,8 @@ package love.shirokasoke.webapi.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
@@ -45,6 +47,15 @@ public interface RouteHandler extends HttpHandler {
         String uri = exchange.getRequestURI()
             .toString();
 
+        // 处理 OPTIONS 预检请求
+        if ("OPTIONS".equals(method)) {
+            setCorsHeaders(exchange);
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        } else {
+            setCorsHeaders(exchange);
+        }
+
         if (!Auth.auth(
             uri,
             method,
@@ -75,6 +86,17 @@ public interface RouteHandler extends HttpHandler {
                     : e.getClass()
                         .getSimpleName());
         }
+    }
+
+    default void setCorsHeaders(HttpExchange exchange) {
+        exchange.getResponseHeaders()
+            .set("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders()
+            .set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        exchange.getResponseHeaders()
+            .set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.getResponseHeaders()
+            .set("Access-Control-Max-Age", "86400");
     }
 
     default void sendResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
@@ -226,5 +248,25 @@ public interface RouteHandler extends HttpHandler {
             throw new Error(503, "Server not available");
         }
         return server;
+    }
+
+    default public void setNoCache(HttpExchange exchange) {
+        exchange.getResponseHeaders()
+            .set("Cache-Control", "no-cache, no-store, must-revalidate");
+        exchange.getResponseHeaders()
+            .set("Pragma", "no-cache");
+        exchange.getResponseHeaders()
+            .set("Expires", "0");
+    }
+
+    default public void setCache(HttpExchange exchange, int time) {
+        exchange.getResponseHeaders()
+            .set("Cache-Control", "public, max-age=" + time);
+        exchange.getResponseHeaders()
+            .set(
+                "Expires",
+                DateTimeFormatter.RFC_1123_DATE_TIME.format(
+                    ZonedDateTime.now()
+                        .plusSeconds(time)));
     }
 }

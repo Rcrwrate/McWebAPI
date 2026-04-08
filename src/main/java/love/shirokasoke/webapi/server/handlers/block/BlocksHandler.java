@@ -36,7 +36,7 @@ public class BlocksHandler implements RouteHandler {
                 items.add(Blocks.dump((Block) obj));
             }
         }
-
+        setCache(exchange, 86400);
         sendResponse(exchange, 200, items);
     }
 }
