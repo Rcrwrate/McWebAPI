@@ -30,6 +30,7 @@ public class RootHandler implements RouteHandler {
             MyMod.MODID,
             Tags.VERSION);
 
+        setCache(exchange, 86400);
         sendResponse(exchange, 200, response);
     }
 }
