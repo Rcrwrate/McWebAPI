@@ -1,3 +1,5 @@
+set -e
+
 ./gradlew spotlessApply
 
 rm -rf /workspace/build/libs
