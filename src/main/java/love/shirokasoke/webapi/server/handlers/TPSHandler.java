@@ -3,6 +3,7 @@ package love.shirokasoke.webapi.server.handlers;
 import java.io.IOException;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -45,6 +46,11 @@ public class TPSHandler implements RouteHandler {
                 double worldTickTime = mean(server.worldTickTimes.get(dimId)) * 1.0E-6D;
                 double worldTPS = Math.min(1000.0 / worldTickTime, 20);
                 ObjectNode tpsNode = mapper.createObjectNode();
+                WorldServer world = DimensionManager.getWorld(dimId.intValue());
+                if (world != null) {
+                    String worldName = world.provider.getDimensionName();
+                    tpsNode.put("WorldName", worldName);
+                }
                 tpsNode.put("TickTime", worldTickTime);
                 tpsNode.put("TPS", worldTPS);
                 root.set(dimId.toString(), tpsNode);
