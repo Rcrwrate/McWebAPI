@@ -38,7 +38,7 @@ public class ChunksHandler implements RouteHandler {
                 ArrayNode chunksArrayNode = mapper.createArrayNode();
                 ChunkProviderServer proS = (ChunkProviderServer) pro;
                 for (Chunk chunk : proS.func_152380_a()) {
-                    chunksArrayNode.add(Chunks.dump(chunk));
+                    chunksArrayNode.add(Chunks.dump(chunk, pro.getLoadedChunkCount() > 512 ? 0 : 1));
                 }
                 dimNode.set("chunks", chunksArrayNode);
             }
