@@ -6,7 +6,6 @@ import java.util.List;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -50,11 +49,7 @@ public class Items {
         data.put("UnlocalizedName", stack.getUnlocalizedName());
 
         data.set("AttributeModifiers", mapper.valueToTree(stack.getAttributeModifiers()));
-        NBTTagCompound nbt = stack.getTagCompound();
-        if (nbt != null) {
-            data.put("nbbtstr", nbt.toString());
-            data.set("nbt", mapper.valueToTree(nbt));
-        }
+        NBT.dump(stack.getTagCompound(), data);
         return data;
     }
 
