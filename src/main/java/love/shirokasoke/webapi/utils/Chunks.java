@@ -1,10 +1,12 @@
 package love.shirokasoke.webapi.utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.world.chunk.Chunk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import love.shirokasoke.webapi.Constant;
@@ -46,6 +48,19 @@ public class Chunks {
                 data.put("entityCount", entityCount);
             case 0:
                 break;
+            case 2:
+                ArrayNode entityList = data.putArray("entityList");
+                if (chunk.entityLists != null) {
+                    for (Object list : chunk.entityLists) {
+                        if (list instanceof ArrayList) {
+                            ArrayNode entityArrayNode = mapper.createArrayNode();
+                            for (Object entity : (ArrayList<?>) list) {
+                                entityArrayNode.add(Entitys.dump(entity));
+                            }
+                            entityList.add(entityArrayNode);
+                        }
+                    }
+                }
             default:
                 break;
         }
