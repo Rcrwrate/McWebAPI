@@ -1,6 +1,8 @@
 package love.shirokasoke.webapi.utils;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
+import java.util.List;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
@@ -13,6 +15,7 @@ import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagString;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -83,7 +86,7 @@ public class NBT {
                 break;
 
             case 8: // STRING
-                data.put(key, tag.toString());
+                data.put(key, ((NBTTagString) tag).func_150285_a_());
                 break;
 
             case 9: // LIST
@@ -107,9 +110,28 @@ public class NBT {
 
     private static ArrayNode listToArray(NBTTagList tagList) {
         ArrayNode array = mapper.createArrayNode();
-        for (int i = 0; i < tagList.tagCount(); i++) {
-            NBTBase tag = tagList.getCompoundTagAt(i);
-            addArrayElement(array, tag);
+        try {
+            Field f = tagList.getClass()
+                .getDeclaredField("field_74747_a");
+            // field_74747_a是编译后的tagList
+            f.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            List<NBTBase> tmp = (List<NBTBase>) f.get(tagList);
+            for (NBTBase n : tmp) {
+                addArrayElement(array, n);
+            }
+        } catch (Throwable e) {
+            log.e(e);
+            NBTTagList tmp = (NBTTagList) tagList.copy();
+            while (tmp.tagCount() > 0) {
+                NBTBase tag = tmp.removeTag(0);
+                addArrayElement(array, tag);
+            }
+            // 不能使用getCompoundTagAt
+            // for (int i = 0; i < tagList.tagCount(); i++) {
+            // NBTBase tag = tagList.getCompoundTagAt(i);
+            // addArrayElement(array, tag);
+            // }
         }
         return array;
     }
