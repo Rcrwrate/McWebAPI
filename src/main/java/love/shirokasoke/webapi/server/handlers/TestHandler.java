@@ -1,12 +1,11 @@
 package love.shirokasoke.webapi.server.handlers;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagList;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.RouteHandler;
+import love.shirokasoke.webapi.utils.log;
 
 public class TestHandler implements RouteHandler {
 
@@ -17,11 +16,9 @@ public class TestHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws Exception {
-        Item item = Item.getItemById(4144);
-        ItemStack stack = new ItemStack(item, 1, 17);
-        MyMod.LOG.info(stack.getDisplayName());
-        MyMod.LOG.info(stack.getItemDamage());
+        NBTTagList nbt = new NBTTagList();
+        log.debugFields(nbt);
+        log.debugMethods(nbt);
         throw new Error(200, "");
     }
-
 }
