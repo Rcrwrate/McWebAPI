@@ -35,22 +35,21 @@ public class Chunks {
 
         // 实体和方块实体数量
         data.put("tileEntityCount", chunk.chunkTileEntityMap != null ? chunk.chunkTileEntityMap.size() : 0);
-        switch (dumpEntity) {
-            case 1:
-                int entityCount = 0;
-                if (chunk.entityLists != null) {
+        if (chunk.entityLists != null) {
+            switch (dumpEntity) {
+                case 1:
+                    int entityCount = 0;
                     for (Object list : chunk.entityLists) {
                         if (list instanceof List) {
                             entityCount += ((List<?>) list).size();
                         }
                     }
-                }
-                data.put("entityCount", entityCount);
-            case 0:
-                break;
-            case 2:
-                ArrayNode entityList = data.putArray("entityList");
-                if (chunk.entityLists != null) {
+                    data.put("entityCount", entityCount);
+                    break;
+                case 0:
+                    break;
+                case 2:
+                    ArrayNode entityList = data.putArray("entityList");
                     for (Object list : chunk.entityLists) {
                         if (list instanceof ArrayList) {
                             ArrayNode entityArrayNode = mapper.createArrayNode();
@@ -60,11 +59,11 @@ public class Chunks {
                             entityList.add(entityArrayNode);
                         }
                     }
-                }
-            default:
-                break;
+                    break;
+                default:
+                    break;
+            }
         }
-
         // 时间信息
         data.put("inhabitedTime", chunk.inhabitedTime);
 
