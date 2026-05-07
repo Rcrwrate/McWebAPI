@@ -42,19 +42,17 @@ public class TPSHandler implements RouteHandler {
         ObjectNode root = mapper.createObjectNode();
 
         for (Integer dimId : DimensionManager.getIDs()) {
-            {
-                double worldTickTime = mean(server.worldTickTimes.get(dimId)) * 1.0E-6D;
-                double worldTPS = Math.min(1000.0 / worldTickTime, 20);
-                ObjectNode tpsNode = mapper.createObjectNode();
-                WorldServer world = DimensionManager.getWorld(dimId.intValue());
-                if (world != null) {
-                    String worldName = world.provider.getDimensionName();
-                    tpsNode.put("WorldName", worldName);
-                }
-                tpsNode.put("TickTime", worldTickTime);
-                tpsNode.put("TPS", worldTPS);
-                root.set(dimId.toString(), tpsNode);
+            double worldTickTime = mean(server.worldTickTimes.get(dimId)) * 1.0E-6D;
+            double worldTPS = Math.min(1000.0 / worldTickTime, 20);
+            ObjectNode tpsNode = mapper.createObjectNode();
+            WorldServer world = DimensionManager.getWorld(dimId.intValue());
+            if (world != null) {
+                String worldName = world.provider.getDimensionName();
+                tpsNode.put("WorldName", worldName);
             }
+            tpsNode.put("TickTime", worldTickTime);
+            tpsNode.put("TPS", worldTPS);
+            root.set(dimId.toString(), tpsNode);
         }
 
         sendResponse(exchange, 200, root);
