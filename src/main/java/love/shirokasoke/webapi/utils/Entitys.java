@@ -5,6 +5,7 @@ import java.util.Collection;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 
@@ -25,6 +26,9 @@ public class Entitys {
         if (object instanceof EntityLivingBase) {
             dumpEntityLivingBase((EntityLivingBase) object, dataNode);
         }
+        if (object instanceof EntityPlayer) {
+            dumpEntityPlayer((EntityPlayer) object, dataNode);
+        }
         ClassUtils.getClassInfo(object, dataNode);
         return dataNode;
     }
@@ -38,9 +42,9 @@ public class Entitys {
         dataNode.put("name", object.getCommandSenderName());
         dataNode.put("entityId", object.getEntityId());
         dataNode.put(
-                "uniqueId",
-                object.getUniqueID()
-                        .toString());
+            "uniqueId",
+            object.getUniqueID()
+                .toString());
         dataNode.put("dimension", object.dimension);
 
         // 位置信息
@@ -100,19 +104,20 @@ public class Entitys {
 
         // 骑行信息
         dataNode.put(
-                "RidingEntity",
-                object.ridingEntity != null ? object.ridingEntity.getUniqueID()
-                        .toString() : null);
+            "RidingEntity",
+            object.ridingEntity != null ? object.ridingEntity.getUniqueID()
+                .toString() : null);
         dataNode.put(
-                "RiddenByEntity",
-                object.riddenByEntity != null ? object.riddenByEntity.getUniqueID()
-                        .toString() : null);
+            "RiddenByEntity",
+            object.riddenByEntity != null ? object.riddenByEntity.getUniqueID()
+                .toString() : null);
 
         NBT.dump(object.getEntityData(), dataNode);
     }
 
     private static void dumpEntityLivingBase(EntityLivingBase object, ObjectNode root) {
         ObjectNode dataNode = root.putObject("EntityLivingBase");
+
         // 生命值信息
         dataNode.put("health", object.getHealth());
         dataNode.put("maxHealth", object.getMaxHealth());
@@ -124,7 +129,9 @@ public class Entitys {
         if (items != null) {
             ArrayNode itemsNode = dataNode.putArray("items");
             for (ItemStack i : items) {
-                itemsNode.add(Items.dump(i));
+                if (i != null) {
+                    itemsNode.add(Items.dump(i));
+                }
             }
         }
 
@@ -166,12 +173,12 @@ public class Entitys {
 
         // 属性信息
         Collection<IAttributeInstance> att = object.getAttributeMap()
-                .getAllAttributes();
+            .getAllAttributes();
         if (att != null) {
             ObjectNode attributesNode = dataNode.putObject("attributes");
             for (IAttributeInstance attr : att) {
                 String attrName = attr.getAttribute()
-                        .getAttributeUnlocalizedName();
+                    .getAttributeUnlocalizedName();
                 ObjectNode attrNode = attributesNode.putObject(attrName);
                 attrNode.put("baseValue", attr.getBaseValue());
                 attrNode.put("currentValue", attr.getAttributeValue());
@@ -180,9 +187,9 @@ public class Entitys {
 
         // 生物类型
         dataNode.put(
-                "creatureAttribute",
-                object.getCreatureAttribute()
-                        .toString());
+            "creatureAttribute",
+            object.getCreatureAttribute()
+                .toString());
 
         // 攻击目标信息
         EntityLivingBase revengeTarget = object.getAITarget();
@@ -207,5 +214,50 @@ public class Entitys {
                 effectNode.put("isAmbient", effect.getIsAmbient());
             }
         }
+    }
+
+    private static void dumpEntityPlayer(EntityPlayer player, ObjectNode root) {
+        ObjectNode dataNode = root.putObject("Player");
+
+        // 经验值
+        dataNode.put("experienceLevel", player.experienceLevel);
+        dataNode.put("experience", player.experience);
+        dataNode.put("experienceTotal", player.experienceTotal);
+
+        // 能力/游戏模式
+        dataNode.put("isCreativeMode", player.capabilities.isCreativeMode);
+        dataNode.put("isFlying", player.capabilities.isFlying);
+        dataNode.put("allowFlying", player.capabilities.allowFlying);
+        dataNode.put("disableDamage", player.capabilities.disableDamage);
+
+        // 睡眠状态
+        dataNode.put("isSleeping", player.isPlayerSleeping());
+        dataNode.put("sleepTimer", player.getSleepTimer());
+
+        // 分数
+        dataNode.put("score", player.getScore());
+
+        // 饥饿值
+        net.minecraft.util.FoodStats food = player.getFoodStats();
+        ObjectNode foodNode = dataNode.putObject("food");
+        foodNode.put("foodLevel", food.getFoodLevel());
+        foodNode.put("saturationLevel", food.getSaturationLevel());
+
+        // 手持物品（比 getLastActiveItems 更精确地反应当前选中的格子）
+        ItemStack held = player.getHeldItem();
+        if (held != null) {
+            dataNode.set("heldItem", Items.dump(held));
+        }
+
+        // 正在使用的物品（如拉弓、吃东西）
+        ItemStack inUse = player.getItemInUse();
+        if (inUse != null) {
+            dataNode.put("itemInUse", inUse.getDisplayName());
+            dataNode.put("itemInUseCount", player.getItemInUseCount());
+            dataNode.put("itemInUseDuration", player.getItemInUseDuration());
+        }
+
+        // 是否正在格挡
+        dataNode.put("isBlocking", player.isBlocking());
     }
 }

@@ -47,6 +47,7 @@ public class RouteRegistry {
         love.shirokasoke.webapi.server.handlers.block.init.i();
         love.shirokasoke.webapi.server.handlers.item.init.i();
         love.shirokasoke.webapi.server.handlers.chunk.init.i();
+        love.shirokasoke.webapi.server.handlers.entity.init.i();
 
         register(new love.shirokasoke.webapi.server.handlers.ProfilerHandler());
         register(new love.shirokasoke.webapi.server.handlers.LagAnalyzerHandler());
