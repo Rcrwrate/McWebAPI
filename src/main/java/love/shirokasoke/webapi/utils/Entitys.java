@@ -19,10 +19,11 @@ public class Entitys {
 
     private static final ObjectMapper mapper = Constant.mapper;
 
-    public static ObjectNode dump(Object object, ObjectNode dataNode) {
+    public static ObjectNode dump(Object object, ObjectNode dataNode, boolean all) {
         if (object instanceof Entity) {
-            dumpEntity((Entity) object, dataNode);
+            dumpEntity((Entity) object, dataNode, all);
         }
+        if (!all) return dataNode;
         if (object instanceof EntityLivingBase) {
             dumpEntityLivingBase((EntityLivingBase) object, dataNode);
         }
@@ -34,10 +35,14 @@ public class Entitys {
     }
 
     public static ObjectNode dump(Object object) {
-        return dump(object, mapper.createObjectNode());
+        return dump(object, mapper.createObjectNode(), true);
     }
 
-    private static void dumpEntity(Entity object, ObjectNode root) {
+    public static ObjectNode dump(Object object, boolean all) {
+        return dump(object, mapper.createObjectNode(), all);
+    }
+
+    private static void dumpEntity(Entity object, ObjectNode root, boolean all) {
         ObjectNode dataNode = root.putObject("Entity");
         dataNode.put("name", object.getCommandSenderName());
         dataNode.put("entityId", object.getEntityId());
@@ -51,6 +56,7 @@ public class Entitys {
         dataNode.put("posX", object.posX);
         dataNode.put("posY", object.posY);
         dataNode.put("posZ", object.posZ);
+        if (!all) return;
         dataNode.put("prevPosX", object.prevPosX);
         dataNode.put("prevPosY", object.prevPosY);
         dataNode.put("prevPosZ", object.prevPosZ);

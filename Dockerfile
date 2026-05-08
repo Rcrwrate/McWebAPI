@@ -16,4 +16,4 @@ RUN sudo apt install -y gnupg ca-certificates curl && \
 
 RUN GIT_LFS_SKIP_SMUDGE=1 git clone --depth=1 https://cnb.cool/${CNB_REPO_SLUG} /tmp/repo &&\
     cd /tmp/repo &&\
-    ./gradlew setupDecompWorkspace injectTags -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3
+    ./gradlew setupDecompWorkspace injectTags spotlessApply -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2,TLSv1.3
