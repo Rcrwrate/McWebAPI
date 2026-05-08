@@ -17,6 +17,7 @@ public class Config {
 
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
+    public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
@@ -50,6 +51,11 @@ public class Config {
             "security",
             authUrlPrefixes,
             "List of URL prefixes (e.g., '/setblock|GET|POST', '/chunk/force|GET|POST') which need auth");
+        langFiles = configuration.getStringList(
+            "langFiles",
+            "localization",
+            langFiles,
+            "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
 
         if (configuration.hasChanged()) {
             configuration.save();
