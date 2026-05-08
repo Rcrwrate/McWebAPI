@@ -22,8 +22,8 @@ include:
 main:
   web_trigger_daily:
     - <<: *daily
-  "crontab: 10 9 * * 1-5":
-    - <<: *daily
+  # "crontab: 10 9 * * 1-5":
+  #   - <<: *daily
   api_trigger_daily:
     - <<: *daily
   push:
@@ -41,7 +41,7 @@ $:
       imports:
         - https://cnb.cool/shirokasoke/keys/-/blob/main/MCWebAPI.yml
       docker:
-        image: docker.io/shirokasoke/mcwebapi:latest
+        image: docker.cnb.cool/shirokasoke/mcwebapi:latest
         volumes:
           - /workspace/run/server:copy-on-write
       stages:

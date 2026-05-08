@@ -1,4 +1,4 @@
-FROM shirokasoke/env
+FROM docker.cnb.cool/shirokasoke/env/pure
 
 ENV maven_TOKEN=""
 
