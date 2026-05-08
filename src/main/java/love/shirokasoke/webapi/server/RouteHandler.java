@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import codechicken.lib.vec.BlockCoord;
 import cpw.mods.fml.common.FMLCommonHandler;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
@@ -132,6 +133,10 @@ public interface RouteHandler extends HttpHandler {
         public coordinates(int x, int y, int z, int dimension) {
             super(x, y, z);
             this.dimension = dimension;
+        }
+
+        public BlockCoord BlockCoord() {
+            return new BlockCoord(this.posX, this.posY, this.posZ);
         }
     }
 

@@ -21,7 +21,7 @@ public class EntitiesHandler implements RouteHandler {
 
     @Override
     public String getDescription() {
-        return "获取服务器中所有已加载实体列表，支持维度和类型过滤";
+        return "获取服务器中所有已加载实体列表";
     }
 
     @Override
