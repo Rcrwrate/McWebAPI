@@ -17,7 +17,7 @@ public class Lang {
             path = path.trim();
 
             InputStream langStream = null;
-            
+
             try {
                 langStream = Lang.class.getResourceAsStream("/" + path);
             } catch (Exception ignored) {}

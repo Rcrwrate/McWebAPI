@@ -36,8 +36,8 @@
 dependencies {
     //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
     api("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-695-GTNH:dev")
-    // api('com.github.GTNewHorizons:ForgeMultipart:1.6.8:dev')
-    // api('com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev')
+    api('com.github.GTNewHorizons:ForgeMultipart:1.7.2:dev')
+    api('com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev')
 
     // Jackson for JSON processing
     shadowImplementation rfg.deobf("com.fasterxml.jackson.core:jackson-databind:2.15.2")
