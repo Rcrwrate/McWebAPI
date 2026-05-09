@@ -48,13 +48,11 @@ public interface RouteHandler extends HttpHandler {
         String uri = exchange.getRequestURI()
             .toString();
 
+        setCorsHeaders(exchange);
         // 处理 OPTIONS 预检请求
         if ("OPTIONS".equals(method)) {
-            setCorsHeaders(exchange);
             exchange.sendResponseHeaders(204, -1);
             return;
-        } else {
-            setCorsHeaders(exchange);
         }
 
         if (!Auth.auth(
@@ -98,6 +96,8 @@ public interface RouteHandler extends HttpHandler {
             .set("Access-Control-Allow-Headers", "Content-Type, Authorization");
         exchange.getResponseHeaders()
             .set("Access-Control-Max-Age", "86400");
+        exchange.getResponseHeaders()
+            .set("X-Powered-By", "love.shirokasoke.webapi");
     }
 
     default void sendResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
