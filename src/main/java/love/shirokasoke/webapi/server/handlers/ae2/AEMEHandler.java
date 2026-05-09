@@ -27,7 +27,7 @@ public class AEMEHandler extends AEBaseHandler {
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
 
-        // 获取AE兼容列表
+        // 获取可被ME接口终端查看的机器类型列表
         Set<Class<? extends IInterfaceViewable>> supportedClasses = InterfaceTerminalRegistry.instance()
             .getSupportedClasses();
         ArrayNode interfaces = mapper.createArrayNode();
@@ -37,7 +37,9 @@ public class AEMEHandler extends AEBaseHandler {
                 ObjectNode iface = interfaces.addObject()
                     .put("display", machine.shouldDisplay())
                     .put("name", machine.getName())
-                    .put("online", node.isActive());
+                    .put("online", node.isActive())
+                    .put("allowsPatternOptimization", machine.allowsPatternOptimization())
+                    .put("playerID",node.getPlayerID());
 
                 DimensionalCoord loc = machine.getLocation();
                 iface.putObject("location")
