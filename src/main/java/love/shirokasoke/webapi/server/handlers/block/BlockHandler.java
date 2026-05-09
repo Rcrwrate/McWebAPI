@@ -17,7 +17,6 @@ import love.shirokasoke.webapi.server.RouteHandler;
 import love.shirokasoke.webapi.utils.Blocks;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Items;
-import love.shirokasoke.webapi.utils.log;
 
 public class BlockHandler implements RouteHandler {
 
@@ -60,18 +59,12 @@ public class BlockHandler implements RouteHandler {
         int metadata = world.getBlockMetadata(co.posX, co.posY, co.posZ);
 
         ObjectNode data = mapper.createObjectNode();
-        try {
-            data.set("blockAuto", mapper.valueToTree(block));
-        } catch (NoClassDefFoundError e) {
-            log.e(e);
-        } finally {
-            ObjectNode b = mapper.createObjectNode();
-            Blocks.dump(block, b);
-            b.put("hardness", block.getBlockHardness(world, co.posX, co.posY, co.posZ));
-            b.put("isReplaceable", block.isReplaceable(world, co.posX, co.posY, co.posZ));
-            b.put("isPassable", !block.getBlocksMovement(world, co.posX, co.posY, co.posZ));
-            data.set("block", b);
-        }
+
+        ObjectNode b = data.putObject("block");
+        Blocks.dump(block, b);
+        b.put("hardness", block.getBlockHardness(world, co.posX, co.posY, co.posZ));
+        b.put("isReplaceable", block.isReplaceable(world, co.posX, co.posY, co.posZ));
+        b.put("isPassable", !block.getBlocksMovement(world, co.posX, co.posY, co.posZ));
 
         data.set("coordinates", mapper.valueToTree(co));
         data.put("metadata", metadata);

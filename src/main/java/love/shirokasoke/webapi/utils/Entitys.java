@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -231,15 +232,14 @@ public class Entitys {
         dataNode.put("experienceTotal", player.experienceTotal);
 
         // 能力/游戏模式
-        dataNode.put("isCreativeMode", player.capabilities.isCreativeMode);
-        dataNode.put("isFlying", player.capabilities.isFlying);
-        dataNode.put("allowFlying", player.capabilities.allowFlying);
-        dataNode.put("disableDamage", player.capabilities.disableDamage);
+        NBTTagCompound nbt = new NBTTagCompound();
+        player.capabilities.writeCapabilitiesToNBT(nbt);
+        NBT.dump(nbt, dataNode);
 
         // 睡眠状态
         dataNode.put("isSleeping", player.isPlayerSleeping());
-        dataNode.put("sleepTimer", player.getSleepTimer());
-
+        // 是否正在格挡
+        dataNode.put("isBlocking", player.isBlocking());
         // 分数
         dataNode.put("score", player.getScore());
 
@@ -249,21 +249,30 @@ public class Entitys {
         foodNode.put("foodLevel", food.getFoodLevel());
         foodNode.put("saturationLevel", food.getSaturationLevel());
 
-        // 手持物品（比 getLastActiveItems 更精确地反应当前选中的格子）
+        // 物品
         ItemStack held = player.getHeldItem();
         if (held != null) {
             dataNode.set("heldItem", Items.dump(held));
         }
 
-        // 正在使用的物品（如拉弓、吃东西）
-        ItemStack inUse = player.getItemInUse();
-        if (inUse != null) {
-            dataNode.put("itemInUse", inUse.getDisplayName());
-            dataNode.put("itemInUseCount", player.getItemInUseCount());
-            dataNode.put("itemInUseDuration", player.getItemInUseDuration());
+        ArrayNode armor = dataNode.putArray("armor");
+        for (ItemStack i : player.inventory.armorInventory) {
+            if (i == null) {
+                armor.addNull();
+            } else {
+                armor.add(Items.dump(i));
+            }
         }
 
-        // 是否正在格挡
-        dataNode.put("isBlocking", player.isBlocking());
+        int size = player.inventory.mainInventory.length;
+        ArrayNode items = dataNode.putArray("items");
+        for (int i = 0; i < size; i++) {
+            ItemStack tmp = player.inventory.mainInventory[i];
+            if (tmp != null) {
+                ObjectNode item = Items.dump(tmp);
+                item.put("slot", i);
+                items.add(item);
+            }
+        }
     }
 }

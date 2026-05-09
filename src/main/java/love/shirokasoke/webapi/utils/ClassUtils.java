@@ -232,7 +232,9 @@ public class ClassUtils {
 
         // 方法2：通过ProtectionDomain获取
         java.security.ProtectionDomain pd = clazz.getProtectionDomain();
-        if (pd != null && pd.getCodeSource() != null) {
+        if (pd != null && pd.getCodeSource() != null
+            && pd.getCodeSource()
+                .getLocation() != null) {
             return pd.getCodeSource()
                 .getLocation()
                 .toString();
