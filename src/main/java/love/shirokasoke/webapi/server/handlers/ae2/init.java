@@ -9,5 +9,7 @@ public class init {
         RouteRegistry.register(new AEItemHandler());
         RouteRegistry.register(new AEMEHandler());
         RouteRegistry.register(new AEMEsHandler());
+        RouteRegistry.register(new AEMEsupportHandler());
+        RouteRegistry.register(new AECPUHandler());
     }
 }

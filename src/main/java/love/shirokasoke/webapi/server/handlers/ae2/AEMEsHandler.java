@@ -39,7 +39,7 @@ public class AEMEsHandler extends AEBaseHandler {
                 ObjectNode iface = interfaces.addObject()
                     .put("display", machine.shouldDisplay())
                     .put("name", machine.getName())
-                    .put("online", node.isActive())
+                    .put("active", node.isActive())
                     .put("allowsPatternOptimization", machine.allowsPatternOptimization())
                     .put("playerID", node.getPlayerID());
 
