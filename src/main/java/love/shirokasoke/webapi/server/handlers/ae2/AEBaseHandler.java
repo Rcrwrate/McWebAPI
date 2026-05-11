@@ -17,6 +17,7 @@ public class AEBaseHandler extends BlockHandler {
     protected IGridHost host;
     protected IGridNode aenode;
     protected IGrid grid;
+    protected coordinates co;
 
     @Override
     public String getPath() {
@@ -40,7 +41,7 @@ public class AEBaseHandler extends BlockHandler {
     protected void AEinit(HttpExchange exchange) throws Error {
         String query = exchange.getRequestURI()
             .getQuery();
-        coordinates co = checklist(query);
+        co = checklist(query);
         TileEntity tileEntity = world.getTileEntity(co.posX, co.posY, co.posZ);
         if (tileEntity instanceof IGridHost) {
             host = (IGridHost) tileEntity;
