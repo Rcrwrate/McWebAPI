@@ -32,7 +32,7 @@ public class Pattern {
      * @return 包含样板信息的 JSON 对象
      */
     public static ObjectNode dump(ItemStack stack) {
-        return dump(stack, null);
+        return dump(stack, false, null);
     }
 
     /**
@@ -44,7 +44,7 @@ public class Pattern {
      * @param world 当前世界实例，用于 PatternHelper 解析；可为 null
      * @return 包含样板信息的 JSON 对象
      */
-    public static ObjectNode dump(ItemStack stack, World world) {
+    public static ObjectNode dump(ItemStack stack, boolean loadItem, World world) {
         ObjectNode node = Items.dump(stack);
 
         NBTTagCompound nbt = stack.getTagCompound();
@@ -65,46 +65,47 @@ public class Pattern {
         if (!author.isEmpty()) {
             node.put("author", author);
         }
-
-        // === 原始输入列表（含 null） ===
-        // NBT 中 "in" 标签是一个 NBTTagList，每个元素是一个 NBTTagCompound（物品序列化后的 NBT）
-        ArrayNode inputs = mapper.createArrayNode();
-        NBTTagList inTag = nbt.getTagList("in", 10); // 10 = NBTTagCompound
-        for (int i = 0; i < inTag.tagCount(); i++) {
-            NBTTagCompound tag = inTag.getCompoundTagAt(i);
-            // 空标签表示该格子没有物品
-            if (tag.hasNoTags()) {
-                inputs.addNull();
-            } else {
-                // 从 NBT 还原 ItemStack
-                ItemStack s = Platform.loadItemStackFromNBT(tag);
-                if (s != null) {
-                    inputs.add(Items.dump(s));
-                } else {
+        if (loadItem) {
+            // === 原始输入列表（含 null） ===
+            // NBT 中 "in" 标签是一个 NBTTagList，每个元素是一个 NBTTagCompound（物品序列化后的 NBT）
+            ArrayNode inputs = mapper.createArrayNode();
+            NBTTagList inTag = nbt.getTagList("in", 10); // 10 = NBTTagCompound
+            for (int i = 0; i < inTag.tagCount(); i++) {
+                NBTTagCompound tag = inTag.getCompoundTagAt(i);
+                // 空标签表示该格子没有物品
+                if (tag.hasNoTags()) {
                     inputs.addNull();
-                }
-            }
-        }
-        node.set("inputs", inputs);
-
-        // === 原始输出列表 ===
-        // 加工配方可能有多个输出，合成配方通常只有一个
-        ArrayNode outputs = mapper.createArrayNode();
-        NBTTagList outTag = nbt.getTagList("out", 10);
-        for (int i = 0; i < outTag.tagCount(); i++) {
-            NBTTagCompound tag = outTag.getCompoundTagAt(i);
-            if (tag.hasNoTags()) {
-                outputs.addNull();
-            } else {
-                ItemStack s = Platform.loadItemStackFromNBT(tag);
-                if (s != null) {
-                    outputs.add(Items.dump(s));
                 } else {
-                    outputs.addNull();
+                    // 从 NBT 还原 ItemStack
+                    ItemStack s = Platform.loadItemStackFromNBT(tag);
+                    if (s != null) {
+                        inputs.add(Items.dump(s));
+                    } else {
+                        inputs.addNull();
+                    }
                 }
             }
+            node.set("inputs", inputs);
+
+            // === 原始输出列表 ===
+            // 加工配方可能有多个输出，合成配方通常只有一个
+            ArrayNode outputs = mapper.createArrayNode();
+            NBTTagList outTag = nbt.getTagList("out", 10);
+            for (int i = 0; i < outTag.tagCount(); i++) {
+                NBTTagCompound tag = outTag.getCompoundTagAt(i);
+                if (tag.hasNoTags()) {
+                    outputs.addNull();
+                } else {
+                    ItemStack s = Platform.loadItemStackFromNBT(tag);
+                    if (s != null) {
+                        outputs.add(Items.dump(s));
+                    } else {
+                        outputs.addNull();
+                    }
+                }
+            }
+            node.set("outputs", outputs);
         }
-        node.set("outputs", outputs);
 
         // === 通过 PatternHelper 补充高级信息（需要 World） ===
         // ICraftingPatternItem 接口由 ItemEncodedPattern 实现，提供 getPatternForItem 方法

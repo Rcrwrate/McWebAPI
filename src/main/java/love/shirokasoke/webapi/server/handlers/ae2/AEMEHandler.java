@@ -83,7 +83,7 @@ public class AEMEHandler extends AEBaseHandler {
         for (int i = 0; i < patternInv.getSizeInventory(); i++) {
             ItemStack patternStack = patternInv.getStackInSlot(i);
             if (patternStack != null) {
-                ObjectNode pattern = Pattern.dump(patternStack, world);
+                ObjectNode pattern = Pattern.dump(patternStack, true, world);
                 pattern.put("slot", i);
                 if (direction != null) {
                     pattern.put("direction", direction);

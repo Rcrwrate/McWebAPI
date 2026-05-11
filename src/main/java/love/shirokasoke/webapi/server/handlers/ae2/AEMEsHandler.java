@@ -1,6 +1,7 @@
 package love.shirokasoke.webapi.server.handlers.ae2;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.inventory.IInventory;
@@ -26,6 +27,7 @@ public class AEMEsHandler extends AEBaseHandler {
     @Override
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
+        Map<String, String> params = parseQueryParams(exchange);
 
         // 获取可被ME接口终端查看的机器类型列表
         Set<Class<? extends IInterfaceViewable>> supportedClasses = InterfaceTerminalRegistry.instance()
@@ -54,7 +56,12 @@ public class AEMEsHandler extends AEBaseHandler {
                     for (int i = 0; i < patternInv.getSizeInventory(); i++) {
                         ItemStack patternStack = patternInv.getStackInSlot(i);
                         if (patternStack != null) {
-                            ObjectNode pattern = Pattern.dump(patternStack, loc.getWorld());
+                            ObjectNode pattern = Pattern.dump(
+                                patternStack,
+                                params.getOrDefault("load", "false")
+                                    .equalsIgnoreCase("true"),
+                                params.getOrDefault("world", "false")
+                                    .equalsIgnoreCase("true") ? loc.getWorld() : null);
                             pattern.put("slot", i);
                             patterns.add(pattern);
                         }
