@@ -21,7 +21,7 @@
 # ./gradlew injectTags
 
 echo "" >> /etc/profile
-echo "alias s='./gradlew spotlessApply'" >> /etc/profile
+echo "alias s='./gradlew spotlessApply --offline'" >> /etc/profile
 echo "alias b='./gradlew build'" >> /etc/profile
 echo "alias run='./gradlew runServer25'" >> /etc/profile
 
