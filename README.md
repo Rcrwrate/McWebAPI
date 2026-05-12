@@ -6,6 +6,14 @@
 
 [在CodeQL Advanced的Artifacts中下载(想着不高兴再写一个就合并在一块了)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/codeql.yml)
 
+## TO DO
+
+调查异常
+
+[`/item/ae`](src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java#106)
+
+`/items`
+
 ## 修改兼容性
 
 [gradle.properties](./gradle.properties#L47-L60)

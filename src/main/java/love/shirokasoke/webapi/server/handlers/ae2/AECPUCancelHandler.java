@@ -30,7 +30,7 @@ public class AECPUCancelHandler extends AEBaseHandler {
     @Override
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
-                .equals("DELETE")) {
+            .equals("DELETE")) {
             throw new Error(400, "Method must be DELETE");
         }
 
@@ -38,9 +38,9 @@ public class AECPUCancelHandler extends AEBaseHandler {
 
         JsonNode body = getBody(exchange);
         String targetName = body.path("name")
-                .asText(null);
+            .asText(null);
         int targetId = body.path("id")
-                .asInt(-1);
+            .asInt(-1);
 
         boolean hasName = targetName != null && !targetName.isEmpty();
 

@@ -17,6 +17,7 @@ import appeng.api.util.AEColor;
 import appeng.api.util.AEColoredItemDefinition;
 import love.shirokasoke.webapi.server.RouteHandler;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.log;
 
 public class AEHandler implements RouteHandler {
 
@@ -98,9 +99,15 @@ public class AEHandler implements RouteHandler {
             }
 
             for (ItemStack stack : stacks) {
-                ObjectNode node = Items.dump(stack);
-                node.put("name", name);
-                array.add(node);
+                try {
+                    ObjectNode node = Items.dump(stack);
+                    node.put("name", name);
+                    array.add(node);
+                } catch (java.lang.NullPointerException ex) {
+                    log.debugFields(stack);
+                    log.debugMethods(stack);
+                    log.e(ex);
+                }
             }
         }
         return array;
