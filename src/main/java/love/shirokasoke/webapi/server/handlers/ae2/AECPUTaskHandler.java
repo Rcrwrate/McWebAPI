@@ -27,46 +27,12 @@ import love.shirokasoke.webapi.utils.Items;
  * 向 AE 合成网络提交自动合成任务
  *
  * <p>
- * <b>请求方式：</b>POST
- * <br>
- * <b>请求路径：</b>{@code /ae/cpu/task?x={x}&y={y}&z={z}&dim={dim}}
- * <br>
- * <b>请求体（JSON）：</b>
- *
- * <pre>
- * {
- *   "id": 1,              // 物品 ID（必填，对应 Minecraft 物品数字 ID）
- *   "damage": 0,          // 物品 metadata / damage（可选，默认 0）
- *   "amount": 64,         // 合成数量（可选，默认 1）
- *   "cpu": "CPU Name"     // 指定 CPU 名称（可选，不填则自动分配）
- * }
- * </pre>
- *
- * <b>成功响应（200）：</b>
- *
- * <pre>
- * {
- *   "success": true,
- *   "bytes": 1024,
- *   "cpu": "auto",
- *   "output": { ... }
- * }
- * </pre>
- *
- * <b>失败响应：</b>
- * <ul>
- * <li>400 - 请求方法不是 POST，或请求体缺少 id / amount 不合法</li>
- * <li>404 - 物品 ID 不存在，或指定 CPU 名称未找到</li>
- * <li>500 - AE 网络不可用、合成网格未初始化等内部错误</li>
- * <li>504 - AE 网络合成网格计算超时</li>
- * </ul>
- *
- * <p>
  * <b>实现流程：</b>
  * <ol>
  * <li>校验请求方法为 POST，解析 JSON 请求体</li>
  * <li>通过坐标参数定位 AE 网络并初始化</li>
- * <li>根据 id + damage 构造 {@link ItemStack}，再包装为 {@link IAEItemStack} 并设置合成数量</li>
+ * <li>根据 id + damage 构造 {@link ItemStack}，再包装为 {@link IAEItemStack}
+ * 并设置合成数量</li>
  * <li>调用 {@link ICraftingGrid#beginCraftingJob} 异步计算合成计划</li>
  * <li>等待计算完成（兼容 V1/V2 两种计算器，30 秒超时）</li>
  * <li>若计算结果为 simulation（材料不足），返回失败</li>
@@ -179,7 +145,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
         ObjectNode response = mapper.createObjectNode();
         response.put("success", true);
         response.put("bytes", job.getByteTotal());
-        response.put("cpu", targetCpu != null ? targetCpu.getName() : "auto");
+        response.put("cpu", targetCpu.getName());
         response.set(
             "output",
             Items.dump(

@@ -16,6 +16,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.DimensionalCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.Pattern;
 import love.shirokasoke.webapi.utils.log;
 
 /**
@@ -149,6 +150,8 @@ public class AECPUHandler extends AEBaseHandler {
                         Items.dump(input.getItemStack())
                             .put("stackSize", input.getStackSize()));
                 }
+
+                taskNode.set("pattern", Pattern.dump(details.getPattern(), true, null));
 
                 // 收集该任务的所有输出物品
                 ArrayNode outputsArray = taskNode.putArray("outputs");
