@@ -6,7 +6,7 @@ async function tasks() {
         method: "POST",
         body: JSON.stringify({
             id: 5,
-            amount: 4
+            amount: 64
         })
     })
     console.log(r.status)
@@ -24,4 +24,6 @@ async function cancel() {
     console.log(await r.text())
 }
 
-tasks().finally(() => { cancel().finally(() => { }) })
+tasks().finally(() => {
+    cancel().finally(() => { })
+})

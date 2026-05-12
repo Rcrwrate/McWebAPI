@@ -145,7 +145,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
         ObjectNode response = mapper.createObjectNode();
         response.put("success", true);
         response.put("bytes", job.getByteTotal());
-        response.put("cpu", targetCpu.getName());
+        response.put("cpu", targetCpu != null ? targetCpu.getName() : "auto");
         response.set(
             "output",
             Items.dump(
