@@ -19,7 +19,7 @@
 # ./gradlew setupDecompWorkspace
 
 # ./gradlew injectTags
-
+vsfix
 echo "" >> /etc/profile
 echo "alias s='./gradlew spotlessApply --offline'" >> /etc/profile
 echo "alias b='./gradlew build'" >> /etc/profile

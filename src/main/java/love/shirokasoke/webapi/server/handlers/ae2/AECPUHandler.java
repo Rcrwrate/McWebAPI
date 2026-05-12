@@ -19,17 +19,13 @@ import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.log;
 
 /**
- * 查看 AE 网络中所有合成 CPU 状态的 HTTP API 处理器。
- *
- * <p>
- * 除了 CPU 基本信息外，还会列出当前正在进行的并行合成任务及其对应的机器坐标。
- * </p>
+ * 查看 AE 网络中所有合成 CPU 状态
  */
 public class AECPUHandler extends AEBaseHandler {
 
-    /** 缓存 {@link CraftingCPUCluster } 的私有 tasks 字段，运行时懒加载。 */
+    /** 缓存 {@link CraftingCPUCluster } 的私有 tasks 字段 */
     private static Field TASKS_FIELD = null;
-    /** 缓存 TaskProgress 的私有 value 字段，运行时懒加载。 */
+    /** 缓存 TaskProgress 的私有 value 字段 */
     private static Field VALUE_FIELD = null;
 
     @Override
@@ -108,7 +104,7 @@ public class AECPUHandler extends AEBaseHandler {
      * 导出 CraftingCPUCluster 内部正在进行的并行合成任务及机器坐标。
      *
      * <p>
-     * 每个任务包含输出物品、剩余次数以及执行该样板的机器位置列表（支持并行合成）。
+     * 每个任务包含输入物品、输出物品、剩余次数以及执行该样板的机器位置列表。
      * </p>
      */
     private void dumpCraftingTasks(CraftingCPUCluster cluster, ObjectNode cpuNode) {
