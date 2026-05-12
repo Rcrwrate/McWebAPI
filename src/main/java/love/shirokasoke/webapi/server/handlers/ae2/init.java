@@ -12,6 +12,7 @@ public class init {
         RouteRegistry.register(new AEMEsupportHandler());
         RouteRegistry.register(new AECPUHandler());
         RouteRegistry.register(new AECPUTaskHandler());
+        RouteRegistry.register(new AECPUCancelHandler());
         RouteRegistry.register(new AENodesHandler());
     }
 }
