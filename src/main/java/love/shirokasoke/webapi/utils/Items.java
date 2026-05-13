@@ -1,11 +1,13 @@
 package love.shirokasoke.webapi.utils;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -113,5 +115,83 @@ public class Items {
             }
             subStack = null;
         }
+    }
+
+    /**
+     * 文件系统非法字符表。
+     *
+     * <p>
+     * 包含 Windows / Linux / macOS 文件系统中不允许出现在文件名中的控制字符和保留符号。
+     *
+     * @see #cleanFileName(String)
+     */
+    private static final int[] ILLEGAL_CHARS = {
+        // 控制字符 0x00-0x1F
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+        30, 31,
+        // 保留符号
+        34, // " 双引号
+        58, // : 冒号
+        60, // < 小于号
+        62, // > 大于号
+        42, // * 星号
+        63, // ? 问号
+        92, // \ 反斜杠
+        47, // / 正斜杠
+        124 // | 竖线
+    };
+
+    static {
+        Arrays.sort(ILLEGAL_CHARS);
+    }
+
+    /**
+     * 生成物品的安全文件名（不含扩展名）。
+     *
+     * <p>
+     * 格式：{@code modid_unlocalizedName_meta_displayName}
+     * <br>
+     * 示例：{@code minecraft_stone_0_Stone}
+     *
+     * <p>
+     * 会对显示名称进行以下处理：
+     * <ol>
+     * <li>去除 Minecraft 格式化代码（§ 颜色代码）</li>
+     * <li>替换文件系统非法字符为下划线</li>
+     * </ol>
+     *
+     * @param stack 物品栈
+     * @return 清理后的安全文件名
+     */
+    public static String getFileName(ItemStack stack) {
+        String name = stack.getItem()
+            .getUnlocalizedName();
+        name = EnumChatFormatting.getTextWithoutFormattingCodes(name);
+        name = cleanFileName(name);
+        String id = Item.itemRegistry.getNameForObject(stack.getItem());
+        return id.replace(":", "_") + "_" + stack.getItemDamage() + "_" + name;
+    }
+
+    /**
+     * 清理文件名中的非法字符。
+     *
+     * <p>
+     * 遍历字符串中的每个字符，如果字符在 {@link #ILLEGAL_CHARS} 中，则替换为下划线 {@code _}。
+     * 这是跨平台兼容的必要处理，因为 Windows 不允许 {@code \ / : * ? " < > |} 等字符出现在文件名中。
+     *
+     * @param name 原始文件名
+     * @return 清理后的安全文件名
+     */
+    public static String cleanFileName(String name) {
+        StringBuilder cleanName = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            int c = name.charAt(i);
+            if (Arrays.binarySearch(ILLEGAL_CHARS, c) < 0) {
+                cleanName.append((char) c);
+            } else {
+                cleanName.append('_');
+            }
+        }
+        return cleanName.toString();
     }
 }
