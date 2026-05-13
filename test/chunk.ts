@@ -36,7 +36,7 @@ async function listChunks(): Promise<ChunkListResponse> {
     console.log('获取强制加载区块列表...');
     const response = await fetch(`${API_BASE}/chunk/force`, { headers: { "Authorization": "Bearer " + auth } });
     const data = await response.json();
-    console.log('当前加载的区块数:', data.totalLoaded);
+    console.log('当前加载的区块数:', data.data.totalLoaded);
     if (data.chunks && data.chunks.length > 0) {
         data.chunks.forEach((chunk: ChunkInfo) => {
             console.log(`  - ${chunk.ticketKey} | ${chunk.dimension} | 剩余: ${chunk.remainingSec}秒`);
@@ -53,12 +53,12 @@ async function loadChunk(x: number, z: number, dimension = 0, duration = 60): Pr
     });
     const data = await response.json();
     if (data.success) {
-        console.log('✓ 加载成功:', data.ticketKey);
-        console.log(`  区块坐标: ${data.chunkX}, ${data.chunkZ}`);
-        console.log(`  维度: ${data.dimension}`);
-        console.log(`  剩余时间: ${data.remainingSec}秒`);
+        console.log('✓ 加载成功:', data.data.ticketKey);
+        console.log(`  区块坐标: ${data.data.chunkX}, ${data.data.chunkZ}`);
+        console.log(`  维度: ${data.data.dimension}`);
+        console.log(`  剩余时间: ${data.data.remainingSec}秒`);
     } else {
-        console.log('✗ 加载失败:', data.error || data.message);
+        console.log('✗ 加载失败:', data.message);
     }
     return data;
 }
@@ -71,9 +71,9 @@ async function unloadChunk(x: number, z: number, dimension = 0): Promise<ChunkAc
     });
     const data = await response.json();
     if (data.success) {
-        console.log('✓ 卸载成功:', data.ticketKey);
+        console.log('✓ 卸载成功:', data.data.ticketKey);
     } else {
-        console.log('✗ 卸载失败:', data.error || data.message);
+        console.log('✗ 卸载失败:', data.message);
     }
     return data;
 }

@@ -30,13 +30,12 @@ public class WorldInfoHandler implements RouteHandler {
 
         for (Integer dimId : DimensionManager.getIDs()) {
             {
-                ObjectNode wNode = mapper.createObjectNode();
+                ObjectNode wNode = root.putObject(dimId.toString());
                 WorldServer worldServer = DimensionManager.getWorld(dimId.intValue());
-                WorldInfo WorldInfo = worldServer.getWorldInfo();
-                ClassUtils.getClassInfo(worldServer, wNode, "worldServer");
-                ClassUtils.getClassInfo(WorldInfo, wNode, "WorldInfo");
-                wNode.set("WorldInfo", mapper.valueToTree(WorldInfo));
-                root.set(dimId.toString(), wNode);
+                WorldInfo worldInfo = worldServer.getWorldInfo();
+                ClassUtils.getClassInfo(worldServer, wNode, "WorldServerClass");
+                ClassUtils.getClassInfo(worldInfo, wNode, "WorldInfoClass");
+                wNode.set("WorldInfo", mapper.valueToTree(worldInfo));
             }
         }
 
