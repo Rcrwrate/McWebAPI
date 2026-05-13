@@ -25,10 +25,8 @@ public class RootHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        String response = String.format(
-            "{\"message\": \"Minecraft WebAPI is running\", \"modid\": \"%s\",\"version\": \"%s\"}",
-            MyMod.MODID,
-            Tags.VERSION);
+        String response = String
+            .format("{\"status\": \"success\", \"modid\": \"%s\",\"version\": \"%s\"}", MyMod.MODID, Tags.VERSION);
 
         setCache(exchange, 86400);
         sendResponse(exchange, 200, response);

@@ -32,7 +32,7 @@ public class AEBaseHandler extends BlockHandler {
     @Override
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
-        String response = "{\"message\": \"AE HIT\"}";
+        String response = "{\"status\": \"success\", \"data\": \"AE HIT\"}";
 
         setCache(exchange, 86400);
         sendResponse(exchange, 200, response);

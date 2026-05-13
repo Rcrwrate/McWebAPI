@@ -96,6 +96,6 @@ public class AECPUCancelHandler extends AEBaseHandler {
         response.put("success", true);
         response.put("cpu", targetCpu.getName());
         response.put("wasBusy", wasBusy);
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 }

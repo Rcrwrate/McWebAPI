@@ -41,6 +41,6 @@ public class AEItemHandler extends AEBaseHandler {
                 }
             }
         }
-        sendResponse(exchange, 200, items);
+        sendResponse(exchange, items);
     }
 }

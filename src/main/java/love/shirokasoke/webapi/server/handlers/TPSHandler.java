@@ -55,6 +55,6 @@ public class TPSHandler implements RouteHandler {
             root.set(dimId.toString(), tpsNode);
         }
 
-        sendResponse(exchange, 200, root);
+        sendResponse(exchange, root);
     }
 }

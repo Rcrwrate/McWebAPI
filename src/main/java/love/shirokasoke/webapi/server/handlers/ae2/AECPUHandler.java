@@ -67,7 +67,7 @@ public class AECPUHandler extends AEBaseHandler {
 
         // CPU 状态变化较快，缓存时间设为极短
         setCache(exchange, 5);
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 
     /**

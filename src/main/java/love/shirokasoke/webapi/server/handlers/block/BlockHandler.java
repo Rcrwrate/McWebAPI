@@ -98,6 +98,6 @@ public class BlockHandler implements RouteHandler {
             }
         }
 
-        sendResponse(exchange, 200, data);
+        sendResponse(exchange, data);
     }
 }

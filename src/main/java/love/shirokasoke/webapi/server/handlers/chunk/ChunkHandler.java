@@ -69,6 +69,6 @@ public class ChunkHandler implements RouteHandler {
         ObjectNode data = mapper.createObjectNode();
         data.put("dimension", dimension);
         Chunks.dump(chunk, data, 2);
-        sendResponse(exchange, 200, data);
+        sendResponse(exchange, data);
     }
 }
