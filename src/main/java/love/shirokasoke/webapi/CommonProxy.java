@@ -3,6 +3,7 @@ package love.shirokasoke.webapi;
 import java.io.File;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
@@ -38,6 +39,8 @@ public class CommonProxy {
     // postInit "Handle interaction with other mods, complete your setup based on
     // this." (Remove if not needed)
     public void postInit(FMLPostInitializationEvent event) {}
+
+    public void loadComplete(FMLLoadCompleteEvent event) {}
 
     // register server commands in this event handler (Remove if not needed)
     public void serverStarting(FMLServerStartingEvent event) {
