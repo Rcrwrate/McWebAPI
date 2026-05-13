@@ -2,6 +2,7 @@ package love.shirokasoke.webapi.server.handlers;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
@@ -25,10 +26,11 @@ public class RootHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        String response = String
-            .format("{\"status\": \"success\", \"modid\": \"%s\",\"version\": \"%s\"}", MyMod.MODID, Tags.VERSION);
+        ObjectNode response = mapper.createObjectNode();
+        response.put("modid", MyMod.MODID);
+        response.put("version", Tags.VERSION);
 
         setCache(exchange, 86400);
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 }

@@ -60,14 +60,8 @@ public class AECPUHandler extends AEBaseHandler {
 
             cpus.add(cpuNode);
         }
-
-        ObjectNode response = mapper.createObjectNode();
-        response.put("count", cpus.size());
-        response.set("cpus", cpus);
-
-        // CPU 状态变化较快，缓存时间设为极短
         setCache(exchange, 5);
-        sendResponse(exchange, response);
+        sendResponse(exchange, cpus);
     }
 
     /**

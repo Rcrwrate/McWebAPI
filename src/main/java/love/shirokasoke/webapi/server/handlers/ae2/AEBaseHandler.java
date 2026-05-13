@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import appeng.api.networking.IGrid;
@@ -32,10 +33,11 @@ public class AEBaseHandler extends BlockHandler {
     @Override
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
-        String response = "{\"status\": \"success\", \"data\": \"AE HIT\"}";
+        ObjectNode response = mapper.createObjectNode()
+            .put("message", "AE HIT");
 
         setCache(exchange, 86400);
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 
     protected void AEinit(HttpExchange exchange) throws Error {

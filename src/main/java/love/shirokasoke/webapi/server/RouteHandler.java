@@ -122,7 +122,7 @@ public interface RouteHandler extends HttpHandler {
             200,
             mapper.writeValueAsString(
                 mapper.createObjectNode()
-                    .put("status", "success")
+                    .put("success", true)
                     .set("data", json)));
     }
 
@@ -132,14 +132,14 @@ public interface RouteHandler extends HttpHandler {
             200,
             mapper.writeValueAsString(
                 mapper.createObjectNode()
-                    .put("status", "success")
+                    .put("success", true)
                     .set("data", json)));
     }
 
     default void sendErrorResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
         String response = mapper.writeValueAsString(
             mapper.createObjectNode()
-                .put("status", "error")
+                .put("success", false)
                 .put("message", message));
         sendResponse(exchange, statusCode, response);
     }

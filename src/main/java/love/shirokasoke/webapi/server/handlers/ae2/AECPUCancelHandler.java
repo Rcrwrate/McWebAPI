@@ -93,7 +93,6 @@ public class AECPUCancelHandler extends AEBaseHandler {
         }
 
         ObjectNode response = mapper.createObjectNode();
-        response.put("success", true);
         response.put("cpu", targetCpu.getName());
         response.put("wasBusy", wasBusy);
         sendResponse(exchange, response);
