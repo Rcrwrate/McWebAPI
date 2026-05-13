@@ -34,20 +34,11 @@ public class AENodesHandler extends AEBaseHandler {
         AEinit(exchange);
 
         ArrayNode nodes = mapper.createArrayNode();
-        int activeCount = 0;
-        int totalCount = 0;
-
         for (IGridNode node : grid.getNodes()) {
-            totalCount++;
             ObjectNode nodeData = nodes.addObject();
-
             nodeData.put("active", node.isActive());
             nodeData.put("meetsChannel", node.meetsChannelRequirements());
             nodeData.put("playerID", node.getPlayerID());
-
-            if (node.isActive()) {
-                activeCount++;
-            }
 
             // 节点对应的机器（TileEntity 或 IPart）信息
             IGridHost machine = node.getMachine();
@@ -76,12 +67,7 @@ public class AENodesHandler extends AEBaseHandler {
             }
         }
 
-        ObjectNode response = mapper.createObjectNode();
-        response.put("total", totalCount);
-        response.put("active", activeCount);
-        response.set("nodes", nodes);
-
         setCache(exchange, 5);
-        sendResponse(exchange, response);
+        sendResponse(exchange, nodes);
     }
 }

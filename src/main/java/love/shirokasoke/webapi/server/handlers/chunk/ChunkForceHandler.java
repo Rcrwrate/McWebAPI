@@ -110,7 +110,6 @@ public class ChunkForceHandler implements RouteHandler {
         }
 
         ObjectNode response = mapper.createObjectNode();
-        response.put("success", true);
         response.put("totalLoaded", activeChunkLoads.size());
         response.set("chunks", chunksArray);
 
@@ -170,7 +169,6 @@ public class ChunkForceHandler implements RouteHandler {
         activeChunkLoads.put(ticketKey, info);
 
         ObjectNode response = info.dump();
-        response.put("success", true);
         response.put("action", "load");
 
         sendResponse(exchange, response);
@@ -197,7 +195,6 @@ public class ChunkForceHandler implements RouteHandler {
             }
 
             ObjectNode response = info.dump();
-            response.put("success", true);
             response.put("action", "unload");
             sendResponse(exchange, response);
         } else {

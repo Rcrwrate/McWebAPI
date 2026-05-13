@@ -3,7 +3,6 @@ package love.shirokasoke.webapi.server.handlers.block;
 import java.io.IOException;
 
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -40,12 +39,13 @@ public class SetBlockHandler extends BlockHandler {
             .asInt(2);
 
         Block block = Block.getBlockById(id);
-        if (block.equals(Blocks.air) && id != 0) {
+        if (block == null) {
             throw new Error(404, "block id not found");
         }
-        boolean success = world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag);
-        ObjectNode rep = mapper.createObjectNode();
-        rep.put("success", success);
-        sendResponse(exchange, rep);
+        boolean changed = world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag);
+        ObjectNode rep = mapper.createObjectNode()
+            .put("success", changed)
+            .putNull("data");
+        sendResponse(exchange, 200, rep, true);
     }
 }
