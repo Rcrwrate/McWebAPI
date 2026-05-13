@@ -15,6 +15,10 @@ public class Config {
     public static int itemThreadBatchSize = 100;
     public static boolean itemThreadEnable = true;
 
+    public static boolean itemIconDumperEnable = false;
+    public static int itemIconDelayMs = 10;
+    public static int itemIconSize = 32;
+
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
@@ -44,6 +48,21 @@ public class Config {
             10,
             1000,
             "ItemsThread batch size for GC hints (items processed before System.gc() call)");
+
+        itemIconDumperEnable = configuration.getBoolean(
+            "enable",
+            "itemIconDumper",
+            itemIconDumperEnable,
+            "enable ItemIconDumper on client load complete");
+        itemIconDelayMs = configuration.getInt(
+            "DelayMs",
+            "itemIconDumper",
+            itemIconDelayMs,
+            0,
+            1000,
+            "ItemIconDumper delay between items in milliseconds");
+        itemIconSize = configuration
+            .getInt("iconSize", "itemIconDumper", itemIconSize, 16, 256, "ItemIconDumper output icon size in pixels");
 
         authToken = configuration.getString("authToken", "security", authToken, "simple use to auth HTTP request");
         authUrlPrefixes = configuration.getStringList(
