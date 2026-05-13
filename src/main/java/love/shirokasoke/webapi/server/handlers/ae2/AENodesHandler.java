@@ -82,6 +82,6 @@ public class AENodesHandler extends AEBaseHandler {
         response.set("nodes", nodes);
 
         setCache(exchange, 5);
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 }

@@ -70,6 +70,6 @@ public class AEMEsHandler extends AEBaseHandler {
             }
         }
 
-        sendResponse(exchange, 200, interfaces);
+        sendResponse(exchange, interfaces);
     }
 }

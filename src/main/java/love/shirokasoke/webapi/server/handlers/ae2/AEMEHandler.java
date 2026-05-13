@@ -91,6 +91,6 @@ public class AEMEHandler extends AEBaseHandler {
                 patterns.add(pattern);
             }
         }
-        sendResponse(exchange, 200, patterns);
+        sendResponse(exchange, patterns);
     }
 }

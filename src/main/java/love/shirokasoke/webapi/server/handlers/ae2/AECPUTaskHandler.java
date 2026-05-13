@@ -155,7 +155,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
                     "stackSize",
                     job.getOutput()
                         .getStackSize()));
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 
     /**

@@ -54,7 +54,7 @@ public class AEHandler implements RouteHandler {
                     .definitions()
                     .blocks()));
         setCache(exchange, 86400);
-        sendResponse(exchange, 200, root);
+        sendResponse(exchange, root);
     }
 
     private ArrayNode collect(Object definitions) {

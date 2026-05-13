@@ -44,7 +44,7 @@ public class ChunksHandler implements RouteHandler {
             }
             dimNode.put("count", pro.getLoadedChunkCount());
         }
-        sendResponse(exchange, 200, data);
+        sendResponse(exchange, data);
     }
 
 }

@@ -36,7 +36,7 @@ public class ItemHandler implements RouteHandler {
 
         }
         setCache(exchange, 86400);
-        sendResponse(exchange, 200, data);
+        sendResponse(exchange, data);
     }
 
 }

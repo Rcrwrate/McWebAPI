@@ -33,7 +33,7 @@ public class FMPHandler extends BlockHandler {
                 TMultiPart part = it.next();
                 root.add(FMP.dump(part));
             }
-            sendResponse(exchange, 200, root);
+            sendResponse(exchange, root);
         }
     }
 }

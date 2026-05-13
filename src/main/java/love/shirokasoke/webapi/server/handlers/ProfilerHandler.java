@@ -50,9 +50,7 @@ public class ProfilerHandler implements RouteHandler {
         // Add profiler data if available
         addProfilerData(root, server);
 
-        String response = mapper.writeValueAsString(root);
-
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, root);
     }
 
     private void addServerOverview(ObjectNode root, MinecraftServer server) {

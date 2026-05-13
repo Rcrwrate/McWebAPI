@@ -48,6 +48,6 @@ public class EntityHandler implements RouteHandler {
         }
 
         ObjectNode result = Entitys.dump(target, true);
-        sendResponse(exchange, 200, result);
+        sendResponse(exchange, result);
     }
 }
