@@ -44,6 +44,6 @@ public class EntitiesHandler implements RouteHandler {
                 }
             }
         }
-        sendResponse(exchange, 200, root);
+        sendResponse(exchange, root);
     }
 }

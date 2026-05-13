@@ -114,7 +114,7 @@ public class ChunkForceHandler implements RouteHandler {
         response.put("totalLoaded", activeChunkLoads.size());
         response.set("chunks", chunksArray);
 
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 
     private void handleLoadChunk(HttpExchange exchange, Map<String, String> params) throws IOException {
@@ -173,7 +173,7 @@ public class ChunkForceHandler implements RouteHandler {
         response.put("success", true);
         response.put("action", "load");
 
-        sendResponse(exchange, 200, response);
+        sendResponse(exchange, response);
     }
 
     private void handleUnloadChunk(HttpExchange exchange, Map<String, String> params) throws IOException {
@@ -199,7 +199,7 @@ public class ChunkForceHandler implements RouteHandler {
             ObjectNode response = info.dump();
             response.put("success", true);
             response.put("action", "unload");
-            sendResponse(exchange, 200, response);
+            sendResponse(exchange, response);
         } else {
             throw new Error(404, "No active chunk loading ticket found for " + ticketKey);
         }

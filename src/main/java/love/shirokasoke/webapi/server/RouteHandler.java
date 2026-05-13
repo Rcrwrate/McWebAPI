@@ -10,6 +10,8 @@ import net.minecraft.util.ChunkCoordinates;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -110,19 +112,35 @@ public interface RouteHandler extends HttpHandler {
         }
     }
 
-    default void sendResponse(HttpExchange exchange, int statusCode, Object json) throws IOException {
-        String message = mapper.writeValueAsString(json);
-        exchange.getResponseHeaders()
-            .set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, message.getBytes().length);
+    default void sendResponse(HttpExchange exchange, int statusCode, Object json, boolean direct) throws IOException {
+        sendResponse(exchange, statusCode, mapper.writeValueAsString(json));
+    }
 
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(message.getBytes());
-        }
+    default void sendResponse(HttpExchange exchange, ObjectNode json) throws IOException {
+        sendResponse(
+            exchange,
+            200,
+            mapper.writeValueAsString(
+                mapper.createObjectNode()
+                    .put("status", "success")
+                    .set("data", json)));
+    }
+
+    default void sendResponse(HttpExchange exchange, ArrayNode json) throws IOException {
+        sendResponse(
+            exchange,
+            200,
+            mapper.writeValueAsString(
+                mapper.createObjectNode()
+                    .put("status", "success")
+                    .set("data", json)));
     }
 
     default void sendErrorResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
-        String response = String.format("{\"error\": \"%s\"}", message);
+        String response = mapper.writeValueAsString(
+            mapper.createObjectNode()
+                .put("status", "error")
+                .put("message", message));
         sendResponse(exchange, statusCode, response);
     }
 

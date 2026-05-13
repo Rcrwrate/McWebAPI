@@ -40,6 +40,6 @@ public class WorldInfoHandler implements RouteHandler {
             }
         }
 
-        sendResponse(exchange, 200, root);
+        sendResponse(exchange, root);
     }
 }

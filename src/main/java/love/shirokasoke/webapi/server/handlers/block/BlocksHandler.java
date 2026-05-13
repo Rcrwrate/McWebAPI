@@ -37,6 +37,6 @@ public class BlocksHandler implements RouteHandler {
             }
         }
         setCache(exchange, 86400);
-        sendResponse(exchange, 200, items);
+        sendResponse(exchange, items);
     }
 }

@@ -140,7 +140,7 @@ public class AEHandler extends BlockHandler {
                 gridInfo.put("isPowered", aenode.isActive());
                 root.set("gridInfo", gridInfo);
 
-                sendResponse(exchange, 200, root);
+                sendResponse(exchange, root);
                 return;
             } else {
                 sendErrorResponse(exchange, 400, "AE block is not connected to a grid or grid node is inactive");

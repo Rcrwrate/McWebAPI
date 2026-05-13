@@ -33,6 +33,6 @@ public class AEMEsupportHandler implements RouteHandler {
         }
 
         setCache(exchange, 86400);
-        sendResponse(exchange, 200, classesArray);
+        sendResponse(exchange, classesArray);
     }
 }

@@ -46,6 +46,6 @@ public class SetBlockHandler extends BlockHandler {
         boolean success = world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag);
         ObjectNode rep = mapper.createObjectNode();
         rep.put("success", success);
-        sendResponse(exchange, 200, rep);
+        sendResponse(exchange, rep);
     }
 }
