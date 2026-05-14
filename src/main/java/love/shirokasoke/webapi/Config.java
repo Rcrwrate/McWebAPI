@@ -12,6 +12,7 @@ public class Config {
     public static boolean classDump = false;
 
     public static String ItemFile = "";
+    public static String ItemIconFolder = "";
     public static int itemThreadDelayMs = 10;
     public static int itemThreadBatchSize = 100;
     public static boolean itemThreadEnable = true;
@@ -39,6 +40,8 @@ public class Config {
             "server",
             ItemFile,
             "if ItemFile is set and valid, itemThread will be disable forcely");
+        ItemIconFolder = configuration
+            .getString("ItemIconFolder", "server", ItemIconFolder, "Client dumped Item Icon Folder");
         itemThreadEnable = configuration
             .getBoolean("enable", "server.itemThread", itemThreadEnable, "enable Itemscache auto build");
         itemThreadDelayMs = configuration.getInt(

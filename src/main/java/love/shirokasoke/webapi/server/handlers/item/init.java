@@ -8,5 +8,6 @@ public class init {
         RouteRegistry.register(new AEHandler());
         RouteRegistry.register(new ItemHandler());
         RouteRegistry.register(new ItemsHandler());
+        RouteRegistry.register(new ItemIconHandler());
     }
 }
