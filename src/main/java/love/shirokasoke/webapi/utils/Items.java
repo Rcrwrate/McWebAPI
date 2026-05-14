@@ -166,10 +166,24 @@ public class Items {
     public static String getFileName(ItemStack stack) {
         String name = stack.getItem()
             .getUnlocalizedName();
-        name = EnumChatFormatting.getTextWithoutFormattingCodes(name);
+        // name = EnumChatFormatting.getTextWithoutFormattingCodes(name);
         name = cleanFileName(name);
         String id = Item.itemRegistry.getNameForObject(stack.getItem());
-        return id.replace(":", "_") + "_" + stack.getItemDamage() + "_" + name;
+        StringBuilder sb = new StringBuilder();
+        sb.append(id.replace(":", "_"))
+            .append("_")
+            .append(stack.getItemDamage())
+            .append("_")
+            .append(name);
+        net.minecraft.nbt.NBTTagCompound nbt = stack.getTagCompound();
+        if (nbt != null) {
+            sb.append("_")
+                .append(
+                    Integer.toHexString(
+                        nbt.toString()
+                            .hashCode() & 0xFFFF));
+        }
+        return sb.toString();
     }
 
     /**

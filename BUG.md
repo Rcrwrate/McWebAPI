@@ -6,6 +6,8 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 已确认：damage相同，依靠NBT进行材质区分，暂时不处理（涉及不到）
 
+(顺手修复了，通过计算NBT hash区分，仅4位的hash就可以实现初步的完整导出(无重复))
+
 ```json
 {
   "id" : 4145,
