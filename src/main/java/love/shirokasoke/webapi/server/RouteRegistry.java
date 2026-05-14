@@ -38,7 +38,7 @@ public class RouteRegistry {
         register(new love.shirokasoke.webapi.server.handlers.RootHandler());
         register(
             new love.shirokasoke.webapi.server.handlers.StaticFileHandler(
-                "static/favicon.ico",
+                "/static/favicon.ico",
                 "image/x-icon",
                 "/favicon.ico"));
 

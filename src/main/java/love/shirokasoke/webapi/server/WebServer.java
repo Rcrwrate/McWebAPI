@@ -122,4 +122,8 @@ public class WebServer {
                     .getSimpleName());
         }
     }
+
+    public static void remove(String path) {
+        server.removeContext(path);
+    }
 }
