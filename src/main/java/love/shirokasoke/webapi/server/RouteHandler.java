@@ -136,6 +136,13 @@ public interface RouteHandler extends HttpHandler {
                     .set("data", json)));
     }
 
+    default void sendResponse(HttpExchange exchange, byte[] data) throws IOException {
+        exchange.sendResponseHeaders(200, data.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(data);
+        }
+    }
+
     default void sendErrorResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
         String response = mapper.writeValueAsString(
             mapper.createObjectNode()

@@ -27,7 +27,7 @@ public class NBT {
 
     private static final ObjectMapper mapper = Constant.mapper;
 
-    static void dump(NBTTagCompound nbt, ObjectNode dataNode) {
+    public static void dump(NBTTagCompound nbt, ObjectNode dataNode) {
         if (nbt != null) {
             dataNode.put("nbtstr", nbt.toString());
             ObjectNode data = dataNode.putObject("nbt");
@@ -35,7 +35,14 @@ public class NBT {
         }
     }
 
-    static void single(NBTBase nbtbase, ObjectNode data) {
+    public static void dump(NBTTagCompound nbt, ObjectNode dataNode, String key) {
+        if (nbt != null) {
+            ObjectNode data = dataNode.putObject(key);
+            single(nbt, data);
+        }
+    }
+
+    private static void single(NBTBase nbtbase, ObjectNode data) {
         if (nbtbase instanceof NBTTagCompound) {
             NBTTagCompound nbt = (NBTTagCompound) nbtbase;
             Iterator<String> iterator = nbt.func_150296_c()
