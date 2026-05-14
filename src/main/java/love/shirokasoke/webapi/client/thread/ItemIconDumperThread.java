@@ -1,4 +1,4 @@
-package love.shirokasoke.webapi.thread;
+package love.shirokasoke.webapi.client.thread;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -20,7 +20,7 @@ import org.lwjgl.opengl.GL12;
 import codechicken.nei.guihook.GuiContainerManager;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.utils.ClientItemList;
+import love.shirokasoke.webapi.client.utils.CItems;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.log;
 
@@ -28,7 +28,8 @@ import love.shirokasoke.webapi.utils.log;
  * 客户端后台线程：导出所有物品 Icon 为 PNG 图片。
  *
  * <p>
- * 实现参考 <a href="https://github.com/ShadowTheAge/nesql-exporter">nesql-exporter</a> 的
+ * 实现参考
+ * <a href="https://github.com/ShadowTheAge/nesql-exporter">nesql-exporter</a> 的
  * {@code Renderer} 类，使用独立 Framebuffer 渲染物品图标，避免与主屏幕内容互相干扰。
  *
  * <p>
@@ -60,7 +61,7 @@ public class ItemIconDumperThread extends Thread {
     public void run() {
         try {
             MyMod.LOG.info("[ItemIconDumper] 开始收集物品列表...");
-            List<ItemStack> allStacks = ClientItemList.getAllItems();
+            List<ItemStack> allStacks = CItems.getAllItems();
             MyMod.LOG.info("[ItemIconDumper] 共 {} 个物品需要导出", allStacks.size());
 
             int exported = 0;
@@ -75,6 +76,7 @@ public class ItemIconDumperThread extends Thread {
                 String fileName = Items.getFileName(stack);
                 File outFile = new File(outputDir, fileName + ".png");
                 if (outFile.exists()) {
+                    MyMod.LOG.warn(fileName + "\tskiped");
                     continue;
                 }
 
