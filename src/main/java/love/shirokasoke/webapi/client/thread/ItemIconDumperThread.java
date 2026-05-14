@@ -17,8 +17,12 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import codechicken.nei.guihook.GuiContainerManager;
 import love.shirokasoke.webapi.Config;
+import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.utils.CItems;
 import love.shirokasoke.webapi.utils.Items;
@@ -60,16 +64,36 @@ public class ItemIconDumperThread extends Thread {
     @Override
     public void run() {
         try {
-            MyMod.LOG.info("[ItemIconDumper] 开始收集物品列表...");
+            MyMod.LOG.info("开始收集物品列表...");
             List<ItemStack> allStacks = CItems.getAllItems();
-            MyMod.LOG.info("[ItemIconDumper] 共 {} 个物品需要导出", allStacks.size());
+            if (Config.itemDump) {
+                MyMod.LOG.info("开始导出物品数据到 items.json...");
+                ArrayNode dumps = Constant.mapper.createArrayNode();
+                for (ItemStack stack : allStacks) {
+                    try {
+                        ObjectNode data = Items.dump(stack);
+                        dumps.add(data);
+                    } catch (Throwable t) {
+                        MyMod.LOG.error("导出物品数据失败: {}", stack, t);
+                    }
+                }
+                File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
+                try {
+                    Constant.mapper.writeValue(dumpsFile, dumps);
+                    MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
+                } catch (IOException e) {
+                    MyMod.LOG.error("写入 items.json 失败");
+                    log.e(e);
+                }
+            }
+            MyMod.LOG.info("共 {} 个物品需要导出", allStacks.size());
 
             int exported = 0;
             long startTime = System.currentTimeMillis();
 
             for (ItemStack stack : allStacks) {
                 if (interrupted()) {
-                    MyMod.LOG.warn("[ItemIconDumper] 被中断，停止导出");
+                    MyMod.LOG.warn("被中断，停止导出");
                     break;
                 }
 
@@ -90,7 +114,7 @@ public class ItemIconDumperThread extends Thread {
                         BufferedImage img = renderItem(stackRef);
                         result.image = img;
                     } catch (Exception e) {
-                        MyMod.LOG.error("[ItemIconDumper] 渲染物品失败: {}", stackRef);
+                        MyMod.LOG.error("渲染物品失败: {}", stackRef);
                         log.e(e);
                         result.image = null;
                     } finally {
@@ -111,7 +135,7 @@ public class ItemIconDumperThread extends Thread {
                         ImageIO.write(result.image, "png", outFile);
                         exported++;
                     } catch (IOException e) {
-                        MyMod.LOG.error("[ItemIconDumper] 保存图片失败: {}", outFile.getAbsolutePath());
+                        MyMod.LOG.error("保存图片失败: {}", outFile.getAbsolutePath());
                         log.e(e);
                     }
                 }
@@ -126,18 +150,14 @@ public class ItemIconDumperThread extends Thread {
                     }
                 }
                 if (exported % 100 == 0 && exported > 0) {
-                    MyMod.LOG.info("[ItemIconDumper] 已导出 {} / {} 个物品", exported, allStacks.size());
+                    MyMod.LOG.info("已导出 {} / {} 个物品", exported, allStacks.size());
                 }
             }
 
             long duration = System.currentTimeMillis() - startTime;
-            MyMod.LOG.info(
-                "[ItemIconDumper] 导出完成，共 {} 个物品，耗时 {}ms，输出目录: {}",
-                exported,
-                duration,
-                outputDir.getAbsolutePath());
+            MyMod.LOG.info("导出完成，共 {} 个物品，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
         } catch (Throwable e) {
-            MyMod.LOG.error("[ItemIconDumper] 导出物品图标时出错");
+            MyMod.LOG.error("导出物品图标时出错");
             log.e(e);
         }
     }

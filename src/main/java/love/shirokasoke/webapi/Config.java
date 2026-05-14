@@ -11,6 +11,7 @@ public class Config {
 
     public static boolean classDump = false;
 
+    public static String ItemFile = "";
     public static int itemThreadDelayMs = 10;
     public static int itemThreadBatchSize = 100;
     public static boolean itemThreadEnable = true;
@@ -23,6 +24,7 @@ public class Config {
     public static boolean itemIconDumperEnable = false;
     public static int itemIconDelayMs = 10;
     public static int itemIconSize = 256;
+    public static boolean itemDump = true;
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
@@ -32,6 +34,11 @@ public class Config {
 
         classDump = configuration.getBoolean("classDump", "debug", classDump, "allow class dump");
 
+        ItemFile = configuration.getString(
+            "ItemFile",
+            "server",
+            ItemFile,
+            "if ItemFile is set and valid, itemThread will be disable forcely");
         itemThreadEnable = configuration
             .getBoolean("enable", "server.itemThread", itemThreadEnable, "enable Itemscache auto build");
         itemThreadDelayMs = configuration.getInt(
@@ -82,6 +89,11 @@ public class Config {
             16,
             256,
             "ItemIconDumper output icon size in pixels");
+        itemDump = configuration.getBoolean(
+            "itemDump",
+            "client.item",
+            itemDump,
+            "Auto dump item's data to json if client.item.IconDumper is enable");
 
         if (configuration.hasChanged()) {
             configuration.save();

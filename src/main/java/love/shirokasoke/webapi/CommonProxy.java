@@ -12,6 +12,7 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import love.shirokasoke.webapi.server.Auth;
 import love.shirokasoke.webapi.server.Lang;
 import love.shirokasoke.webapi.server.WebServer;
+import love.shirokasoke.webapi.server.handlers.item.ItemStaticHandler;
 
 public class CommonProxy {
 
@@ -52,6 +53,12 @@ public class CommonProxy {
 
     public void serverStarted(FMLServerStartedEvent event) {
         MyMod.LOG.info("Server Started");
+        ItemStaticHandler s = new ItemStaticHandler(Config.ItemFile);
+        if (s.isValid()) {
+            Config.itemThreadEnable = false;
+            MyMod.LOG.info("[CommonProxy] ItemFile is valid, itemThread forcibly disabled");
+            s.inject();
+        }
         if (Config.itemThreadEnable) {
             new love.shirokasoke.webapi.thread.ItemsThread().start();
         }
