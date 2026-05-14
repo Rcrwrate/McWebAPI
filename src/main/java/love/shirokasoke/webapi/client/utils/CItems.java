@@ -1,4 +1,4 @@
-package love.shirokasoke.webapi.utils;
+package love.shirokasoke.webapi.client.utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,7 +20,7 @@ import love.shirokasoke.webapi.MyMod;
  * 客户端物品列表工具类。
  * 参考 {@link codechicken.nei.ItemList#getPermutations } 的逻辑，获取客户端所有可见物品的完整列表。
  */
-public class ClientItemList {
+public class CItems {
 
     private static final HashSet<Item> erroredItems = new HashSet<>();
     private static final HashSet<String> stackTraces = new HashSet<>();

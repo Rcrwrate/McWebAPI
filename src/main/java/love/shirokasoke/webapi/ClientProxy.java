@@ -4,7 +4,7 @@ import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import love.shirokasoke.webapi.thread.ItemIconDumperThread;
+import love.shirokasoke.webapi.client.thread.ItemIconDumperThread;
 
 public class ClientProxy extends CommonProxy {
 
