@@ -1,12 +1,11 @@
 async function tasks() {
-    const x = 251
-    const y = 65
-    const z = 265
-    const r = await fetch("http://localhost:40002/ae/cpu/task?x=250&y=64&z=264", {
+    const r = await fetch("http://localhost:40002/ae/cpu/task?x=258&y=64&z=260", {
         method: "POST",
         body: JSON.stringify({
-            id: 5,
-            amount: 64
+            "id": 4138,
+            "Count": 4,
+            "Damage": 0,
+            "tag": "CAAFbW9kaWQAE2FwcGxpZWRlbmVyZ2lzdGljczIIAAhpdGVtbmFtZQAhdGlsZS5RdWFydHpQaWxsYXJTbGFiQmxvY2suZG91YmxlCwABeAAAAAIAAADzAAAAAAA="
         })
     })
     console.log(r.status)
@@ -14,7 +13,7 @@ async function tasks() {
 }
 
 async function cancel() {
-    const r = await fetch("http://localhost:40002/ae/cpu/cancel?x=250&y=64&z=264", {
+    const r = await fetch("http://localhost:40002/ae/cpu/cancel?x=258&y=64&z=260", {
         method: "DELETE",
         body: JSON.stringify({
             id: 0,
@@ -25,5 +24,5 @@ async function cancel() {
 }
 
 tasks().finally(() => {
-    cancel().finally(() => { })
+    // cancel().finally(() => { })
 })
