@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,7 +21,9 @@ import appeng.api.networking.security.IActionHost;
 import appeng.api.networking.security.MachineSource;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.crafting.v2.CraftingJobV2;
+import appeng.util.Platform;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.NBT;
 
 /**
  * 向 AE 合成网络提交自动合成任务
@@ -65,36 +67,53 @@ public class AECPUTaskHandler extends AEBaseHandler {
 
         AEinit(exchange);
 
-        JsonNode body = getBody(exchange);
-        int id = body.path("id")
-            .asInt(-1);
-        int damage = body.path("damage")
-            .asInt(0);
-        long amount = body.path("amount")
-            .asLong(1);
-        String cpuName = body.path("cpu")
+        JsonNode json = getBody(exchange);
+
+        String cpuName = json.path("cpu")
             .asText(null);
 
-        if (id <= 0) {
-            throw new Error(400, "Missing or invalid 'id' in request body");
+        NBTTagCompound nbt = new NBTTagCompound();
+        if (json.has("id")) {
+            nbt.setShort(
+                "id",
+                (short) json.get("id")
+                    .asInt());
+        } else {
+            throw new Error(400, "missing field 'id'");
         }
-        if (amount <= 0) {
-            throw new Error(400, "Invalid 'amount' in request body");
+        if (json.has("Count")) {
+            nbt.setInteger(
+                "Count",
+                json.get("Count")
+                    .asInt());
+        } else {
+            throw new Error(400, "missing field 'Count'");
+        }
+        if (json.has("Damage")) {
+            nbt.setShort(
+                "Damage",
+                (short) json.get("Damage")
+                    .asInt());
+        } else {
+            nbt.setShort("Damage", (short) 0);
+        }
+        if (json.has("tag")) {
+            NBTTagCompound tagNbt = NBT.readFromBase64(
+                json.get("tag")
+                    .asText());
+            if (tagNbt != null) {
+                nbt.setTag("tag", tagNbt);
+            }
         }
 
-        Item item = Item.getItemById(id);
-        if (item == null) {
-            throw new Error(404, "Item not found for id: " + id);
-        }
-
-        ItemStack stack = new ItemStack(item, 1, damage);
+        ItemStack stack = Platform.loadItemStackFromNBT(nbt);
         IAEItemStack craftWhat = AEApi.instance()
             .storage()
             .createItemStack(stack);
         if (craftWhat == null) {
             throw new Error(500, "Failed to create AEItemStack");
         }
-        craftWhat.setStackSize(amount);
+        craftWhat.setStackSize(stack.stackSize);
 
         // 获取合成网格
         ICraftingGrid craftingGrid = grid.getCache(ICraftingGrid.class);

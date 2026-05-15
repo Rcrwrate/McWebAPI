@@ -12,7 +12,7 @@ java {
 publishing {
     repositories {
         maven {
-            val cnbArtifactsGradlePassword = System.getenv("maven_TOKEN")
+            val cnbArtifactsGradlePassword = System.getenv("maven_TOKEN") ?: "UN_SET"
             url = uri("https://maven.cnb.cool/shirokasoke/love/-/packages/")
             credentials {
                 username = "cnb"
