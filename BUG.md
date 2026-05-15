@@ -46,11 +46,61 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 [`/item/ae`](src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java#L106)
 
-
 ## NBT -> JSON -> NBT
 
 不可行，java中byte/short/int/long/float/double转向JSON直接丢失精度且不方便处理
 
 选择使用`NBTBase.write`转为Base64处理
 
-但是客户端/服务端各自生成的Base64不一致，导致hash生成的icon文件名不一致（暂时没有好的解决办法，目前打算在SDK中处理）
+但是客户端/服务端各自生成的Base64**不一致**，导致hash生成的icon文件名不一致（暂时没有好的解决办法，目前打算在SDK中处理）
+
+客户端
+
+```json
+{
+  "id": 4138,
+  "registryName": "appliedenergistics2:item.ItemFacade",
+  "UnlocalizedName": "item.appliedenergistics2.ItemFacade",
+  "localizedName": "Cable Facade - Certus Quartz Pillar Slab",
+  "HasSubtypes": true,
+  "MaxStackSize": 64,
+  "damageable": false,
+  "damage": 0,
+  "AttributeModifiers": {
+    "empty": true
+  },
+  "nbtstr": "{modid:\"appliedenergistics2\",itemname:\"tile.QuartzPillarSlabBlock.double\",x:[243,0,]}",
+  "nbtWrite": "CAAFbW9kaWQAE2FwcGxpZWRlbmVyZ2lzdGljczIIAAhpdGVtbmFtZQAhdGlsZS5RdWFydHpQaWxsYXJTbGFiQmxvY2suZG91YmxlCwABeAAAAAIAAADzAAAAAAA=",
+  "nbt": {
+    "modid": "appliedenergistics2",
+    "itemname": "tile.QuartzPillarSlabBlock.double",
+    "x": [243, 0]
+  }
+}
+```
+
+服务端
+
+```json
+{
+  "id": 4138,
+  "registryName": "appliedenergistics2:item.ItemFacade",
+  "UnlocalizedName": "item.appliedenergistics2.ItemFacade",
+  "localizedName": "Cable Facade - Certus Quartz Pillar Slab",
+  "HasSubtypes": true,
+  "MaxStackSize": 64,
+  "damageable": false,
+  "damage": 0,
+  "AttributeModifiers": {
+    "empty": true
+  },
+  "nbtstr": "{itemname:\"tile.QuartzPillarSlabBlock.double\",x:[243,0,],modid:\"appliedenergistics2\"}",
+  "nbtWrite": "CAAIaXRlbW5hbWUAIXRpbGUuUXVhcnR6UGlsbGFyU2xhYkJsb2NrLmRvdWJsZQsAAXgAAAACAAAA8wAAAAAIAAVtb2RpZAATYXBwbGllZGVuZXJnaXN0aWNzMgA=",
+  "nbt": {
+    "itemname": "tile.QuartzPillarSlabBlock.double",
+    "x": [243, 0],
+    "modid": "appliedenergistics2"
+  },
+  "stackSize": 0
+}
+```

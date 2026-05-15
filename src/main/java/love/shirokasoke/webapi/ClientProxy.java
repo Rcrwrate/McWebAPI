@@ -5,6 +5,7 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import love.shirokasoke.webapi.client.thread.ItemIconDumperThread;
+import love.shirokasoke.webapi.client.thread.MapTileDumperThread;
 
 public class ClientProxy extends CommonProxy {
 
@@ -14,6 +15,10 @@ public class ClientProxy extends CommonProxy {
         if (Config.itemIconDumperEnable) {
             MyMod.LOG.info("[ClientProxy] 客户端加载完成，启动 ItemIconDumperThread...");
             new ItemIconDumperThread().start();
+        }
+        if (Config.blockTileDumperEnable) {
+            MyMod.LOG.info("[ClientProxy] 客户端加载完成，启动 MapTileDumperThread...");
+            new MapTileDumperThread().start();
         }
     }
 
