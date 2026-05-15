@@ -1,11 +1,17 @@
 package love.shirokasoke.webapi.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTSizeTracker;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,7 +24,6 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,8 +37,50 @@ public class NBT {
     public static void dump(NBTTagCompound nbt, ObjectNode dataNode) {
         if (nbt != null) {
             dataNode.put("nbtstr", nbt.toString());
+            dataNode.put("nbtWrite", writeToBase64(nbt));
             ObjectNode data = dataNode.putObject("nbt");
             single(nbt, data);
+        }
+    }
+
+    public static String writeToBase64(NBTTagCompound nbt) {
+        if (nbt == null) {
+            return null;
+        }
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            Method write = NBTBase.class.getDeclaredMethod("write", java.io.DataOutput.class);
+            write.setAccessible(true);
+            write.invoke(nbt, dos);
+            dos.close();
+            return Base64.getEncoder()
+                .encodeToString(baos.toByteArray());
+        } catch (Exception e) {
+            log.e(e);
+            return null;
+        }
+    }
+
+    public static NBTTagCompound readFromBase64(String base64) {
+        if (base64 == null || base64.isEmpty()) {
+            return null;
+        }
+        try {
+            byte[] bytes = Base64.getDecoder()
+                .decode(base64);
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            DataInputStream dis = new DataInputStream(bais);
+            NBTTagCompound nbt = new NBTTagCompound();
+            Method read = NBTTagCompound.class
+                .getDeclaredMethod("func_152446_a", java.io.DataInput.class, int.class, NBTSizeTracker.class);
+            read.setAccessible(true);
+            read.invoke(nbt, dis, 0, NBTSizeTracker.field_152451_a);
+            dis.close();
+            return nbt;
+        } catch (Exception e) {
+            log.e(e);
+            return null;
         }
     }
 
@@ -130,7 +177,7 @@ public class NBT {
                 addArrayElement(array, n);
             }
         } catch (Throwable e) {
-            log.e(e);
+            // log.e(e);
             NBTTagList tmp = (NBTTagList) tagList.copy();
             while (tmp.tagCount() > 0) {
                 NBTBase tag = tmp.removeTag(0);
@@ -206,92 +253,5 @@ public class NBT {
                 array.add(tag.toString());
                 break;
         }
-    }
-
-    // ==================== JSON -> NBT ====================
-
-    /**
-     * 将 Jackson JSON 对象转换为 NBTTagCompound。
-     *
-     * <p>
-     * 类型映射规则：
-     * <ul>
-     * <li>Object -> NBTTagCompound</li>
-     * <li>Array -> NBTTagList</li>
-     * <li>String -> NBTTagString</li>
-     * <li>Boolean -> NBTTagByte (1/0)</li>
-     * <li>Floating point -> NBTTagDouble</li>
-     * <li>Integer 根据范围自动选择 byte / short / int / long</li>
-     * </ul>
-     */
-    public static NBTTagCompound fromJson(JsonNode node) {
-        if (node == null || !node.isObject()) {
-            return null;
-        }
-        NBTTagCompound nbt = new NBTTagCompound();
-        Iterator<Map.Entry<String, JsonNode>> it = node.fields();
-        while (it.hasNext()) {
-            Map.Entry<String, JsonNode> entry = it.next();
-            putJsonValue(nbt, entry.getKey(), entry.getValue());
-        }
-        return nbt;
-    }
-
-    private static void putJsonValue(NBTTagCompound nbt, String key, JsonNode value) {
-        if (value == null || value.isNull()) {
-            return;
-        }
-        if (value.isObject()) {
-            nbt.setTag(key, fromJson(value));
-        } else if (value.isArray()) {
-            nbt.setTag(key, listFromJson(value));
-        } else if (value.isTextual()) {
-            nbt.setString(key, value.asText());
-        } else if (value.isBoolean()) {
-            nbt.setBoolean(key, value.asBoolean());
-        } else if (value.isFloatingPointNumber()) {
-            nbt.setDouble(key, value.asDouble());
-        } else if (value.isIntegralNumber()) {
-            long l = value.asLong();
-            if (l >= Byte.MIN_VALUE && l <= Byte.MAX_VALUE) {
-                nbt.setByte(key, (byte) l);
-            } else if (l >= Short.MIN_VALUE && l <= Short.MAX_VALUE) {
-                nbt.setShort(key, (short) l);
-            } else if (l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE) {
-                nbt.setInteger(key, (int) l);
-            } else {
-                nbt.setLong(key, l);
-            }
-        }
-    }
-
-    private static NBTTagList listFromJson(JsonNode array) {
-        NBTTagList list = new NBTTagList();
-        for (JsonNode element : array) {
-            if (element == null || element.isNull()) {
-                continue;
-            }
-            if (element.isObject()) {
-                list.appendTag(fromJson(element));
-            } else if (element.isTextual()) {
-                list.appendTag(new NBTTagString(element.asText()));
-            } else if (element.isBoolean()) {
-                list.appendTag(new NBTTagByte((byte) (element.asBoolean() ? 1 : 0)));
-            } else if (element.isFloatingPointNumber()) {
-                list.appendTag(new NBTTagDouble(element.asDouble()));
-            } else if (element.isIntegralNumber()) {
-                long l = element.asLong();
-                if (l >= Byte.MIN_VALUE && l <= Byte.MAX_VALUE) {
-                    list.appendTag(new NBTTagByte((byte) l));
-                } else if (l >= Short.MIN_VALUE && l <= Short.MAX_VALUE) {
-                    list.appendTag(new NBTTagShort((short) l));
-                } else if (l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE) {
-                    list.appendTag(new NBTTagInt((int) l));
-                } else {
-                    list.appendTag(new NBTTagLong(l));
-                }
-            }
-        }
-        return list;
     }
 }

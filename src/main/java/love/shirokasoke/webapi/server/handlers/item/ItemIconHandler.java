@@ -1,19 +1,15 @@
 package love.shirokasoke.webapi.server.handlers.item;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Base64;
 import java.util.Map;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.Config;
-import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.RouteHandler;
 import love.shirokasoke.webapi.utils.Items;
@@ -42,55 +38,29 @@ public class ItemIconHandler implements RouteHandler {
             throw new Error(500, "ItemIconFolder not configured");
         }
 
-        String base64 = params.get("id");
-        String jsonStr;
-        try {
-            jsonStr = new String(
-                    Base64.getDecoder()
-                            .decode(base64),
-                    java.nio.charset.StandardCharsets.UTF_8);
-        } catch (IllegalArgumentException e) {
-            throw new Error(400, "invalid base64 encoding");
-        }
-
-        JsonNode json;
-        try {
-            json = Constant.mapper.readTree(jsonStr);
-        } catch (IOException e) {
-            throw new Error(400, "invalid json: " + e.getMessage());
-        }
-        if (!json.isObject()) {
-            throw new Error(400, "json must be an object");
-        }
-
         NBTTagCompound nbt = new NBTTagCompound();
-        if (json.has("id")) {
-            nbt.setShort(
-                    "id",
-                    (short) json.get("id")
-                            .asInt());
-        } else {
-            throw new Error(400, "missing field 'id'");
+
+        try {
+            nbt.setShort("id", Short.parseShort(params.get("id")));
+        } catch (NumberFormatException e) {
+            throw new Error(400, "invalid query param 'id'");
         }
-        if (json.has("Count")) {
-            nbt.setByte(
-                    "Count",
-                    (byte) json.get("Count")
-                            .asInt());
-        } else {
-            nbt.setByte("Count", (byte) 1);
-        }
-        if (json.has("Damage")) {
-            nbt.setShort(
-                    "Damage",
-                    (short) json.get("Damage")
-                            .asInt());
+
+        nbt.setByte("Count", (byte) 1);
+
+        String damageStr = params.get("damage");
+        if (damageStr != null) {
+            try {
+                nbt.setShort("Damage", Short.parseShort(damageStr));
+            } catch (NumberFormatException e) {
+                throw new Error(400, "invalid query param 'damage'");
+            }
         } else {
             nbt.setShort("Damage", (short) 0);
         }
-        if (json.has("tag") && json.get("tag")
-                .isObject()) {
-            NBTTagCompound tagNbt = NBT.fromJson(json.get("tag"));
+
+        if (params.containsKey("tag")) {
+            NBTTagCompound tagNbt = NBT.readFromBase64(params.get("tag"));
             if (tagNbt != null) {
                 nbt.setTag("tag", tagNbt);
             }
@@ -111,7 +81,7 @@ public class ItemIconHandler implements RouteHandler {
 
         byte[] imageData = Files.readAllBytes(iconFile.toPath());
         exchange.getResponseHeaders()
-                .set("Content-Type", "image/png");
+            .set("Content-Type", "image/png");
         setCache(exchange, 86400);
         sendResponse(exchange, imageData);
     }
