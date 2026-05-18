@@ -253,9 +253,16 @@ public class MapTileDumperThread extends Thread {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
+        // 获取方块基础渲染颜色（如树叶、草等需要着色）
+        int color = 16777215;
+        try {
+            color = block.getRenderColor(meta);
+        } catch (Throwable ignored) {}
+
         // 绘制全屏 quad，UV 映射到该 icon 在 atlas 上的区域
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
+        tess.setColorOpaque_I(color);
         // 左下
         tess.addVertexWithUV(0, iconSize, 0, icon.getMinU(), icon.getMaxV());
         // 右下

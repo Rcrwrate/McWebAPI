@@ -17,6 +17,7 @@ import net.minecraft.world.chunk.Chunk;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.Constant;
@@ -54,6 +55,27 @@ public class ChunkMapHandler implements RouteHandler {
     private final File blockTileDir;
 
     private final int tileSize;
+
+    /** 表示单个格子最顶层方块的数据 */
+    private static class BlockInfo {
+
+        final String registryName;
+        final int meta;
+        final int y;
+
+        BlockInfo(String registryName, int meta, int y) {
+            this.registryName = registryName;
+            this.meta = meta;
+            this.y = y;
+        }
+
+        public ObjectNode dump() {
+            return mapper.createObjectNode()
+                .put("name", registryName)
+                .put("meta", meta)
+                .put("y", y);
+        }
+    }
 
     public ChunkMapHandler(File blocksJsonFile, File blockTileDir, int tileSize) {
         this.blocksJsonFile = blocksJsonFile;
@@ -99,11 +121,9 @@ public class ChunkMapHandler implements RouteHandler {
         if (world == null) {
             throw new Error(404, "Invalid dimension: " + dimension);
         }
-
         if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
             throw new Error(404, "Chunk not loaded at " + chunkX + "," + chunkZ);
         }
-
         Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
         if (chunk == null) {
             throw new Error(404, "Chunk not found at " + chunkX + "," + chunkZ);
@@ -112,7 +132,22 @@ public class ChunkMapHandler implements RouteHandler {
         // 确保映射表已加载
         ensureBlockTileMapLoaded();
 
-        BufferedImage mapImage = renderChunkMap(chunk);
+        BlockInfo[][] data = extractChunkData(chunk);
+        setCache(exchange, 60);
+        if (params.containsKey("raw")) {
+            ArrayNode rows = mapper.createArrayNode();
+            for (int x = 0; x < 16; x++) {
+                ArrayNode row = mapper.createArrayNode();
+                for (int z = 0; z < 16; z++) {
+                    BlockInfo info = data[x][z];
+                    row.add(info.dump());
+                }
+                rows.add(row);
+            }
+            sendResponse(exchange, rows);
+            return;
+        }
+        BufferedImage mapImage = renderChunkMap(data);
 
         // 编码为 PNG
         byte[] pngData;
@@ -123,17 +158,53 @@ public class ChunkMapHandler implements RouteHandler {
 
         exchange.getResponseHeaders()
             .set("Content-Type", "image/png");
-        setCache(exchange, 5); // 缓存 5 秒，因为地形可能变化
         sendResponse(exchange, pngData);
     }
 
     /**
-     * 渲染区块最顶层图像。
+     * 从 Chunk 中提取最顶层方块数据。
      *
      * @param chunk 目标区块
-     * @return 16×16 的 BufferedImage
+     * @return 16×16 的 BlockInfo 数组
      */
-    private BufferedImage renderChunkMap(Chunk chunk) {
+    private BlockInfo[][] extractChunkData(Chunk chunk) {
+        BlockInfo[][] data = new BlockInfo[16][16];
+
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                int y = chunk.getHeightValue(x, z) - 1;
+                Block block = chunk.getBlock(x, y, z);
+
+                // 草丛可能有问题(未被跳过)
+                if (block == null || block.getRenderType() == -1) {
+                    while (y > 0) {
+                        y--;
+                        block = chunk.getBlock(x, y, z);
+                        if (block != null && block.getRenderType() != -1) {
+                            break;
+                        }
+                    }
+                }
+
+                int meta = chunk.getBlockMetadata(x, y, z);
+                String regName = null;
+                if (block != null) {
+                    regName = Block.blockRegistry.getNameForObject(block);
+                }
+                data[x][z] = new BlockInfo(regName, meta, y);
+            }
+        }
+
+        return data;
+    }
+
+    /**
+     * 根据提取的方块数据渲染区块图像。
+     *
+     * @param data 16×16 的 BlockInfo 数组
+     * @return 渲染后的 BufferedImage
+     */
+    private BufferedImage renderChunkMap(BlockInfo[][] data) {
         int imgSize = 16 * tileSize;
 
         BufferedImage canvas = new BufferedImage(imgSize, imgSize, BufferedImage.TYPE_INT_ARGB);
@@ -142,31 +213,11 @@ public class ChunkMapHandler implements RouteHandler {
         try {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
-                    // 获取该列最顶层方块
-                    int y = chunk.getHeightValue(x, z);
-                    Block block = chunk.getBlock(x, y - 1, z);
-                    if (block == null || block.getMaterial()
-                        .isLiquid()
-                        || block.getMaterial()
-                            .isReplaceable()) {
-                        // 液体或空气，往下找固体方块
-                        while (y > 0) {
-                            y--;
-                            block = chunk.getBlock(x, y, z);
-                            if (block != null && !block.getMaterial()
-                                .isLiquid()
-                                && !block.getMaterial()
-                                    .isReplaceable()) {
-                                break;
-                            }
-                        }
-                    }
-
-                    int meta = chunk.getBlockMetadata(x, y, z);
-                    BufferedImage tile = getTileImage(block, meta);
+                    BlockInfo info = data[x][z];
+                    BufferedImage tile = getTileImage(info.registryName, info.meta);
 
                     if (tile != null) {
-                        g2d.drawImage(tile, x * tileSize, z * tileSize, tileSize, tileSize, null);
+                        g2d.drawImage(tile, x * tileSize, z * tileSize, null);
                     }
                 }
             }
@@ -178,14 +229,9 @@ public class ChunkMapHandler implements RouteHandler {
     }
 
     /**
-     * 根据方块和 meta 获取对应的顶面纹理图片。
+     * 根据方块注册名和 meta 获取对应的顶面纹理图片。
      */
-    private BufferedImage getTileImage(Block block, int meta) {
-        if (block == null) {
-            return getMissingTile();
-        }
-
-        String regName = Block.blockRegistry.getNameForObject(block);
+    private BufferedImage getTileImage(String regName, int meta) {
         if (regName == null) {
             return getMissingTile();
         }
@@ -209,6 +255,7 @@ public class ChunkMapHandler implements RouteHandler {
         }
 
         // 从磁盘加载
+        MyMod.LOG.info("Cache Miss {}", fileName);
         File tileFile = new File(blockTileDir, fileName + ".png");
         if (!tileFile.exists()) {
             return getMissingTile();
@@ -217,6 +264,17 @@ public class ChunkMapHandler implements RouteHandler {
         try {
             BufferedImage img = ImageIO.read(tileFile);
             if (img != null) {
+                // 预缩放到统一尺寸，后续渲染可直接拼接而不带缩放参数
+                if (img.getWidth() != tileSize || img.getHeight() != tileSize) {
+                    BufferedImage scaled = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g = scaled.createGraphics();
+                    try {
+                        g.drawImage(img, 0, 0, tileSize, tileSize, null);
+                    } finally {
+                        g.dispose();
+                    }
+                    img = scaled;
+                }
                 tileCache.put(fileName, img);
             }
             return img != null ? img : getMissingTile();
@@ -227,11 +285,11 @@ public class ChunkMapHandler implements RouteHandler {
     }
 
     /**
-     * 获取缺失纹理的占位图（透明 1×1）。
+     * 获取缺失纹理的占位图。
      */
     private BufferedImage getMissingTile() {
         if (missingTile == null) {
-            missingTile = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+            missingTile = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
         }
         return missingTile;
     }
