@@ -1,0 +1,44 @@
+{
+    "name": "@shirokasoke/webapi-sdk",
+    "version": "0.1.0",
+    "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod server",
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/esm/index.js"
+            },
+            "require": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.js"
+            }
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "sideEffects": false,
+    "scripts": {
+        "build": "npm run build:cjs && npm run build:esm",
+        "build:cjs": "tsc -p tsconfig.json",
+        "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json",
+        "test": "tsx --test test/*.test.ts",
+        "prepare": "npm run build"
+    },
+    "keywords": [
+        "gtnh",
+        "minecraft",
+        "webapi",
+        "mod",
+        "sdk"
+    ],
+    "author": "Rcrwrate",
+    "license": "MIT",
+    "devDependencies": {
+        "tsx": "^4.22.1",
+        "typescript": "^5.4.0"
+    }
+}
