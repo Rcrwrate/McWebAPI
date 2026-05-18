@@ -11,6 +11,7 @@ import net.minecraftforge.common.ForgeChunkManager.Ticket;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.RouteRegistry;
+import love.shirokasoke.webapi.server.handlers.block.BlockTileHandler;
 
 public class init {
 
@@ -28,6 +29,7 @@ public class init {
 
         if (blocksJson.exists() && blockTileDir.exists() && blockTileDir.isDirectory()) {
             RouteRegistry.register(new ChunkMapHandler(blocksJson, blockTileDir, Config.blockTileSize));
+            RouteRegistry.register(new BlockTileHandler(blocksJson, blockTileDir));
         } else {
             MyMod.LOG.warn(
                 "ChunkMapHandler 未注册：blocks.json 或 block_tiles 目录不存在。"
