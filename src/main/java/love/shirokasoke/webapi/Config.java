@@ -25,14 +25,14 @@ public class Config {
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
 
     // client
-    public static boolean itemIconDumperEnable = false;
+    public static boolean itemIconDumperEnable = true;
     public static int itemIconDelayMs = 10;
     public static int itemIconSize = 256;
     public static boolean itemDump = true;
 
-    public static boolean blockTileDumperEnable = false;
+    public static boolean blockTileDumperEnable = true;
     public static int blockTileDelayMs = 10;
-    public static int blockTileSize = 256;
+    public static int blockTileSize = 64;
     public static boolean blockDump = true;
 
     public static void synchronizeConfiguration(File configFile) {
