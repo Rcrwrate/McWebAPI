@@ -54,7 +54,4 @@ export interface SetBlockBody {
     flag?: number;
 }
 
-export interface SetBlockResult {
-    success: boolean;
-    data: null;
-}
+export type SetBlockResult = null

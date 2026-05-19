@@ -17,9 +17,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.server.RouteHandler;
 
-public class ChunkForceHandler implements RouteHandler {
+public class ChunkForceHandler extends ChunkHandler {
 
     // 存储活跃的chunk tickets和任务信息
     public static class ChunkLoadInfo {
@@ -117,9 +116,7 @@ public class ChunkForceHandler implements RouteHandler {
     }
 
     private void handleLoadChunk(HttpExchange exchange, Map<String, String> params) throws IOException {
-        int x = Integer.parseInt(params.get("x"));
-        int z = Integer.parseInt(params.get("z"));
-        int dimension = Integer.parseInt(params.getOrDefault("dim", "0"));
+        getCo(params);
         int duration = Integer.parseInt(params.getOrDefault("duration", "60"));
 
         if (duration <= 0) {
@@ -133,8 +130,6 @@ public class ChunkForceHandler implements RouteHandler {
             throw new Error(404, "Invalid dimension: " + dimension);
         }
 
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
         String ticketKey = dimension + ":" + chunkX + ":" + chunkZ;
 
         if (activeChunkLoads.containsKey(ticketKey)) {
@@ -175,14 +170,8 @@ public class ChunkForceHandler implements RouteHandler {
     }
 
     private void handleUnloadChunk(HttpExchange exchange, Map<String, String> params) throws IOException {
-        int x = Integer.parseInt(params.getOrDefault("x", "0"));
-        int z = Integer.parseInt(params.getOrDefault("z", "0"));
-        int dimension = Integer.parseInt(params.getOrDefault("dim", "0"));
-
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
+        getCo(params);
         String ticketKey = dimension + ":" + chunkX + ":" + chunkZ;
-
         ChunkLoadInfo info = activeChunkLoads.remove(ticketKey);
 
         if (info != null) {
