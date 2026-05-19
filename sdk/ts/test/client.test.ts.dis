@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { WebApiClient, WebApiError } from "../src/client";

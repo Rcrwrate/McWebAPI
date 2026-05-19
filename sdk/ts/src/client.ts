@@ -30,18 +30,12 @@ import type {
     AECPUCancelResult,
     AEItemStack,
     Coordinates,
+    ApiResponse,
 } from "./types";
 
-type FetchResponseLike = {
-    ok: boolean;
-    status: number;
-    statusText: string;
-    headers: { get(name: string): string | null };
-    json(): Promise<unknown>;
-    arrayBuffer(): Promise<ArrayBuffer>;
-};
 
-export type FetchLike = (input: string, init?: Record<string, unknown>) => Promise<FetchResponseLike>;
+export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+
 
 export interface WebApiClientOptions {
     baseUrl: string;
@@ -76,22 +70,13 @@ export class WebApiClient {
         }
     }
 
-    private async request<T>(path: string, init?: Record<string, unknown>): Promise<T> {
-        const headers: Record<string, string> = {};
-        if (init && typeof init.headers === "object" && init.headers !== null) {
-            Object.assign(headers, init.headers as Record<string, string>);
-        }
+    private async request<T>(path: string, init?: RequestInit): Promise<T> {
+        const req = new Request(`${this.baseUrl}${path}`, init)
         if (this.authToken) {
-            headers["Authorization"] = this.authToken;
+            req.headers.set("Authorization", this.authToken);
         }
-
-        const res = await this.fetchImpl(`${this.baseUrl}${path}`, {
-            ...init,
-            headers,
-        });
-
+        const res = await this.fetchImpl(req);
         const contentType = res.headers.get("content-type") || "";
-
         if (!res.ok) {
             if (contentType.includes("application/json")) {
                 const body = await res.json().catch(() => ({ message: res.statusText }));
@@ -105,18 +90,16 @@ export class WebApiClient {
         }
 
         if (contentType.includes("application/json")) {
-            const body = await res.json();
-            if (body && typeof (body as { success?: boolean }).success === "boolean") {
-                if (!(body as { success: boolean }).success) {
-                    throw new WebApiError(
-                        (body as { message?: string }).message || "API Error",
-                        res.status,
-                        body
-                    );
-                }
-                if ("data" in (body as Record<string, unknown>)) return (body as { data: T }).data;
+            const body = await res.json() as ApiResponse<T>;
+            if (body.success) {
+                return body.data;
+            } else {
+                throw new WebApiError(
+                    body.message,
+                    res.status,
+                    body
+                );
             }
-            return body as T;
         }
 
         return res.arrayBuffer() as unknown as T;
@@ -154,11 +137,11 @@ export class WebApiClient {
         return this.request<Block[]>("/blocks");
     }
 
-    getBlock(params: Coordinates): Promise<BlockDetail> {
+    getBlock(params: { x: number, y: number, z: number, dim?: number }): Promise<BlockDetail> {
         return this.request<BlockDetail>(`/block${buildQuery(params)}`);
     }
 
-    setBlock(params: Coordinates, body: SetBlockBody): Promise<SetBlockResult> {
+    setBlock(params: { x: number, y: number, z: number, dim?: number }, body: SetBlockBody): Promise<SetBlockResult> {
         return this.request<SetBlockResult>(`/setblock${buildQuery(params)}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -225,13 +208,13 @@ export class WebApiClient {
         return this.request<ChunkForceList>("/chunk/force");
     }
 
-    loadChunk(params: { x: number; z: number; dim?: number; duration?: number }): Promise<ChunkLoadResult> {
+    loadChunk(params: { x: number; z: number; dim?: number; duration?: number } | { chunkX: number; chunkZ: number; dim?: number; duration?: number }): Promise<ChunkLoadResult> {
         return this.request<ChunkLoadResult>(`/chunk/force${buildQuery({ action: "load", ...params })}`, {
             method: "POST",
         });
     }
 
-    unloadChunk(params: { x: number; z: number; dim?: number }): Promise<ChunkLoadResult> {
+    unloadChunk(params: { x: number; z: number; dim?: number } | { chunkX: number; chunkZ: number; dim?: number }): Promise<ChunkLoadResult> {
         return this.request<ChunkLoadResult>(`/chunk/force${buildQuery({ action: "unload", ...params })}`, {
             method: "POST",
         });
