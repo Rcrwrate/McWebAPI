@@ -22,13 +22,15 @@ public class ChunkHandler implements RouteHandler {
         return "Get chunk information at specified coordinates. Query params: x, y, z, dim (optional, default=0) or chunkX, chunkZ, dim (optional, default=0)";
     }
 
-    @Override
-    public void run(HttpExchange exchange) throws Exception {
-        java.util.Map<String, String> params = parseQueryParams(exchange);
+    protected int chunkX;
+    protected int chunkZ;
+    protected int dimension = 0;
 
-        int chunkX, chunkZ;
-        int dimension = 0;
+    protected void getCo(HttpExchange exchange) throws Error {
+        getCo(parseQueryParams(exchange));
+    }
 
+    protected void getCo(java.util.Map<String, String> params) throws Error {
         if (params.containsKey("chunkX") && params.containsKey("chunkZ")) {
             chunkX = Integer.parseInt(params.get("chunkX"));
             chunkZ = Integer.parseInt(params.get("chunkZ"));
@@ -40,10 +42,14 @@ public class ChunkHandler implements RouteHandler {
         } else {
             throw new Error(400, "Missing required parameters. Provide either chunkX & chunkZ, or x & z");
         }
-
         if (params.containsKey("dim") || params.containsKey("dimension")) {
             dimension = Integer.parseInt(params.get("dim") != null ? params.get("dim") : params.get("dimension"));
         }
+    }
+
+    @Override
+    public void run(HttpExchange exchange) throws Exception {
+        getCo(exchange);
 
         MinecraftServer server = getServer();
         WorldServer world = server.worldServerForDimension(dimension);

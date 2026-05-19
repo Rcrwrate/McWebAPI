@@ -22,7 +22,6 @@ import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.server.RouteHandler;
 
 /**
  * 返回指定区块的最顶层图像 PNG。
@@ -39,7 +38,7 @@ import love.shirokasoke.webapi.server.RouteHandler;
  * <li>{@code dim} / {@code dimension} - 维度 ID（可选，默认 0）</li>
  * </ul>
  */
-public class ChunkMapHandler implements RouteHandler {
+public class ChunkMapHandler extends ChunkHandler {
 
     /** (registryName + ":" + meta) → 预导出 PNG 文件名（不含扩展名） */
     private final Map<String, String> blockTileMap = new HashMap<>();
@@ -96,26 +95,7 @@ public class ChunkMapHandler implements RouteHandler {
     @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
-
-        int chunkX, chunkZ;
-        int dimension = 0;
-
-        if (params.containsKey("chunkX") && params.containsKey("chunkZ")) {
-            chunkX = Integer.parseInt(params.get("chunkX"));
-            chunkZ = Integer.parseInt(params.get("chunkZ"));
-        } else if (params.containsKey("x") && params.containsKey("z")) {
-            int worldX = Integer.parseInt(params.get("x"));
-            int worldZ = Integer.parseInt(params.get("z"));
-            chunkX = worldX >> 4;
-            chunkZ = worldZ >> 4;
-        } else {
-            throw new Error(400, "Missing required parameters. Provide either chunkX & chunkZ, or x & z");
-        }
-
-        if (params.containsKey("dim") || params.containsKey("dimension")) {
-            dimension = Integer.parseInt(params.get("dim") != null ? params.get("dim") : params.get("dimension"));
-        }
-
+        getCo(params);
         MinecraftServer server = getServer();
         WorldServer world = server.worldServerForDimension(dimension);
         if (world == null) {

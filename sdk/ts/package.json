@@ -25,8 +25,7 @@
         "build": "npm run build:cjs && npm run build:esm",
         "build:cjs": "tsc -p tsconfig.json",
         "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json",
-        "test": "tsx --test test/*.test.ts",
-        "prepare": "npm run build"
+        "test": "tsx --test test/*.test.ts"
     },
     "keywords": [
         "gtnh",
@@ -38,6 +37,7 @@
     "author": "Rcrwrate",
     "license": "MIT",
     "devDependencies": {
+        "@types/node": "^25.9.0",
         "tsx": "^4.22.1",
         "typescript": "^5.4.0"
     }
