@@ -105,7 +105,12 @@ export interface Entity {
     class?: ClassInfo;
 }
 
+/** getEntities 返回的精简实体（服务端强制 all=false） */
+export interface EntitySummary {
+    Entity: Pick<EntityBase, "name" | "entityId" | "uniqueId" | "dimension" | "posX" | "posY" | "posZ">;
+}
+
 export interface EntitiesByDimension {
     WorldName: string;
-    loadedEntityList: Entity[];
+    loadedEntityList: EntitySummary[];
 }

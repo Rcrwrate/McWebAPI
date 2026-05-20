@@ -15,7 +15,7 @@ export interface Item {
     HasSubtypes: boolean;
 }
 
-export interface ItemStack extends Item {
+export interface ItemStack extends Item, NBTData {
     MaxStackSize: number;
     damageable: boolean;
     damage: number;
