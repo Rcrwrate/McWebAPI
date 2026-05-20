@@ -1,10 +1,10 @@
 /// <reference types="node" />
-import { describe, it } from "node:test";
 import assert from "node:assert";
+import { describe, it } from "node:test";
 
-import { WebApiClient, WebApiError } from "../src/client";
-import * as v from "../src/validators"
 import Joi from "joi";
+import { WebApiClient } from "../src/client";
+import * as v from "../src/validators";
 
 const api = new WebApiClient({ baseUrl: "http://localhost:40002" })
 
@@ -79,7 +79,6 @@ describe("chunks", () => {
     it("entities", async () => {
         const r = await api.getEntities()
         const entitiesV = Joi.object().pattern(Joi.string(), v.EntitiesByDimensionSchema)
-        console.log(entitiesV.validate(r))
         assert.ok(entitiesV.validate(r).error == undefined)
         assert.ok(r["0"].loadedEntityList.length > 100)
         const rans = new Array(10).fill(1).map(i => r["0"].loadedEntityList[Math.floor(Math.random() * r["0"].loadedEntityList.length)])
