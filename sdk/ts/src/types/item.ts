@@ -2,7 +2,7 @@ import type { ClassInfo } from "./common";
 
 export interface NBTData {
     nbtstr?: string;
-    nbtWrite?: string;
+    nbtWrite?: string | null;
     nbt?: Record<string, unknown>;
 }
 

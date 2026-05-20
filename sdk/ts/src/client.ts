@@ -259,7 +259,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/entity/EntitiesHandler.java)
-     * @returns 使用 `Joi.object().pattern(Joi.string(),`{@link EntitiesByDimensionSchema})` 验证
+     * @returns 使用 `Joi.object().pattern(Joi.string(),`{@link EntitiesByDimensionSchema}`)` 验证
      * 
      * 其中实体为 {@link EntitySummarySchema} 精简结构
      */
