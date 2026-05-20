@@ -1,12 +1,15 @@
 package love.shirokasoke.webapi.server.handlers.block;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.minecraft.block.Block;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
+
+import love.shirokasoke.webapi.CommonProxy;
 
 public class SetBlockHandler extends BlockHandler {
 
@@ -42,9 +45,17 @@ public class SetBlockHandler extends BlockHandler {
         if (block == null) {
             throw new Error(404, "block id not found");
         }
-        boolean changed = world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag);
+
+        AtomicBoolean changed = new AtomicBoolean();
+        try {
+            CommonProxy.runOnServerThread(
+                () -> { changed.set(world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag)); });
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+
         ObjectNode rep = mapper.createObjectNode()
-            .put("success", changed)
+            .put("success", changed.get())
             .putNull("data");
         sendResponse(exchange, 200, rep, true);
     }
