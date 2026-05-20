@@ -1,69 +1,68 @@
 import type {
-    RootInfo,
-    TPSInfo,
-    WorldInfoData,
-    ProfilerData,
-    LagAnalyzerData,
+    AE2Pattern,
+    AECPU,
+    AECPUCancelBody,
+    AECPUCancelResult,
+    AECraftingTaskBody,
+    AECraftingTaskResult,
+    AEHitResult,
+    AEItemDefinitions,
+    AEItemStack,
+    AEMEInterface,
+    AENode,
+    ApiResponse,
     Block,
     BlockDetail,
-    SetBlockBody,
-    SetBlockResult,
-    FMPPart,
-    Item,
-    ItemDetail,
-    AEItemDefinitions,
-    Entity,
-    EntitiesByDimension,
-    ChunkWithDimension,
-    ChunksByDimension,
     ChunkForceList,
     ChunkLoadResult,
     ChunkMapCell,
-    AENode,
-    AECPU,
-    AEMEInterface,
-    AEHitResult,
-    AE2Pattern,
-    AECraftingTaskBody,
-    AECraftingTaskResult,
-    AECPUCancelBody,
-    AECPUCancelResult,
-    AEItemStack,
+    ChunksByDimension,
+    ChunkWithDimension,
     Coordinates,
-    ApiResponse,
+    EntitiesByDimension,
+    Entity,
+    FMPPart,
+    Item,
+    ItemDetail,
+    LagAnalyzerData,
+    ProfilerData,
+    RootInfo,
+    SetBlockBody,
+    SetBlockResult,
+    TPSInfo,
+    WorldInfoData,
 } from "./types";
 
 import type {
-    RootInfoSchema,
-    TPSInfoSchema,
-    WorldInfoDataSchema,
-    ProfilerDataSchema,
-    LagAnalyzerDataSchema,
-    BlockSchema,
-    BlockDetailSchema,
-    SetBlockBodySchema,
-    SetBlockResultSchema,
-    FMPPartSchema,
-    ItemSchema,
-    ItemDetailSchema,
+    AE2PatternSchema,
+    AECPUCancelBodySchema,
+    AECPUCancelResultSchema,
+    AECPUSchema,
+    AECraftingTaskBodySchema,
+    AECraftingTaskResultSchema,
+    AEHitResultSchema,
     AEItemDefinitionsSchema,
-    EntitiesByDimensionSchema,
-    EntitySchema,
-    ChunksByDimensionSchema,
-    ChunkWithDimensionSchema,
+    AEItemStackSchema,
+    AEMEInterfaceSchema,
+    AENodeSchema,
+    BlockDetailSchema,
+    BlockSchema,
     ChunkForceListSchema,
     ChunkLoadResultSchema,
     ChunkMapCellSchema,
-    AEHitResultSchema,
-    AENodeSchema,
-    AECPUSchema,
-    AE2PatternSchema,
-    AEMEInterfaceSchema,
-    AEItemStackSchema,
-    AECraftingTaskBodySchema,
-    AECraftingTaskResultSchema,
-    AECPUCancelBodySchema,
-    AECPUCancelResultSchema,
+    ChunksByDimensionSchema,
+    ChunkWithDimensionSchema,
+    EntitiesByDimensionSchema,
+    EntitySchema,
+    EntitySummarySchema,
+    FMPPartSchema,
+    ItemDetailSchema,
+    ItemSchema,
+    LagAnalyzerDataSchema,
+    ProfilerDataSchema,
+    RootInfoSchema,
+    SetBlockBodySchema,
+    SetBlockResultSchema
 } from "./validators";
 
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -139,48 +138,70 @@ export class WebApiClient {
 
     // ========== Root / Status ==========
 
-    /** @returns 使用 {@link RootInfoSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/RootHandler.java)
+     * @returns 使用 {@link RootInfoSchema} 验证
+     */
     getRoot(): Promise<RootInfo> {
         return this.request<RootInfo>("/");
     }
 
     // ========== TPS / Performance ==========
 
-    /** @returns 使用 `Joi.object().pattern(Joi.string(),`{@link TPSInfoSchema}`)` 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/TPSHandler.java)
+     * @returns 使用 `Joi.object().pattern(Joi.string(), {@link TPSInfoSchema})` 验证
+     */
     getTPS(): Promise<Record<string, TPSInfo>> {
         return this.request<Record<string, TPSInfo>>("/tps");
     }
 
-    /** @returns 使用 {@link ProfilerDataSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ProfilerHandler.java)
+     * @returns 使用 {@link ProfilerDataSchema} 验证
+     */
     getProfiler(): Promise<ProfilerData> {
         return this.request<ProfilerData>("/profiler");
     }
 
-    /** @returns 使用 {@link LagAnalyzerDataSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/LagAnalyzerHandler.java)
+     * @returns 使用 {@link LagAnalyzerDataSchema} 验证
+     */
     getLagAnalyzer(): Promise<LagAnalyzerData> {
         return this.request<LagAnalyzerData>("/lag-analyzer");
     }
 
     // ========== World ==========
 
-    /** @returns 使用 `Joi.object().pattern(Joi.string(),`{@link WorldInfoDataSchema}`)` 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/WorldInfoHandler.java)
+     * @returns 使用 `Joi.object().pattern(Joi.string(), {@link WorldInfoDataSchema})` 验证
+     */
     getWorldInfo(): Promise<Record<string, WorldInfoData>> {
         return this.request<Record<string, WorldInfoData>>("/WorldInfo");
     }
 
     // ========== Blocks ==========
 
-    /** @returns 使用 {@link BlockSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/BlocksHandler.java)
+     * @returns 使用 {@link BlockSchema}[] 验证
+     */
     getBlocks(): Promise<Block[]> {
         return this.request<Block[]>("/blocks");
     }
 
-    /** @returns 使用 {@link BlockDetailSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/BlockHandler.java)
+     * @returns 使用 {@link BlockDetailSchema} 验证
+     */
     getBlock(params: { x: number, y: number, z: number, dim?: number }): Promise<BlockDetail> {
         return this.request<BlockDetail>(`/block${buildQuery(params)}`);
     }
 
     /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/SetBlockHandler.java)
      * @param body 使用 {@link SetBlockBodySchema} 验证
      * @returns 使用 {@link SetBlockResultSchema} 验证
      */
@@ -192,60 +213,92 @@ export class WebApiClient {
         });
     }
 
-    /** @returns 使用 {@link FMPPartSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/FMPHandler.java)
+     * @returns 使用 {@link FMPPartSchema}[] 验证
+     */
     getBlockFMP(params: Coordinates): Promise<FMPPart[]> {
         return this.request<FMPPart[]>(`/block/fmp${buildQuery(params)}`);
     }
 
-    /** @returns 二进制数据，无 JSON Schema */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/BlockTileHandler.java)
+     * @returns 二进制数据，无 JSON Schema
+     */
     getBlockTile(params: { id?: number; regName?: string; meta?: number }): Promise<ArrayBuffer> {
         return this.request<ArrayBuffer>(`/block/tile${buildQuery(params)}`);
     }
 
     // ========== Items ==========
 
-    /** @returns 使用 {@link ItemSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemsHandler.java)
+     * @returns 使用 {@link ItemSchema}[] 验证
+     */
     getItems(): Promise<Item[]> {
         return this.request<Item[]>("/items");
     }
 
-    /** @returns 使用 {@link ItemDetailSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemHandler.java)
+     * @returns 使用 {@link ItemDetailSchema} 验证
+     */
     getItem(params: { id: number }): Promise<ItemDetail> {
         return this.request<ItemDetail>(`/item${buildQuery(params)}`);
     }
 
-    /** @returns 使用 {@link AEItemDefinitionsSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java)
+     * @returns 使用 {@link AEItemDefinitionsSchema} 验证
+     */
     getAEItems(): Promise<AEItemDefinitions> {
         return this.request<AEItemDefinitions>("/items/ae");
     }
 
     // ========== Entities ==========
 
-    /** @returns 使用 `Joi.object().pattern(Joi.string(),`{@link EntitiesByDimensionSchema}`)` 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/entity/EntitiesHandler.java)
+     * @returns 使用 `Joi.object().pattern(Joi.string(),`{@link EntitiesByDimensionSchema})` 验证
+     * 
+     * 其中实体为 {@link EntitySummarySchema} 精简结构
+     */
     getEntities(): Promise<Record<string, EntitiesByDimension>> {
         return this.request<Record<string, EntitiesByDimension>>("/entities");
     }
 
-    /** @returns 使用 {@link EntitySchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/entity/EntityHandler.java)
+     * @returns 使用 {@link EntitySchema} 验证
+     */
     getEntity(params: { id: number }): Promise<Entity> {
         return this.request<Entity>(`/entity${buildQuery(params)}`);
     }
 
     // ========== Chunks ==========
 
-    /** @returns 使用 `Joi.object().pattern(Joi.string(),`{@link ChunksByDimensionSchema}`)` 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunksHandler.java)
+     * @returns 使用 `Joi.object().pattern(Joi.string(),`{@link ChunksByDimensionSchema}`)` 验证
+     */
     getChunks(): Promise<Record<string, ChunksByDimension>> {
         return this.request<Record<string, ChunksByDimension>>("/chunks");
     }
 
-    /** @returns 使用 {@link ChunkWithDimensionSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkHandler.java)
+     * @returns 使用 {@link ChunkWithDimensionSchema} 验证
+     */
     getChunk(
         params: { chunkX: number; chunkZ: number; dim?: number } | { x: number; z: number; dim?: number }
     ): Promise<ChunkWithDimension> {
         return this.request<ChunkWithDimension>(`/chunk${buildQuery(params)}`);
     }
 
-    /** @returns JSON 模式使用 {@link ChunkMapCellSchema}[][] 验证；raw 模式为 ArrayBuffer */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkMapHandler.java)
+     * @returns JSON 模式使用 {@link ChunkMapCellSchema}[][] 验证；raw 模式为 ArrayBuffer
+     */
     getChunkMap(
         params: { chunkX: number; chunkZ: number; dim?: number } | { x: number; z: number; dim?: number },
         raw?: boolean
@@ -257,19 +310,28 @@ export class WebApiClient {
         return this.request<ArrayBuffer | ChunkMapCell[][]>(`/chunk/map${q}`);
     }
 
-    /** @returns 使用 {@link ChunkForceListSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkForceHandler.java)
+     * @returns 使用 {@link ChunkForceListSchema} 验证
+     */
     getChunkForceList(): Promise<ChunkForceList> {
         return this.request<ChunkForceList>("/chunk/force");
     }
 
-    /** @returns 使用 {@link ChunkLoadResultSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkForceHandler.java)
+     * @returns 使用 {@link ChunkLoadResultSchema} 验证
+     */
     loadChunk(params: { x: number; z: number; dim?: number; duration?: number } | { chunkX: number; chunkZ: number; dim?: number; duration?: number }): Promise<ChunkLoadResult> {
         return this.request<ChunkLoadResult>(`/chunk/force${buildQuery({ action: "load", ...params })}`, {
             method: "POST",
         });
     }
 
-    /** @returns 使用 {@link ChunkLoadResultSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkForceHandler.java)
+     * @returns 使用 {@link ChunkLoadResultSchema} 验证
+     */
     unloadChunk(params: { x: number; z: number; dim?: number } | { chunkX: number; chunkZ: number; dim?: number }): Promise<ChunkLoadResult> {
         return this.request<ChunkLoadResult>(`/chunk/force${buildQuery({ action: "unload", ...params })}`, {
             method: "POST",
@@ -278,44 +340,66 @@ export class WebApiClient {
 
     // ========== AE2 ==========
 
-    /** @returns 使用 {@link AEHitResultSchema} 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEBaseHandler.java)
+     * @returns 使用 {@link AEHitResultSchema} 验证
+     */
     aeHit(params: Coordinates): Promise<AEHitResult> {
         return this.request<AEHitResult>(`/ae${buildQuery(params)}`);
     }
 
-    /** @returns 使用 {@link AENodeSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AENodesHandler.java)
+     * @returns 使用 {@link AENodeSchema}[] 验证
+     */
     aeNodes(params: Coordinates): Promise<AENode[]> {
         return this.request<AENode[]>(`/ae/nodes${buildQuery(params)}`);
     }
 
-    /** @returns 使用 {@link AECPUSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUHandler.java)
+     * @returns 使用 {@link AECPUSchema}[] 验证
+     */
     aeCPUs(params: Coordinates): Promise<AECPU[]> {
         return this.request<AECPU[]>(`/ae/cpu${buildQuery(params)}`);
     }
 
-    /** @returns 使用 `(`{@link AE2PatternSchema}` & { slot: Joi.NumberSchema, direction: Joi.StringSchema })[]` 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEHandler.java)
+     * @returns 使用 `(`{@link AE2PatternSchema}`& { slot: Joi.NumberSchema, direction: Joi.StringSchema })[]` 验证
+     */
     aeME(params: Coordinates): Promise<Array<AE2Pattern & { slot: number; direction?: string }>> {
         return this.request<Array<AE2Pattern & { slot: number; direction?: string }>>(
             `/ae/me${buildQuery(params)}`
         );
     }
 
-    /** @returns 使用 {@link AEMEInterfaceSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEsHandler.java)
+     * @returns 使用 {@link AEMEInterfaceSchema}[] 验证
+     */
     aeMEs(params: Coordinates & { load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
         return this.request<AEMEInterface[]>(`/ae/mes${buildQuery(params)}`);
     }
 
-    /** @returns 字符串数组，无专用 Schema */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEsupportHandler.java)
+     * @returns 字符串数组，无专用 Schema
+     */
     aeMESupport(): Promise<string[]> {
         return this.request<string[]>("/ae/me/support");
     }
 
-    /** @returns 使用 {@link AEItemStackSchema}[] 验证 */
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEItemHandler.java)
+     * @returns 使用 {@link AEItemStackSchema}[] 验证
+     */
     aeItems(params: Coordinates): Promise<AEItemStack[]> {
         return this.request<AEItemStack[]>(`/ae/item${buildQuery(params)}`);
     }
 
     /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUTaskHandler.java)
      * @param body 使用 {@link AECraftingTaskBodySchema} 验证
      * @returns 使用 {@link AECraftingTaskResultSchema} 验证
      */
@@ -328,6 +412,7 @@ export class WebApiClient {
     }
 
     /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUCancelHandler.java)
      * @param body 使用 {@link AECPUCancelBodySchema} 验证
      * @returns 使用 {@link AECPUCancelResultSchema} 验证
      */
