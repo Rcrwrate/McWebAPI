@@ -20,7 +20,7 @@ export const BlockSchema = Joi.object({
     registryName: Joi.string().required(),
     unlocalizedName: Joi.string().required(),
     localizedName: Joi.string().required(),
-    resistance: Joi.number().required(),
+    resistance: Joi.alternatives(Joi.number().unsafe(), Joi.valid("Infinity")).required(),
     lightLevel: Joi.number().required(),
     isOpaqueCube: Joi.boolean().required(),
     isNormalCube: Joi.boolean().required(),

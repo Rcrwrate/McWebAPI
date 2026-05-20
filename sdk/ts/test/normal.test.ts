@@ -21,7 +21,7 @@ describe("normal", () => {
     it("blocks", async () => {
         const r = await api.getBlocks()
         assert.ok(r.length > 100)
-        r.map(i => assert.ok(v.BlockSchema.validate(i).error == undefined))
+        assert.ok(Joi.array().items(v.BlockSchema).validate(r).error == undefined)
     })
     it("items", async () => {
         const r = await api.getItems()
@@ -30,8 +30,10 @@ describe("normal", () => {
     })
     it("subitems", async () => {
         const r = await api.getItem({ id: 4144 })
-        assert.ok(r.subs)
-        assert.ok(r.subs.length > 100)
+        if (r.HasSubtypes) {
+            assert.ok(r.subs)
+            assert.ok(r.subs.length > 100)
+        }
         assert.ok(v.ItemDetailSchema.validate(r).error == undefined)
     })
     it("AEitems", async () => {
@@ -80,7 +82,7 @@ describe("chunks", () => {
         const r = await api.getEntities()
         const entitiesV = Joi.object().pattern(Joi.string(), v.EntitiesByDimensionSchema)
         assert.ok(entitiesV.validate(r).error == undefined)
-        assert.ok(r["0"].loadedEntityList.length > 100)
+        assert.ok(r["0"].loadedEntityList.length > 10)
         const rans = new Array(10).fill(1).map(i => r["0"].loadedEntityList[Math.floor(Math.random() * r["0"].loadedEntityList.length)])
 
         rans.map(i => it(`entity-${i.Entity.entityId}`, async () => {

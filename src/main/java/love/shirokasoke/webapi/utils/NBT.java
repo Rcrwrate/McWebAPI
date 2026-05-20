@@ -34,6 +34,13 @@ public class NBT {
 
     private static final ObjectMapper mapper = Constant.mapper;
 
+    /** 缓存 {@link NBTTagCompound#write } 的私有 write 方法 */
+    private static Method write = null;
+    /** 缓存 {@link NBTTagCompound#func_152446_a } 的私有 write 方法 */
+    private static Method read = null;
+    /** 缓存 {@link NBTTagList#field_74747_a } 的私有 tagList */
+    private static Field field_74747_a = null;
+
     public static void dump(NBTTagCompound nbt, ObjectNode dataNode) {
         if (nbt != null) {
             dataNode.put("nbtstr", nbt.toString());
@@ -47,11 +54,23 @@ public class NBT {
         if (nbt == null) {
             return null;
         }
+        if (write == null) {
+            try {
+                write = NBTBase.class.getDeclaredMethod("func_74734_a", java.io.DataOutput.class);
+                write.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                try {
+                    write = NBTBase.class.getDeclaredMethod("write", java.io.DataOutput.class);
+                    write.setAccessible(true);
+                } catch (NoSuchMethodException e1) {
+                    return null;
+                }
+            }
+        }
+
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream dos = new DataOutputStream(baos);
-            Method write = NBTBase.class.getDeclaredMethod("write", java.io.DataOutput.class);
-            write.setAccessible(true);
             write.invoke(nbt, dos);
             dos.close();
             return Base64.getEncoder()
@@ -66,15 +85,21 @@ public class NBT {
         if (base64 == null || base64.isEmpty()) {
             return null;
         }
+        if (read == null) {
+            try {
+                read = NBTTagCompound.class
+                    .getDeclaredMethod("func_152446_a", java.io.DataInput.class, int.class, NBTSizeTracker.class);
+                read.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                return null;
+            }
+        }
         try {
             byte[] bytes = Base64.getDecoder()
                 .decode(base64);
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             DataInputStream dis = new DataInputStream(bais);
             NBTTagCompound nbt = new NBTTagCompound();
-            Method read = NBTTagCompound.class
-                .getDeclaredMethod("func_152446_a", java.io.DataInput.class, int.class, NBTSizeTracker.class);
-            read.setAccessible(true);
             read.invoke(nbt, dis, 0, NBTSizeTracker.field_152451_a);
             dis.close();
             return nbt;
@@ -167,12 +192,14 @@ public class NBT {
     private static ArrayNode listToArray(NBTTagList tagList) {
         ArrayNode array = mapper.createArrayNode();
         try {
-            Field f = tagList.getClass()
-                .getDeclaredField("field_74747_a");
-            // field_74747_a是编译后的tagList
-            f.setAccessible(true);
+            if (field_74747_a == null) {
+                field_74747_a = tagList.getClass()
+                    .getDeclaredField("field_74747_a");
+                // field_74747_a是编译后的tagList
+                field_74747_a.setAccessible(true);
+            }
             @SuppressWarnings("unchecked")
-            List<NBTBase> tmp = (List<NBTBase>) f.get(tagList);
+            List<NBTBase> tmp = (List<NBTBase>) field_74747_a.get(tagList);
             for (NBTBase n : tmp) {
                 addArrayElement(array, n);
             }
