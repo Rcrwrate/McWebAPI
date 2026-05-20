@@ -19,7 +19,7 @@ export interface Block {
     registryName: string;
     unlocalizedName: string;
     localizedName: string;
-    resistance: number;
+    resistance: number | "Infinity";
     lightLevel: number;
     isOpaqueCube: boolean;
     isNormalCube: boolean;
