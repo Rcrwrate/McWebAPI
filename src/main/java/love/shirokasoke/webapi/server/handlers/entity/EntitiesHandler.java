@@ -40,7 +40,7 @@ public class EntitiesHandler implements RouteHandler {
 
                 ArrayNode loaded = data.putArray("loadedEntityList");
                 for (Entity obj : world.loadedEntityList) {
-                    loaded.add(Entitys.dump(obj, world.loadedEntityList.size() < 50));
+                    loaded.add(Entitys.dump(obj, false));
                 }
             }
         }

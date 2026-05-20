@@ -19,7 +19,7 @@ describe(`setBlocks${x}-${y}-${z}`, async () => {
         assert.ok(loadResult.durationSec == 120)
     })
 
-    await sleep(1000)
+    await sleep(2000)
     let before: BlockDetail
     await it("getBefore", async () => {
         before = await api.getBlock({ x, y, z, dim });
@@ -37,7 +37,10 @@ describe(`setBlocks${x}-${y}-${z}`, async () => {
     })
 
 
-
+    await it("clean", async () => {
+        const loadResult = await api.unloadChunk({ x, z, dim })
+        assert.ok(loadResult.isActive)
+    })
     // it("setAndRestoreBlock", async () => {
 
     //     const loadResult = await api.loadChunk({ x, z, dim, duration: 120 });
