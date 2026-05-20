@@ -1,7 +1,11 @@
 package love.shirokasoke.webapi;
 
 import java.io.File;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
@@ -9,12 +13,66 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import love.shirokasoke.webapi.server.Auth;
 import love.shirokasoke.webapi.server.Lang;
 import love.shirokasoke.webapi.server.WebServer;
 import love.shirokasoke.webapi.server.handlers.item.ItemStaticHandler;
 
 public class CommonProxy {
+
+    private static final ConcurrentLinkedQueue<PendingTask> pendingTasks = new ConcurrentLinkedQueue<>();
+
+    private static class PendingTask {
+
+        final Runnable task;
+        final CountDownLatch latch;
+        final AtomicReference<Exception> error;
+
+        PendingTask(Runnable task) {
+            this.task = task;
+            this.latch = new CountDownLatch(1);
+            this.error = new AtomicReference<>();
+        }
+    }
+
+    /**
+     * 将任务投递到服务器主线程执行，并阻塞等待完成。
+     * 如果当前线程已经是 Server thread，则直接执行。
+     */
+    public static void runOnServerThread(Runnable task) throws Exception {
+        if ("Server thread".equals(
+            Thread.currentThread()
+                .getName())) {
+            task.run();
+            return;
+        }
+        PendingTask pt = new PendingTask(task);
+        pendingTasks.offer(pt);
+        pt.latch.await();
+        Exception ex = pt.error.get();
+        if (ex != null) {
+            throw ex;
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) {
+            return;
+        }
+        PendingTask pt;
+        while ((pt = pendingTasks.poll()) != null) {
+            try {
+                pt.task.run();
+            } catch (Exception e) {
+                pt.error.set(e);
+            } finally {
+                pt.latch.countDown();
+            }
+        }
+    }
 
     // preInit "Run before anything else. Read your config, create blocks, items,
     // etc, and register them with the
@@ -49,6 +107,9 @@ public class CommonProxy {
         Auth.setup(Config.authUrlPrefixes);
         WebServer.start(Config.httpPort, Config.nThreads);
         Lang.setup(Config.langFiles);
+        FMLCommonHandler.instance()
+            .bus()
+            .register(this);
     }
 
     public void serverStarted(FMLServerStartedEvent event) {
