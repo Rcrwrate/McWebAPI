@@ -241,10 +241,22 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemStaticHandler.java)
      * @returns 使用 {@link ItemDetailSchema} 验证
      */
     getItem(params: { id: number }): Promise<ItemDetail> {
         return this.request<ItemDetail>(`/item${buildQuery(params)}`);
+    }
+
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemIconHandler.java)
+     * @param params.id 物品 ID（对应 ItemStack 的 id）
+     * @param params.damage 物品损伤值/元数据（可选，默认 0）
+     * @param params.tag Base64 编码的 NBTTagCompound（可选）
+     * @returns 二进制 PNG 图片数据 (ArrayBuffer)
+     */
+    getItemIcon(params: { id: number; damage?: number; tag?: string }): Promise<ArrayBuffer> {
+        return this.request<ArrayBuffer>(`/item/icon${buildQuery(params)}`);
     }
 
     /**

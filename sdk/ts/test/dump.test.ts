@@ -1,0 +1,54 @@
+/// <reference types="node" />
+import assert from "node:assert";
+import { describe, it } from "node:test";
+
+import { WebApiClient } from "../src/client";
+import * as v from "../src/validators";
+import Joi from "joi";
+
+const api = new WebApiClient({ baseUrl: "http://localhost:40002" })
+
+describe("dump", () => {
+    it("chunks", async () => {
+        const r = await api.getChunks()
+        const test = r["0"].chunks.pop()
+        assert.ok(test != undefined)
+        const first = await api.getChunkMap(test)
+        assert.ok(first instanceof ArrayBuffer)
+        assert.ok(first.byteLength > 0)
+        const second = await api.getChunkMap(test, true)
+        const check = Joi.array().items(
+            Joi.array().items(v.ChunkMapCellSchema)
+        )
+        assert.ok(check.validate(second).error == undefined)
+    })
+
+    it("MapError", async () => {
+        const x = Math.floor(Math.random() * 40000) + 10000;
+        const z = Math.floor(Math.random() * 40000) + 10000;
+        const y = Math.floor(Math.random() * 50) + 50;
+        assert.rejects(() => api.getChunkMap({ x, z }), { message: `Chunk not loaded at ${x >> 4},${z >> 4}` })
+    })
+
+    it("itemIcon", async () => {
+        const items = await api.getItems()
+        const no = items.filter(i => i.HasSubtypes == false)
+        const nor = no[Math.floor(Math.random() * no.length)]
+        assert.ok(v.ItemSchema.validate(nor).error == undefined)
+
+        const icon = await api.getItemIcon({ id: nor.id })
+        assert.ok(icon instanceof ArrayBuffer)
+        assert.ok(icon.byteLength > 0)
+
+        const yes = items.filter(i => i.HasSubtypes == true)
+        const yesr = yes[Math.floor(Math.random() * yes.length)]
+        assert.ok(v.ItemSchema.validate(yesr).error == undefined)
+        console.log(yesr)
+        const yess = await api.getItem({ id: yesr.id })
+        
+        assert.ok(yess.HasSubtypes)
+        assert.ok(yess.subs)
+        
+        const sub = yess.subs[Math.floor(Math.random() * yess.subs.length)]
+    })
+})

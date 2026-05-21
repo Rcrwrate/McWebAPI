@@ -1,5 +1,7 @@
 # BUGs
 
+## 1.<已修复> NBT
+
 [ItemIconDumperThread.java](src/main/java/love/shirokasoke/webapi/client/thread/ItemIconDumperThread.java#L79)
 
 IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
@@ -46,7 +48,7 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 [`/item/ae`](src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java#L106)
 
-## NBT -> JSON -> NBT
+## 2.<已修复> NBT -> JSON -> NBT
 
 不可行，java中byte/short/int/long/float/double转向JSON直接丢失精度且不方便处理
 
@@ -104,3 +106,17 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
   "stackSize": 0
 }
 ```
+
+## 3. <未修复> 客户端与服务端直接的物品数据ID不一致
+
+预期向下兼容，新增通过regName确保唯一，但保留ID获取的功能
+
+服务端数据：
+
+[ItemHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemHandler.java)
+
+[ItemsHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemsHandler.java)
+
+客户端数据：
+
+[ItemStaticHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemStaticHandler.java)
