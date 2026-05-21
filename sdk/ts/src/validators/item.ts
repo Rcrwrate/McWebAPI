@@ -25,7 +25,7 @@ export const ItemStackSchema = ItemSchema.keys({
     count: Joi.number().optional(),
 }).concat(NBTDataSchema);
 
-export const ItemDetailSchema = ItemSchema.keys({
+export const ItemDetailSchema = ItemStackSchema.keys({
     subs: Joi.array().items(ItemStackSchema).optional(),
 });
 

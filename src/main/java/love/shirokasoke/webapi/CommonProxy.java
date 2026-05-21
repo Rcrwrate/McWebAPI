@@ -117,7 +117,7 @@ public class CommonProxy {
         ItemStaticHandler s = new ItemStaticHandler(Config.ItemFile);
         if (s.isValid()) {
             Config.itemThreadEnable = false;
-            MyMod.LOG.info("[CommonProxy] ItemFile is valid, itemThread forcibly disabled");
+            MyMod.LOG.info("ItemFile is valid, itemThread forcibly disabled");
             s.inject();
         }
         if (Config.itemThreadEnable) {

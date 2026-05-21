@@ -11,14 +11,14 @@ public class Config {
 
     public static boolean classDump = false;
 
-    public static String ItemFile = "";
-    public static String ItemIconFolder = "";
+    public static String ItemFile = "dumps/items.json";
+    public static String ItemIconFolder = "dumps/item_icons";
     public static int itemThreadDelayMs = 10;
     public static int itemThreadBatchSize = 100;
     public static boolean itemThreadEnable = true;
 
-    public static String BlockFile = "";
-    public static String BlockTileFolder = "";
+    public static String BlockFile = "dumps/blocks.json";
+    public static String BlockTileFolder = "dumps/block_tiles";
 
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
