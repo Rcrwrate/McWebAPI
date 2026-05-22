@@ -36,9 +36,9 @@ export const AE2PatternSchema = ItemStackSchema.keys({
 });
 
 export const AECPUSchema = Joi.object({
-    name: Joi.string().required(),
+    name: Joi.string().allow("").required(),
     busy: Joi.boolean().required(),
-    availableStorage: Joi.number().required(),
+    availableStorage: Joi.number().unsafe().required(),
     usedStorage: Joi.number().required(),
     coProcessors: Joi.number().required(),
     remainingItemCount: Joi.number().required(),
