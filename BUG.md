@@ -107,9 +107,11 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 }
 ```
 
-## 3. <未修复> 客户端与服务端直接的物品数据ID不一致
+## 3. <已修复> 客户端与服务端直接的物品数据ID不一致
 
-预期向下兼容，新增通过regName确保唯一，但保留ID获取的功能
+~~预期向下兼容，新增通过regName确保唯一，但保留ID获取的功能~~
+
+在数据导入时，转换客户端id为服务端id
 
 服务端数据：
 
@@ -120,3 +122,9 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 客户端数据：
 
 [ItemStaticHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemStaticHandler.java)
+
+## 4. <未修复> 部分客户端导出的物品icon显示空白
+
+正在调查，发现的有**液滴**，2.9.0将被移除？，后续处理
+
+**粉尘**
