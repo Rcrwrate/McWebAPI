@@ -2,9 +2,9 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
 
+import Joi from "joi";
 import { WebApiClient } from "../src/client";
 import * as v from "../src/validators";
-import Joi from "joi";
 
 const api = new WebApiClient({ baseUrl: "http://localhost:40002" })
 
@@ -43,12 +43,15 @@ describe("dump", () => {
         const yes = items.filter(i => i.HasSubtypes == true)
         const yesr = yes[Math.floor(Math.random() * yes.length)]
         assert.ok(v.ItemSchema.validate(yesr).error == undefined)
-        console.log(yesr)
         const yess = await api.getItem({ id: yesr.id })
-        
+
         assert.ok(yess.HasSubtypes)
         assert.ok(yess.subs)
-        
+
         const sub = yess.subs[Math.floor(Math.random() * yess.subs.length)]
+        assert.ok(v.ItemStackSchema.validate(sub).error == undefined)
+        const icon2 = await api.getItemIcon({ id: sub.id, damage: sub.damage, tag: sub.nbtWrite })
+        assert.ok(icon2 instanceof ArrayBuffer)
+        assert.ok(icon2.byteLength > 0)
     })
 })
