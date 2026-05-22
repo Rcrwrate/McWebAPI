@@ -364,7 +364,7 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AENodesHandler.java)
      * @returns 使用 {@link AENodeSchema}[] 验证
      */
-    aeNodes(params: Coordinates): Promise<AENode[]> {
+    aeNodes(params: { x: number, y: number, z: number, dimension?: number }): Promise<AENode[]> {
         return this.request<AENode[]>(`/ae/nodes${buildQuery(params)}`);
     }
 
@@ -372,15 +372,15 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUHandler.java)
      * @returns 使用 {@link AECPUSchema}[] 验证
      */
-    aeCPUs(params: Coordinates): Promise<AECPU[]> {
+    aeCPUs(params: { x: number, y: number, z: number, dimension?: number }): Promise<AECPU[]> {
         return this.request<AECPU[]>(`/ae/cpu${buildQuery(params)}`);
     }
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEHandler.java)
-     * @returns 使用 `(`{@link AE2PatternSchema}`& { slot: Joi.NumberSchema, direction: Joi.StringSchema })[]` 验证
+     * @returns 使用 `Joi.array().items(`{@link AE2PatternSchema}`.keys({ slot: Joi.number().required(), direction: Joi.string().optional() }))` 验证
      */
-    aeME(params: Coordinates): Promise<Array<AE2Pattern & { slot: number; direction?: string }>> {
+    aeME(params: { x: number, y: number, z: number, dimension?: number }): Promise<Array<AE2Pattern & { slot: number; direction?: string }>> {
         return this.request<Array<AE2Pattern & { slot: number; direction?: string }>>(
             `/ae/me${buildQuery(params)}`
         );
@@ -390,7 +390,7 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEsHandler.java)
      * @returns 使用 {@link AEMEInterfaceSchema}[] 验证
      */
-    aeMEs(params: Coordinates & { load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
+    aeMEs(params: { x: number, y: number, z: number, dimension?: number, load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
         return this.request<AEMEInterface[]>(`/ae/mes${buildQuery(params)}`);
     }
 
@@ -406,7 +406,7 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEItemHandler.java)
      * @returns 使用 {@link AEItemStackSchema}[] 验证
      */
-    aeItems(params: Coordinates): Promise<AEItemStack[]> {
+    aeItems(params: { x: number, y: number, z: number, dimension?: number }): Promise<AEItemStack[]> {
         return this.request<AEItemStack[]>(`/ae/item${buildQuery(params)}`);
     }
 
@@ -415,7 +415,7 @@ export class WebApiClient {
      * @param body 使用 {@link AECraftingTaskBodySchema} 验证
      * @returns 使用 {@link AECraftingTaskResultSchema} 验证
      */
-    aeCraft(params: Coordinates, body: AECraftingTaskBody): Promise<AECraftingTaskResult> {
+    aeCraft(params: { x: number, y: number, z: number, dimension?: number }, body: AECraftingTaskBody): Promise<AECraftingTaskResult> {
         return this.request<AECraftingTaskResult>(`/ae/cpu/task${buildQuery(params)}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -428,7 +428,7 @@ export class WebApiClient {
      * @param body 使用 {@link AECPUCancelBodySchema} 验证
      * @returns 使用 {@link AECPUCancelResultSchema} 验证
      */
-    aeCancel(params: Coordinates, body: AECPUCancelBody): Promise<AECPUCancelResult> {
+    aeCancel(params: { x: number, y: number, z: number, dimension?: number }, body: AECPUCancelBody): Promise<AECPUCancelResult> {
         return this.request<AECPUCancelResult>(`/ae/cpu/cancel${buildQuery(params)}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
