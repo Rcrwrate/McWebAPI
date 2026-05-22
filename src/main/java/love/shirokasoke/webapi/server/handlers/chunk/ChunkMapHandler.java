@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
-import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 
 /**
@@ -289,7 +288,7 @@ public class ChunkMapHandler extends ChunkHandler {
         }
 
         try {
-            ArrayNode array = (ArrayNode) Constant.mapper.readTree(blocksJsonFile);
+            ArrayNode array = (ArrayNode) mapper.readTree(blocksJsonFile);
             for (JsonNode node : array) {
                 String regName = node.path("registryName")
                     .asText(null);

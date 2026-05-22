@@ -9,3 +9,4 @@ wget https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.7
 
 rm -rf /tmp/GTNH
 
+# cat ./GTNH-server/logs/fml-junk-earlystartup.log | grep -oE '[0-9]+ms' | sort | uniq -c | sort -rn

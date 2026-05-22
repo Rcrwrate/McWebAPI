@@ -8,4 +8,6 @@ bash JetBrains.sh
 cd /workspace/sdk/ts && npm i
 npm i typescript bun -g
 npm i tsx -g
+
+cd /workspace
 bash CF.sh
