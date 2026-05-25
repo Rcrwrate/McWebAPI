@@ -1,6 +1,14 @@
 # BUGs
 
-## 1.<已修复> NBT
+- [x] [1.NBT](#1nbt)
+
+- [x] [2.NBT -> JSON -> NBT](#2nbt---json---nbt)
+
+- [x] [3.客户端与服务端直接的物品数据ID不一致](#3客户端与服务端直接的物品数据id不一致)
+
+- [x] [4. 部分客户端导出的物品icon显示空白](#4部分客户端导出的物品icon显示空白)
+
+## 1.NBT
 
 [ItemIconDumperThread.java](src/main/java/love/shirokasoke/webapi/client/thread/ItemIconDumperThread.java#L79)
 
@@ -48,7 +56,7 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 [`/item/ae`](src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java#L106)
 
-## 2.<已修复> NBT -> JSON -> NBT
+## 2.NBT -> JSON -> NBT
 
 不可行，java中byte/short/int/long/float/double转向JSON直接丢失精度且不方便处理
 
@@ -107,7 +115,7 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 }
 ```
 
-## 3. <已修复> 客户端与服务端直接的物品数据ID不一致
+## 3.客户端与服务端直接的物品数据ID不一致
 
 ~~预期向下兼容，新增通过regName确保唯一，但保留ID获取的功能~~
 
@@ -123,8 +131,10 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 [ItemStaticHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemStaticHandler.java)
 
-## 4. <未修复> 部分客户端导出的物品icon显示空白
+## 4.部分客户端导出的物品icon显示空白
 
-正在调查，发现的有**液滴**，2.9.0将被移除？，后续处理
+~~正在调查，发现的有**液滴**，2.9.0将被移除？，后续处理~~
 
 **粉尘**
+
+采用了NEI的渲染，但是未进入游戏真正激活NEI导致的渲染异常，改成游戏内指令形式的触发
