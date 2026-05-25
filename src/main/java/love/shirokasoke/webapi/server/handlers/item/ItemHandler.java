@@ -3,6 +3,7 @@ package love.shirokasoke.webapi.server.handlers.item;
 import java.util.Map;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,7 +28,7 @@ public class ItemHandler implements RouteHandler {
         Item item = Item.getItemById(id);
 
         ObjectNode data = mapper.createObjectNode();
-        Items.dump(item, data);
+        Items.dump(new ItemStack(item, 1, 0), data);
         if (item.getHasSubtypes()) {
             ArrayNode subs = mapper.createArrayNode();
             Items.getPermutations(item)

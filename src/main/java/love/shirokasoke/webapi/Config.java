@@ -25,12 +25,10 @@ public class Config {
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
 
     // client
-    public static boolean itemIconDumperEnable = true;
     public static int itemIconDelayMs = 10;
     public static int itemIconSize = 256;
     public static boolean itemDump = true;
 
-    public static boolean blockTileDumperEnable = true;
     public static int blockTileDelayMs = 10;
     public static int blockTileSize = 64;
     public static boolean blockDump = true;
@@ -88,11 +86,6 @@ public class Config {
             "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
 
         // client
-        itemIconDumperEnable = configuration.getBoolean(
-            "enable",
-            "client.item.IconDumper",
-            itemIconDumperEnable,
-            "enable ItemIconDumper on client load complete");
         itemIconDelayMs = configuration.getInt(
             "DelayMs",
             "client.item.IconDumper",
@@ -113,11 +106,6 @@ public class Config {
             itemDump,
             "Auto dump item's data to json if client.item.IconDumper is enable");
 
-        blockTileDumperEnable = configuration.getBoolean(
-            "enable",
-            "client.block.TileDumper",
-            blockTileDumperEnable,
-            "enable MapTileDumper on client load complete");
         blockTileDelayMs = configuration.getInt(
             "DelayMs",
             "client.block.TileDumper",

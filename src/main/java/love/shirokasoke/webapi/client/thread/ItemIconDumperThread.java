@@ -20,6 +20,7 @@ import org.lwjgl.opengl.GL12;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import codechicken.nei.ItemList;
 import codechicken.nei.guihook.GuiContainerManager;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
@@ -50,7 +51,9 @@ public class ItemIconDumperThread extends Thread {
     /** 独立 Framebuffer，用于离屏渲染物品图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
 
-    public ItemIconDumperThread() {
+    private boolean useNEI = false;
+
+    public ItemIconDumperThread(boolean useNEI) {
         super("ItemIcon-Dumper");
         setDaemon(true);
         this.mc = Minecraft.getMinecraft();
@@ -59,13 +62,19 @@ public class ItemIconDumperThread extends Thread {
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
+        this.useNEI = useNEI;
     }
 
     @Override
     public void run() {
         try {
             MyMod.LOG.info("开始收集物品列表...");
-            List<ItemStack> allStacks = CItems.getAllItems();
+            List<ItemStack> allStacks;
+            if (useNEI) {
+                allStacks = ItemList.items;
+            } else {
+                allStacks = CItems.getAllItems();
+            }
             if (Config.itemDump) {
                 MyMod.LOG.info("开始导出物品数据到 items.json...");
                 ArrayNode dumps = Constant.mapper.createArrayNode();
