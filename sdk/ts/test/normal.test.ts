@@ -44,6 +44,14 @@ describe("normal", () => {
         assert.ok(r.materials.length > 60)
         assert.ok(r.parts.length > 100)
     })
+    it("fluids", async () => {
+        const r = await api.getFluids()
+        assert.ok(Joi.array().items(v.FluidSchema).validate(r).error == undefined)
+    })
+    it("fluidContainers",async () => {
+        const r = await api.getFluidContainers()
+        assert.ok(Joi.array().items(v.FluidContainerSchema).validate(r).error == undefined)
+    })
 })
 
 describe("chunks", () => {

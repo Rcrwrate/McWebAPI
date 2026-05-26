@@ -4,5 +4,6 @@ export * from "./chunk";
 export * from "./common";
 export * from "./entity";
 export * from "./fmp";
+export * from "./fluid";
 export * from "./item";
 export * from "./world";

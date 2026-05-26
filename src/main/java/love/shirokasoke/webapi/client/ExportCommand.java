@@ -5,6 +5,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.client.thread.FluidIconDumperThread;
 import love.shirokasoke.webapi.client.thread.ItemIconDumperThread;
 import love.shirokasoke.webapi.client.thread.MapTileDumperThread;
 
@@ -12,6 +13,7 @@ public class ExportCommand extends CommandBase {
 
     private static volatile Thread itemThread = null;
     private static volatile Thread blockThread = null;
+    private static volatile Thread fluidThread = null;
 
     @Override
     public String getCommandName() {
@@ -20,7 +22,7 @@ public class ExportCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/export <nei|items|blocks>";
+        return "/export <nei|items|blocks|fluids>";
     }
 
     @Override
@@ -50,6 +52,16 @@ public class ExportCommand extends CommandBase {
             blockThread = new MapTileDumperThread();
             blockThread.start();
             sender.addChatMessage(new ChatComponentText("[WebAPI] 方块纹理导出线程已启动，请查看后台日志。"));
+        } else if ("fluids".equals(sub)) {
+            if (fluidThread != null && fluidThread.isAlive()) {
+                sender.addChatMessage(new ChatComponentText("[WebAPI] 流体图标导出线程已在运行中。"));
+                return;
+            }
+            MyMod.LOG.info("[ExportImagesCommand] 用户手动触发，启动 FluidIconDumperThread...");
+            sender.addChatMessage(new ChatComponentText("[WebAPI] 正在启动流体图标导出线程..."));
+            fluidThread = new FluidIconDumperThread();
+            fluidThread.start();
+            sender.addChatMessage(new ChatComponentText("[WebAPI] 流体图标导出线程已启动，请查看后台日志。"));
         } else {
             sender.addChatMessage(new ChatComponentText("[WebAPI] 未知子命令 '" + sub + "'。用法: " + getCommandUsage(sender)));
         }

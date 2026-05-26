@@ -9,50 +9,49 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import cpw.mods.fml.common.registry.GameData;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.log;
 
 /**
- * 客户端后台线程：导出所有方块的顶面纹理为 PNG 图片，并可选导出方块元数据到 JSON。
+ * 客户端后台线程：导出所有已注册流体的 Icon 为 PNG 图片。
  *
  * <p>
  * 与 {@link ItemIconDumperThread} 类似，渲染任务通过
  * {@link Minecraft#func_152344_a(Runnable)} 投递到客户端主线程执行。
  */
-public class MapTileDumperThread extends Thread {
+public class FluidIconDumperThread extends Thread {
 
+    /** 输出目录：.minecraft/dumps/fluid_icons/ */
     private final File outputDir;
+    /** 输出图标尺寸（像素），由配置文件 {@link Config#fluidIconSize} 决定。 */
     private final int iconSize;
     private final Minecraft mc;
+    /** 独立 Framebuffer，用于离屏渲染流体图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
 
-    public MapTileDumperThread() {
-        super("MapTile-Dumper");
+    public FluidIconDumperThread() {
+        super("FluidIcon-Dumper");
         setDaemon(true);
         this.mc = Minecraft.getMinecraft();
-        this.iconSize = Config.blockTileSize;
-        this.outputDir = new File(mc.mcDataDir, "dumps/block_tiles");
+        this.iconSize = Config.fluidIconSize;
+        this.outputDir = new File(mc.mcDataDir, "dumps/fluid_icons");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
@@ -61,62 +60,61 @@ public class MapTileDumperThread extends Thread {
     @Override
     public void run() {
         try {
-            MyMod.LOG.info("开始收集方块列表...");
-            List<BlockMetaEntry> allBlocks = getAllBlockEntries();
+            MyMod.LOG.info("开始收集流体列表...");
+            List<Fluid> allFluids = new ArrayList<>(
+                FluidRegistry.getRegisteredFluids()
+                    .values());
 
-            MyMod.LOG.info("开始导出方块数据到 blocks.json...");
+            MyMod.LOG.info("开始导出流体数据到 fluids.json...");
             ArrayNode dumps = Constant.mapper.createArrayNode();
-            for (BlockMetaEntry entry : allBlocks) {
-                if (interrupted()) {
-                    break;
-                }
+            for (Fluid fluid : allFluids) {
                 try {
-                    ObjectNode data = love.shirokasoke.webapi.utils.Blocks.dump(entry.block);
-                    data.put("meta", entry.meta);
-                    data.put("fileName", entry.fileName);
-                    // 尝试获取方块基础颜色（不带生物群系着色）
-                    try {
-                        data.put("blockColor", entry.block.getBlockColor());
-                    } catch (Throwable ignored) {}
-                    dumps.add(data);
+                    Fluids.dump(fluid, dumps.addObject());
                 } catch (Throwable t) {
-                    MyMod.LOG.error("导出方块数据失败: {}", entry, t);
+                    MyMod.LOG.error("导出流体数据失败: {}", fluid.getName(), t);
                 }
             }
-            File dumpsFile = new File(mc.mcDataDir, "dumps/blocks.json");
+            File dumpsFile = new File(mc.mcDataDir, "dumps/fluids.json");
             try {
                 Constant.mapper.writeValue(dumpsFile, dumps);
-                MyMod.LOG.info("blocks.json 导出完成，共 {} 条记录", dumps.size());
+                MyMod.LOG.info("fluids.json 导出完成，共 {} 条记录", dumps.size());
             } catch (IOException e) {
-                MyMod.LOG.error("写入 blocks.json 失败");
+                MyMod.LOG.error("写入 fluids.json 失败");
                 log.e(e);
             }
 
-            MyMod.LOG.info("共 {} 个方块变体需要导出", allBlocks.size());
+            MyMod.LOG.info("共 {} 个流体需要导出", allFluids.size());
 
             int exported = 0;
             long startTime = System.currentTimeMillis();
 
-            for (BlockMetaEntry entry : allBlocks) {
+            for (Fluid fluid : allFluids) {
                 if (interrupted()) {
                     MyMod.LOG.warn("被中断，停止导出");
                     break;
                 }
 
-                File outFile = new File(outputDir, entry.fileName + ".png");
-                if (outFile.exists()) {
+                if (fluid.getIcon() == null) {
+                    MyMod.LOG.warn("流体 {} 没有图标，跳过", fluid.getName());
                     continue;
                 }
 
-                final BlockMetaEntry entryRef = entry;
+                String fileName = Fluids.getFileName(fluid);
+                File outFile = new File(outputDir, fileName + ".png");
+                if (outFile.exists()) {
+                    MyMod.LOG.warn(fileName + "\tskiped");
+                    continue;
+                }
+
+                final Fluid fluidRef = fluid;
                 final RenderResult result = new RenderResult();
 
                 mc.func_152344_a(() -> {
                     try {
-                        BufferedImage img = renderBlockTop(entryRef.block, entryRef.meta);
+                        BufferedImage img = renderFluid(fluidRef);
                         result.image = img;
                     } catch (Exception e) {
-                        MyMod.LOG.error("渲染方块顶面失败: {}", entryRef);
+                        MyMod.LOG.error("渲染流体失败: {}", fluidRef.getName());
                         log.e(e);
                         result.image = null;
                     } finally {
@@ -143,9 +141,9 @@ public class MapTileDumperThread extends Thread {
                     }
                 }
 
-                if (Config.blockTileDelayMs > 0) {
+                if (Config.fluidIconDelayMs > 0) {
                     try {
-                        Thread.sleep(Config.blockTileDelayMs);
+                        Thread.sleep(Config.fluidIconDelayMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread()
                             .interrupt();
@@ -154,86 +152,55 @@ public class MapTileDumperThread extends Thread {
                 }
 
                 if (exported % 100 == 0 && exported > 0) {
-                    MyMod.LOG.info("已导出 {} / {} 个方块", exported, allBlocks.size());
+                    MyMod.LOG.info("已导出 {} / {} 个流体", exported, allFluids.size());
                 }
             }
 
             long duration = System.currentTimeMillis() - startTime;
-            MyMod.LOG.info("导出完成，共 {} 个方块，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
+            MyMod.LOG.info("导出完成，共 {} 个流体，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
         } catch (Throwable e) {
-            MyMod.LOG.error("导出方块顶面时出错");
+            MyMod.LOG.error("导出流体图标时出错");
             log.e(e);
         }
     }
 
     /**
-     * 收集所有需要导出的 Block + meta 组合。
-     */
-    private List<BlockMetaEntry> getAllBlockEntries() {
-        List<BlockMetaEntry> list = new ArrayList<>();
-        for (Object obj : GameData.getBlockRegistry()
-            .typeSafeIterable()) {
-            if (!(obj instanceof Block)) {
-                continue;
-            }
-            Block block = (Block) obj;
-            if (block == null || block == Blocks.air) {
-                continue;
-            }
-
-            Item item = Item.getItemFromBlock(block);
-            if (item == null) {
-                list.add(new BlockMetaEntry(block, 0));
-            } else {
-                ArrayList<ItemStack> subBlocks = new ArrayList<>();
-                try {
-                    block.getSubBlocks(item, null, subBlocks);
-                    if (subBlocks.isEmpty()) {
-                        list.add(new BlockMetaEntry(block, 0));
-                    } else {
-                        for (ItemStack stack : subBlocks) {
-                            list.add(new BlockMetaEntry(block, item.getDamage(stack)));
-                        }
-                    }
-                } catch (Throwable t) {
-                    MyMod.LOG.error("[MapTileDumper] 获取方块 {} 的子类型时出错", block, t);
-                    list.add(new BlockMetaEntry(block, 0));
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * 在客户端主线程中渲染指定方块的顶面纹理到独立 Framebuffer。
+     * 在客户端主线程中渲染单个流体到独立 Framebuffer。
      *
      * <p>
      * <b>必须在拥有 OpenGL Context 的线程调用！</b>
      *
-     * @param block 目标方块
-     * @param meta  元数据
-     * @return 渲染后的图片，ARGB 格式；若该方块没有顶面纹理则返回 null
+     * <p>
+     * 渲染流程：
+     * <ol>
+     * <li>创建/绑定独立 Framebuffer（尺寸 = iconSize × iconSize）</li>
+     * <li>清空缓冲区为透明黑色</li>
+     * <li>绑定方块纹理图集（流体纹理在此图集上）</li>
+     * <li>获取流体静止图标 {@link Fluid#getIcon()} 和流体颜色</li>
+     * <li>设置正交投影矩阵</li>
+     * <li>使用 {@link Tessellator} 绘制全屏 quad，并叠加流体颜色</li>
+     * <li>读取像素数据，翻转 Y 轴</li>
+     * <li>解绑 Framebuffer，恢复主屏幕</li>
+     * </ol>
+     *
+     * @param fluid 要渲染的流体
+     * @return 渲染后的图片，ARGB 格式；若该流体没有图标则返回 null
      */
-    private BufferedImage renderBlockTop(Block block, int meta) {
-        IIcon icon;
-        try {
-            icon = block.getIcon(1, meta);
-        } catch (Throwable t) {
-            return null;
-        }
-        if (icon == null) {
-            return null;
-        }
-
+    private BufferedImage renderFluid(Fluid fluid) {
         if (framebuffer == null) {
             framebuffer = new Framebuffer(iconSize, iconSize, true);
+        }
+
+        IIcon icon = fluid.getIcon();
+        if (icon == null) {
+            return null;
         }
 
         // 绑定方块纹理图集
         mc.getTextureManager()
             .bindTexture(TextureMap.locationBlocksTexture);
 
-        // 绑定 Framebuffer 并清空
+        // 绑定 Framebuffer 并清空为透明
         framebuffer.bindFramebuffer(true);
         GL11.glClearColor(0f, 0f, 0f, 0f);
         GL11.glClearDepth(1D);
@@ -251,16 +218,16 @@ public class MapTileDumperThread extends Thread {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        // 获取方块基础渲染颜色（如树叶、草等需要着色）
-        int color = 16777215;
-        try {
-            color = block.getRenderColor(meta);
-        } catch (Throwable ignored) {}
+        // 获取流体颜色（部分流体为灰度纹理，需叠加颜色）
+        int color = fluid.getColor();
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
+        GL11.glColor3ub((byte) r, (byte) g, (byte) b);
 
         // 绘制全屏 quad，UV 映射到该 icon 在 atlas 上的区域
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
-        tess.setColorOpaque_I(color);
         // 左下
         tess.addVertexWithUV(0, iconSize, 0, icon.getMinU(), icon.getMaxV());
         // 右下
@@ -270,6 +237,9 @@ public class MapTileDumperThread extends Thread {
         // 左上
         tess.addVertexWithUV(0, 0, 0, icon.getMinU(), icon.getMinV());
         tess.draw();
+
+        // 重置颜色混合
+        GL11.glColor4f(1f, 1f, 1f, 1f);
 
         BufferedImage image = readImage();
         framebuffer.unbindFramebuffer();
@@ -281,6 +251,8 @@ public class MapTileDumperThread extends Thread {
      *
      * <p>
      * OpenGL 的坐标系原点在左下角，而 BufferedImage 原点在左上角，需要对 Y 轴翻转。
+     *
+     * @return ARGB 格式的 BufferedImage
      */
     private BufferedImage readImage() {
         ByteBuffer imageByteBuffer = BufferUtils.createByteBuffer(4 * iconSize * iconSize);
@@ -302,36 +274,6 @@ public class MapTileDumperThread extends Thread {
         BufferedImage image = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_INT_ARGB);
         image.setRGB(0, 0, iconSize, iconSize, pixels, 0, iconSize);
         return image;
-    }
-
-    /**
-     * 生成方块变体的安全文件名。
-     */
-    private static String getFileName(Block block, int meta) {
-        String regName = Block.blockRegistry.getNameForObject(block);
-        if (regName == null) {
-            regName = "unknown";
-        }
-        String unloc = block.getUnlocalizedName();
-        return Items.cleanFileName(regName.replace(":", "_") + "_" + meta + "_" + unloc);
-    }
-
-    private static class BlockMetaEntry {
-
-        final Block block;
-        final int meta;
-        final String fileName;
-
-        BlockMetaEntry(Block block, int meta) {
-            this.block = block;
-            this.meta = meta;
-            this.fileName = getFileName(block, meta);
-        }
-
-        @Override
-        public String toString() {
-            return fileName;
-        }
     }
 
     private static class RenderResult {

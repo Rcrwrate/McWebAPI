@@ -92,7 +92,8 @@ public class ItemStaticHandler implements RouteHandler {
 
         if (matches.size() == 0) {
             // throw new Error(404, "item not found");
-            fallback.run(exchange);
+            fallback.handle(exchange);
+            return;
         }
 
         ObjectNode result = ((ObjectNode) matches.get(0)).deepCopy();
