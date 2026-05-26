@@ -20,6 +20,8 @@ public class Config {
     public static String BlockFile = "dumps/blocks.json";
     public static String BlockTileFolder = "dumps/block_tiles";
 
+    public static String FluidIconFolder = "dumps/fluid_icons";
+
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
@@ -27,11 +29,12 @@ public class Config {
     // client
     public static int itemIconDelayMs = 10;
     public static int itemIconSize = 256;
-    public static boolean itemDump = true;
 
     public static int blockTileDelayMs = 10;
     public static int blockTileSize = 64;
-    public static boolean blockDump = true;
+
+    public static int fluidIconDelayMs = 10;
+    public static int fluidIconSize = 256;
 
     public static void synchronizeConfiguration(File configFile) {
         Configuration configuration = new Configuration(configFile);
@@ -55,6 +58,8 @@ public class Config {
             "if BlockFile is set and valid, block data will be loaded from this file");
         BlockTileFolder = configuration
             .getString("BlockTileFolder", "server", BlockTileFolder, "Client dumped Block Tile Folder");
+        FluidIconFolder = configuration
+            .getString("FluidIconFolder", "server", FluidIconFolder, "Client dumped Fluid Icon Folder");
         itemThreadEnable = configuration
             .getBoolean("enable", "server.itemThread", itemThreadEnable, "enable Itemscache auto build");
         itemThreadDelayMs = configuration.getInt(
@@ -100,11 +105,6 @@ public class Config {
             16,
             256,
             "ItemIconDumper output icon size in pixels");
-        itemDump = configuration.getBoolean(
-            "itemDump",
-            "client.item",
-            itemDump,
-            "Auto dump item's data to json if client.item.IconDumper is enable");
 
         blockTileDelayMs = configuration.getInt(
             "DelayMs",
@@ -120,11 +120,21 @@ public class Config {
             16,
             256,
             "MapTileDumper output tile size in pixels");
-        blockDump = configuration.getBoolean(
-            "blockDump",
-            "client.block",
-            blockDump,
-            "Auto dump block's data to json if client.block.TileDumper is enable");
+
+        fluidIconDelayMs = configuration.getInt(
+            "DelayMs",
+            "client.fluid.IconDumper",
+            fluidIconDelayMs,
+            0,
+            1000,
+            "FluidIconDumper delay between fluids in milliseconds");
+        fluidIconSize = configuration.getInt(
+            "iconSize",
+            "client.fluid.IconDumper",
+            fluidIconSize,
+            16,
+            256,
+            "FluidIconDumper output icon size in pixels");
 
         if (configuration.hasChanged()) {
             configuration.save();

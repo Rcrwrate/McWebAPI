@@ -75,25 +75,23 @@ public class ItemIconDumperThread extends Thread {
             } else {
                 allStacks = CItems.getAllItems();
             }
-            if (Config.itemDump) {
-                MyMod.LOG.info("开始导出物品数据到 items.json...");
-                ArrayNode dumps = Constant.mapper.createArrayNode();
-                for (ItemStack stack : allStacks) {
-                    try {
-                        ObjectNode data = Items.dump(stack);
-                        dumps.add(data);
-                    } catch (Throwable t) {
-                        MyMod.LOG.error("导出物品数据失败: {}", stack, t);
-                    }
-                }
-                File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
+            MyMod.LOG.info("开始导出物品数据到 items.json...");
+            ArrayNode dumps = Constant.mapper.createArrayNode();
+            for (ItemStack stack : allStacks) {
                 try {
-                    Constant.mapper.writeValue(dumpsFile, dumps);
-                    MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
-                } catch (IOException e) {
-                    MyMod.LOG.error("写入 items.json 失败");
-                    log.e(e);
+                    ObjectNode data = Items.dump(stack);
+                    dumps.add(data);
+                } catch (Throwable t) {
+                    MyMod.LOG.error("导出物品数据失败: {}", stack, t);
                 }
+            }
+            File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
+            try {
+                Constant.mapper.writeValue(dumpsFile, dumps);
+                MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
+            } catch (IOException e) {
+                MyMod.LOG.error("写入 items.json 失败");
+                log.e(e);
             }
             MyMod.LOG.info("共 {} 个物品需要导出", allStacks.size());
 

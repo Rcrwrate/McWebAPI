@@ -22,6 +22,8 @@ import type {
     EntitiesByDimension,
     Entity,
     FMPPart,
+    Fluid,
+    FluidContainer,
     Item,
     ItemDetail,
     LagAnalyzerData,
@@ -56,6 +58,8 @@ import type {
     EntitySchema,
     EntitySummarySchema,
     FMPPartSchema,
+    FluidSchema,
+    FluidContainerSchema,
     ItemDetailSchema,
     ItemSchema,
     LagAnalyzerDataSchema,
@@ -265,6 +269,24 @@ export class WebApiClient {
      */
     getAEItems(): Promise<AEItemDefinitions> {
         return this.request<AEItemDefinitions>("/items/ae");
+    }
+
+    // ========== Fluids ==========
+
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/fluid/FluidsHandler.java)
+     * @returns 使用 {@link FluidSchema}[] 验证
+     */
+    getFluids(): Promise<Fluid[]> {
+        return this.request<Fluid[]>("/fluids");
+    }
+
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/fluid/FluidContainersHandler.java)
+     * @returns 使用 {@link FluidContainerSchema}[] 验证
+     */
+    getFluidContainers(): Promise<FluidContainer[]> {
+        return this.request<FluidContainer[]>("/fluidContainers");
     }
 
     // ========== Entities ==========

@@ -34,7 +34,6 @@ public class ItemHandler implements RouteHandler {
             Items.getPermutations(item)
                 .forEach(t -> { subs.add(Items.dump(t)); });
             data.set("subs", subs);
-
         }
         setCache(exchange, 86400);
         sendResponse(exchange, data);
