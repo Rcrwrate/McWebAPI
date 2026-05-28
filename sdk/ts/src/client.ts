@@ -378,7 +378,7 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEBaseHandler.java)
      * @returns 使用 {@link AEHitResultSchema} 验证
      */
-    aeHit(params: Coordinates): Promise<AEHitResult> {
+    aeHit(params: { x: number, y: number, z: number, dimension?: number }): Promise<AEHitResult> {
         return this.request<AEHitResult>(`/ae${buildQuery(params)}`);
     }
 

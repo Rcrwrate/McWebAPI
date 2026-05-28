@@ -23,6 +23,7 @@ const DRAWER_WIDTH = 240;
 const LINKS = [
     { text: 'Home', href: '/i', icon: HomeIcon },
     { text: 'Blocks', href: '/blocks', icon: ViewModuleIcon },
+    { text: 'AE', href: '/ae', icon: StorageIcon },
     { text: 'Search', href: '/search', icon: SearchIcon },
     { text: 'Popular', href: '/popular', icon: WhatshotIcon },
     { text: 'Subscription', href: '/watched', icon: LoyaltyIcon },
@@ -31,7 +32,7 @@ const LINKS = [
 
 const PLACEHOLDER_LINKS = [
     { text: 'Settings', href: '/settings', icon: SettingsIcon },
-    { text: 'Server', href: '/extra', icon: StorageIcon },
+    
     { text: 'Login', href: '/login', icon: LoginIcon },
     // { text: 'Logout', href: '/api/auth/signout', icon: LogoutIcon },
 ];
