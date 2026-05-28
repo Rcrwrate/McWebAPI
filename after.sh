@@ -5,9 +5,14 @@ bash JetBrains.sh
     --install-extension vscjava.vscode-java-pack 
     # --install-extension georgewfraser.vscode-javac
 
-cd /workspace/sdk/ts && npm i
+cd /workspace/sdk/ts
+npm i
 npm i typescript bun -g
 npm i tsx -g
+
+cd /workspace/web
+bun i
+bun i @shirokasoke/webapi-sdk --registry=https://npm.cnb.cool/shirokasoke/npm/-/packages/
 
 cd /workspace
 bash CF.sh
