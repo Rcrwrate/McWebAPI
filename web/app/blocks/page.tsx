@@ -19,7 +19,7 @@ import {
     ToggleButtonGroup,
     Typography
 } from "@mui/material"
-import type { GridFilterModel } from "@mui/x-data-grid"
+import type { GridFilterModel, GridSortModel } from "@mui/x-data-grid"
 import {
     DataGrid,
     GridColDef,
@@ -27,6 +27,7 @@ import {
 } from "@mui/x-data-grid"
 import { GridApiCommunity } from "@mui/x-data-grid/internals"
 import type { Block } from "@shirokasoke/webapi-sdk"
+import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import CustomPagination from "./CustomPagination"
 
@@ -127,11 +128,18 @@ export default function BlocksPage() {
     const [blocks, setBlocks] = useState<Block[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    const [select, setSelect] = useState<"include" | "exclude">("include")
     const [selectionModel, setSelectionModel] = useState<string[]>([])
+
     const [viewMode, setViewMode] = useState<"list" | "icon">("list")
+
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 })
+
     const [displayRows, setDisplayRows] = useState<Block[]>([])
-    const [filterM, setFilterM] = useState<GridFilterModel>({ items: [] })
+
+    const [sortM, setSortM] = useState<GridSortModel>()
+    const [filterM, setFilterM] = useState<GridFilterModel>()
     const apiRef = useRef<GridApiCommunity>(null)
 
     useEffect(() => {
@@ -155,7 +163,7 @@ export default function BlocksPage() {
             setDisplayRows(entries.map((e) => e.model as Block))
         }, 200)
         return () => clearTimeout(timer)
-    }, [filterM])
+    }, [filterM, sortM])
 
     if (!api) {
         return (
@@ -246,10 +254,15 @@ export default function BlocksPage() {
                         density="compact"
                         checkboxSelection
                         filterModel={filterM}
-                        onFilterModelChange={(m, d) => {
-                            setFilterM(m)
+                        onFilterModelChange={(m, d) => setFilterM(m)}
+                        sortModel={sortM}
+                        onSortModelChange={(s) => setSortM(s)}
+                        rowSelectionModel={{ type: select, ids: new Set(selectionModel) }}
+                        onRowSelectionModelChange={({ type, ids }) => {
+                            // setSelect(type);
+                            if (type == "exclude") return enqueueSnackbar("不允许全选", { variant: "warning" });
+                            setSelectionModel(Array.from(ids) as string[])
                         }}
-                        onRowSelectionModelChange={({ ids }) => setSelectionModel(Array.from(ids) as string[])}
                         slots={{ pagination: CustomPagination }}
                         slotProps={{
                             loadingOverlay: {
@@ -309,11 +322,17 @@ export default function BlocksPage() {
                                 page={paginationModel.page + 1}
                                 onChange={(_, p) => {
                                     setPaginationModel(prev => ({ ...prev, page: p - 1 }))
-                                    apiRef.current?.setPage(p - 1)
                                 }}
                                 showFirstButton
                                 showLastButton
                             />
+                            {/* <TablePagination count={displayRows.length}
+                                page={paginationModel.page + 1}
+                                rowsPerPage={paginationModel.pageSize}
+                                onPageChange={(_, p) => setPaginationModel(prev => ({ ...prev, page: p - 1 }))}
+                                onRowsPerPageChange={(e) =>
+                                    setPaginationModel(prev => ({ ...prev, pageSize: Number(e.target.value) }))
+                                } /> */}
                         </Box>
                     )}
                 </>
