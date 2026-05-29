@@ -43,7 +43,9 @@ public class AENodesHandler extends AEBaseHandler {
             // 节点对应的机器（TileEntity 或 IPart）信息
             IGridHost machine = node.getMachine();
             if (machine != null) {
-                ClassUtils.getClassInfo(machine, nodeData, "machineClass");
+                // ClassUtils.getClassInfo(machine, nodeData, "machineClass");
+                // 绕过配置文件
+                nodeData.set("machineClass", ClassUtils.getClassInfo(machine));
                 // 判断是否为线缆上的部件（如输入/输出总线、存储/合成面板等）
                 nodeData.put("isPart", machine instanceof IPart);
                 // 判断是否为可操作主机（用于安全权限校验）

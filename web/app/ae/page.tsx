@@ -6,13 +6,12 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import BuildIcon from '@mui/icons-material/Build'
 import DeleteIcon from '@mui/icons-material/Delete'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import HelpIcon from '@mui/icons-material/Help'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import MemoryIcon from '@mui/icons-material/Memory'
 import ScienceIcon from '@mui/icons-material/Science'
 import StorageIcon from '@mui/icons-material/Storage'
-
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
     Accordion,
     AccordionDetails,
@@ -40,32 +39,10 @@ import {
     useMediaQuery
 } from "@mui/material"
 import type { TPSInfo } from "@shirokasoke/webapi-sdk"
+import { default as LinkC } from "next/link"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useState } from "react"
-
-interface SavedAECoord {
-    x: number
-    y: number
-    z: number
-    dimension: number
-    name: string
-}
-
-const STORAGE_KEY = "ae_coords"
-
-function getSavedCoords(): SavedAECoord[] {
-    if (typeof window === "undefined") return []
-    try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
-    } catch {
-        return []
-    }
-}
-
-function saveCoords(coords: SavedAECoord[]) {
-    if (typeof window === "undefined") return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(coords))
-}
+import { createArgs, getSavedCoords, saveCoords, type SavedAECoord } from "./coords"
 
 export default function AEPage() {
     const api = useAPI()
@@ -218,8 +195,12 @@ export default function AEPage() {
                             {saved.length === 0
                                 ? <Alert severity="info">暂无保存的 AE 坐标，请添加</Alert>
                                 : <Grid container spacing={1}>
-                                    {saved.map((coord, index) => (
-                                        <Grid size={{ xs: 12 }} key={`${coord.x}-${coord.y}-${coord.z}-${coord.dimension}`}>
+                                    {saved.map((coord, index) => {
+                                        let args = ""
+                                        if (selectedIndex === index) {
+                                            args = createArgs(coord)
+                                        }
+                                        return <Grid size={{ xs: 12 }} key={`${coord.x}-${coord.y}-${coord.z}-${coord.dimension}`}>
                                             <Accordion expanded={selectedIndex === index}
                                                 onChange={(_, expanded) => setSelectedIndex(expanded ? index : null)}
                                                 slotProps={{ transition: { unmountOnExit: true } }}>
@@ -238,7 +219,8 @@ export default function AEPage() {
                                                 </AccordionSummary>
                                                 <AccordionDetails>
                                                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                                                        <Button size="small" variant="outlined" startIcon={<AccountTreeIcon />}>节点信息</Button>
+                                                        <Button size="small" variant="outlined" startIcon={<AccountTreeIcon />}
+                                                            LinkComponent={LinkC} href={`/ae/node?${args}`}>节点信息</Button>
                                                         <Button size="small" variant="outlined" startIcon={<MemoryIcon />}>CPU 信息</Button>
                                                         <Button size="small" variant="outlined" startIcon={<InventoryIcon />}>存储物品</Button>
                                                         <Button size="small" variant="outlined" startIcon={<BuildIcon />}>ME 接口</Button>
@@ -255,7 +237,7 @@ export default function AEPage() {
                                                 </AccordionDetails>
                                             </Accordion>
                                         </Grid>
-                                    ))}
+                                    })}
                                 </Grid>
                             }
                         </CardContent>

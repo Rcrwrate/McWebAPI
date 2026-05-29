@@ -13,10 +13,10 @@ import {
     Grid,
     Pagination,
     Paper,
-    Skeleton,
     TextField,
     ToggleButton,
     ToggleButtonGroup,
+    Tooltip,
     Typography
 } from "@mui/material"
 import type { GridFilterModel, GridSortModel } from "@mui/x-data-grid"
@@ -29,29 +29,9 @@ import { GridApiCommunity } from "@mui/x-data-grid/internals"
 import type { Block } from "@shirokasoke/webapi-sdk"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
+import BlockIcon from "./BlockIcon"
 import CustomPagination from "./CustomPagination"
 
-
-
-function BlockIcon({ api, block }: { api: NonNullable<ReturnType<typeof useAPI>>; block: Block }) {
-    const [url, setUrl] = useState<string | null>(null)
-    useEffect(() => {
-        api.getBlockTile({ id: block.id, meta: block.meta ?? 0 })
-            .then((buf) => {
-                const blob = new Blob([buf], { type: "image/png" })
-                setUrl(URL.createObjectURL(blob))
-            })
-            .catch(() => setUrl(null))
-    }, [api, block.id, block.meta])
-    if (!url) return <Skeleton variant="rectangular" width={64} height={64} />
-    return (
-        <img
-            src={url}
-            alt={block.localizedName}
-            style={{ width: 64, height: 64, imageRendering: "pixelated" }}
-        />
-    )
-}
 
 const columns: GridColDef<Block>[] = [
     {
@@ -197,9 +177,8 @@ export default function BlocksPage() {
             <H2>Blocks</H2>
             <Grid container spacing={2} sx={{ mb: 2, alignItems: "center", justifyContent: "center" }}>
                 <Grid>
-                    <TextField
-                        label="搜索方块"
-                        placeholder="输入名称、注册名或 ID"
+                    <TextField label="搜索方块" placeholder="输入名称、注册名或 ID"
+                        disabled={viewMode == "icon"}
                         onChange={(e) => apiRef.current?.setQuickFilterValues([e.target.value])}
                         size="small"
                         sx={{ minWidth: 280 }}
@@ -278,34 +257,59 @@ export default function BlocksPage() {
                         <Box
                             sx={{
                                 display: "grid",
-                                gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
+                                gridTemplateColumns: "repeat(auto-fill, minmax(72px, 1fr))",
                                 gap: 1,
                             }}
                         >
                             {iconPageBlocks.map((block) => {
                                 const selected = selectionModel.includes(block.registryName)
                                 return (
-                                    <Paper
-                                        key={block.registryName}
-                                        onClick={() => toggleSelection(block.registryName)}
-                                        sx={{
-                                            p: 1,
-                                            textAlign: "center",
-                                            cursor: "pointer",
-                                            border: selected ? 2 : 1,
-                                            borderColor: selected ? "primary.main" : "divider",
+                                    <Tooltip key={block.registryName}
+                                        title={
+                                            <Box>
+                                                <Typography variant="body2">
+                                                    {block.localizedName}
+                                                </Typography>
+                                                <Typography variant="caption" color="#aaa" component="div">
+                                                    #{block.id}{block.meta != null ? `:${block.meta}` : ""}
+                                                </Typography>
+                                                <Typography variant="caption" color="#55aaff" component="div">
+                                                    {block.registryName}
+                                                </Typography>
+                                            </Box>
+                                        }
+                                        arrow
+                                        placement="top"
+                                        slotProps={{
+                                            tooltip: {
+                                                sx: {
+                                                    bgcolor: "rgba(16, 0, 32, 0.92)",
+                                                    border: "1px solid rgba(80, 0, 160, 0.7)",
+                                                    boxShadow: 4,
+                                                    maxWidth: 320,
+                                                    "& .MuiTooltip-arrow": {
+                                                        color: "rgba(16, 0, 32, 0.92)",
+                                                    },
+                                                },
+                                            },
                                         }}
                                     >
-                                        <BlockIcon api={api} block={block} />
-                                        <Typography
-                                            variant="caption"
-                                            noWrap
-                                            sx={{ display: "block", mt: 0.5 }}
-                                            title={block.localizedName}
+                                        <Paper elevation={selected ? 16 : 0}
+                                            onClick={() => toggleSelection(block.registryName)}
+                                            sx={{
+                                                p: 0.5,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                aspectRatio: "1 / 1",
+                                                cursor: "pointer",
+                                                border: 1,
+                                                borderColor: selected ? "primary.main" : "divider",
+                                            }}
                                         >
-                                            {block.localizedName}
-                                        </Typography>
-                                    </Paper>
+                                            <BlockIcon api={api} block={block} />
+                                        </Paper>
+                                    </Tooltip>
                                 )
                             })}
                         </Box>
@@ -326,13 +330,6 @@ export default function BlocksPage() {
                                 showFirstButton
                                 showLastButton
                             />
-                            {/* <TablePagination count={displayRows.length}
-                                page={paginationModel.page + 1}
-                                rowsPerPage={paginationModel.pageSize}
-                                onPageChange={(_, p) => setPaginationModel(prev => ({ ...prev, page: p - 1 }))}
-                                onRowsPerPageChange={(e) =>
-                                    setPaginationModel(prev => ({ ...prev, pageSize: Number(e.target.value) }))
-                                } /> */}
                         </Box>
                     )}
                 </>
