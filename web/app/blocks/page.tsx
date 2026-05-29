@@ -156,7 +156,7 @@ export default function BlocksPage() {
 
     let iconPageCount = 0
     let iconPageBlocks: Block[] = []
-    if (viewMode == "icon") {
+    if (viewMode === "icon") {
         iconPageCount = Math.ceil(displayRows.length / paginationModel.pageSize)
         iconPageBlocks = displayRows.slice(
             paginationModel.page * paginationModel.pageSize,
