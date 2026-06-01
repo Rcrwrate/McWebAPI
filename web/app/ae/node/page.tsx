@@ -251,7 +251,7 @@ export default function AENodePage() {
                                 <Typography variant="h4" color="primary">
                                     {nodes.length}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     总节点数
                                 </Typography>
                             </CardContent>
@@ -263,7 +263,7 @@ export default function AENodePage() {
                                 <Typography variant="h4" color="success">
                                     {nodes.filter((n) => n.active).length}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     活跃节点
                                 </Typography>
                             </CardContent>
@@ -275,7 +275,7 @@ export default function AENodePage() {
                                 <Typography variant="h4" color="info">
                                     {nodes.filter((n) => n.meetsChannel).length}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     满足频道
                                 </Typography>
                             </CardContent>
@@ -287,7 +287,7 @@ export default function AENodePage() {
                                 <Typography variant="h4" color="secondary">
                                     {nodes.filter((n) => n.isPart).length}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     部件节点
                                 </Typography>
                             </CardContent>
@@ -299,7 +299,7 @@ export default function AENodePage() {
                                 <Typography variant="h4" color="warning">
                                     {nodes.filter((n) => n.isIActionHost).length}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     操作主机
                                 </Typography>
                             </CardContent>
@@ -311,7 +311,7 @@ export default function AENodePage() {
                                 <Typography variant="h4">
                                     {nodes.reduce((sum, n) => sum + (n.idlePowerUsage || 0), 0).toFixed(0)}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     总待机功耗 (AE/t)
                                 </Typography>
                             </CardContent>

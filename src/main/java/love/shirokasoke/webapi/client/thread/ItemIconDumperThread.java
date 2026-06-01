@@ -4,7 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -17,6 +19,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -76,16 +79,41 @@ public class ItemIconDumperThread extends Thread {
                 allStacks = CItems.getAllItems();
             }
             MyMod.LOG.info("开始导出物品数据到 items.json...");
-            ArrayNode dumps = Constant.mapper.createArrayNode();
+            File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
+            Map<String, ObjectNode> merged = new LinkedHashMap<>();
+
+            if (dumpsFile.exists()) {
+                try {
+                    JsonNode existing = Constant.mapper.readTree(dumpsFile);
+                    if (existing.isArray()) {
+                        for (JsonNode node : existing) {
+                            if (node.isObject()) {
+                                ObjectNode obj = (ObjectNode) node;
+                                merged.put(getUniqueKey(obj), obj);
+                            }
+                        }
+                    }
+                    MyMod.LOG.info("已加载现有 items.json，共 {} 条记录", merged.size());
+                } catch (IOException e) {
+                    MyMod.LOG.error("读取已存在的 items.json 失败");
+                    log.e(e);
+                }
+            }
+
             for (ItemStack stack : allStacks) {
                 try {
                     ObjectNode data = Items.dump(stack);
-                    dumps.add(data);
+                    merged.put(getUniqueKey(data), data);
                 } catch (Throwable t) {
                     MyMod.LOG.error("导出物品数据失败: {}", stack, t);
                 }
             }
-            File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
+
+            ArrayNode dumps = Constant.mapper.createArrayNode();
+            for (ObjectNode data : merged.values()) {
+                dumps.add(data);
+            }
+
             try {
                 Constant.mapper.writeValue(dumpsFile, dumps);
                 MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
@@ -259,6 +287,18 @@ public class ItemIconDumperThread extends Thread {
         BufferedImage image = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_INT_ARGB);
         image.setRGB(0, 0, iconSize, iconSize, pixels, 0, iconSize);
         return image;
+    }
+
+    private String getUniqueKey(ObjectNode node) {
+        return getText(node, "id") + "|" + getText(node, "damage") + "|" + getText(node, "nbtWrite");
+    }
+
+    private String getText(ObjectNode node, String fieldName) {
+        JsonNode value = node.get(fieldName);
+        if (value != null && !value.isNull()) {
+            return value.asText();
+        }
+        return "";
     }
 
     private static class RenderResult {
