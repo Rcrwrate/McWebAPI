@@ -5,12 +5,14 @@ import java.io.IOException;
 import net.minecraft.item.ItemStack;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import appeng.api.networking.storage.IStorageGrid;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
+import appeng.me.cache.GridStorageCache;
 import love.shirokasoke.webapi.utils.Items;
 
 public class AEItemHandler extends AEBaseHandler {
@@ -41,6 +43,23 @@ public class AEItemHandler extends AEBaseHandler {
                 }
             }
         }
-        sendResponse(exchange, items);
+
+        ObjectNode response = mapper.createObjectNode();
+        response.set("items", items);
+        if (storageGrid instanceof GridStorageCache) {
+            GridStorageCache cache = (GridStorageCache) storageGrid;
+            response.put("totalBytes", cache.getItemBytesTotal());
+            response.put("usedBytes", cache.getItemBytesUsed());
+            response.put("totalTypes", cache.getItemTypesTotal());
+            response.put("usedTypes", cache.getItemTypesUsed());
+
+            ObjectNode cellStatus = response.putObject("cellStatus");
+            cellStatus.put("all", cache.getItemCellCount());
+            cellStatus.put("green", cache.getItemCellG());
+            cellStatus.put("blue", cache.getItemCellB());
+            cellStatus.put("orange", cache.getItemCellO());
+            cellStatus.put("red", cache.getItemCellR());
+        }
+        sendResponse(exchange, response);
     }
 }

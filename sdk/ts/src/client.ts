@@ -7,7 +7,7 @@ import type {
     AECraftingTaskResult,
     AEHitResult,
     AEItemDefinitions,
-    AEItemStack,
+    AEItemsResult,
     AEMEInterface,
     AENode,
     ApiResponse,
@@ -44,7 +44,7 @@ import type {
     AECraftingTaskResultSchema,
     AEHitResultSchema,
     AEItemDefinitionsSchema,
-    AEItemStackSchema,
+    AEItemsResultSchema,
     AEMEInterfaceSchema,
     AENodeSchema,
     BlockDetailSchema,
@@ -426,10 +426,10 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEItemHandler.java)
-     * @returns 使用 {@link AEItemStackSchema}[] 验证
+     * @returns 使用 {@link AEItemsResultSchema} 验证
      */
-    aeItems(params: { x: number, y: number, z: number, dimension?: number }): Promise<AEItemStack[]> {
-        return this.request<AEItemStack[]>(`/ae/item${buildQuery(params)}`);
+    aeItems(params: { x: number, y: number, z: number, dimension?: number }): Promise<AEItemsResult> {
+        return this.request<AEItemsResult>(`/ae/item${buildQuery(params)}`);
     }
 
     /**

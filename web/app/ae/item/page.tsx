@@ -3,6 +3,7 @@
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import { useAPI } from "@/data/api"
+import { formatBytes, formatCount } from "@/data/format"
 import ViewListIcon from "@mui/icons-material/ViewList"
 import ViewModuleIcon from "@mui/icons-material/ViewModule"
 import {
@@ -14,6 +15,7 @@ import {
     CircularProgress,
     Container,
     Grid,
+    LinearProgress,
     Pagination,
     Paper,
     TextField,
@@ -29,20 +31,15 @@ import {
     gridExpandedSortedRowEntriesSelector
 } from "@mui/x-data-grid"
 import { GridApiCommunity } from "@mui/x-data-grid/internals"
-import type { AEItemStack } from "@shirokasoke/webapi-sdk"
+import type { AEItemStack, AEItemsResult } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
-
-function formatCount(n: number): string {
-    if (!n || n < 1000) return String(n || 0)
-    if (n < 1000000) return `${(n / 1000).toFixed(1)}k`
-    if (n < 1000000000) return `${(n / 1000000).toFixed(1)}M`
-    return `${(n / 1000000000).toFixed(1)}G`
-}
+import Percent from "@/components/PerCent"
 
 type AEItemRow = AEItemStack & { uid: string }
+type AEItemStorageStats = Pick<AEItemsResult, "totalBytes" | "usedBytes" | "totalTypes" | "usedTypes">
 
 const columns: GridColDef<AEItemRow>[] = [
     {
@@ -91,7 +88,9 @@ export default function AEItemPage() {
     const api = useAPI()
     const searchParams = useSearchParams()
     const [items, setItems] = useState<AEItemRow[]>([])
+    const [storageStats, setStorageStats] = useState<AEItemStorageStats | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [loadingItems, setLoadingItems] = useState(false)
 
     const [viewMode, setViewMode] = useState<"list" | "icon">("icon")
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 })
@@ -118,16 +117,24 @@ export default function AEItemPage() {
             return
         }
         setError(null)
+        setLoadingItems(true)
         api.aeItems({ x: px, y: py, z: pz, dimension: dim })
             .then((data) => {
-                const rows = data.map((it): AEItemRow => ({
+                const rows = data.items.map((it): AEItemRow => ({
                     ...it,
                     uid: `${it.id}-${it.damage}-${it.nbtstr ?? ""}`,
                 }))
                 setItems(rows)
                 setDisplayRows(rows)
+                setStorageStats({
+                    totalBytes: data.totalBytes,
+                    usedBytes: data.usedBytes,
+                    totalTypes: data.totalTypes,
+                    usedTypes: data.usedTypes,
+                })
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载物品失败"))
+            .finally(() => setLoadingItems(false))
     }, [api, x, y, z, dimension])
 
     useEffect(() => {
@@ -159,6 +166,12 @@ export default function AEItemPage() {
     }
 
     const totalCount = items.reduce((s, it) => s + (it.stackSize || 0), 0)
+    const storagePercent = storageStats && storageStats.totalBytes > 0
+        ? Math.min((storageStats.usedBytes / storageStats.totalBytes) * 100, 100)
+        : 0
+    const typePercent = storageStats && storageStats.totalTypes > 0
+        ? Math.min((storageStats.usedTypes / storageStats.totalTypes) * 100, 100)
+        : 0
 
     return (
         <Container sx={{ p: 1 }}>
@@ -171,29 +184,24 @@ export default function AEItemPage() {
 
             {!error && (
                 <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                    <Grid size={{ xs: 12, sm: 12, md: 4 }}>
                         <Card>
+                            <LinearProgress variant="determinate" color="success" sx={{ height: 6 }} value={100} />
                             <CardContent sx={{ textAlign: "center", py: 2 }}>
-                                <Typography variant="h4" color="primary">
-                                    {items.length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    物品种类
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-                        <Card>
-                            <CardContent sx={{ textAlign: "center", py: 2 }}>
-                                <Typography variant="h4" color="info">
+                                <Typography variant="h4" color="success">
                                     {formatCount(totalCount)}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     物品总数
                                 </Typography>
                             </CardContent>
                         </Card>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Percent percent={storagePercent} title="存储占用" subtitle={storageStats ? `${formatBytes(storageStats.usedBytes)} / ${formatBytes(storageStats.totalBytes)}` : "-"} />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Percent percent={typePercent} title="类型占用" subtitle={storageStats ? `${formatCount(storageStats.usedTypes)} / ${formatCount(storageStats.totalTypes)}` : "-"} />
                     </Grid>
                 </Grid>
             )}
@@ -256,12 +264,14 @@ export default function AEItemPage() {
                 </Paper>
             ) : (
                 <>
-                    <Paper sx={{ p: 2, mb: 2 }}>
+                    <Paper sx={{ p: 2, mb: 2, position: "relative", minHeight: 240 }}>
                         <Box
                             sx={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))",
                                 gap: 1.5,
+                                opacity: loadingItems ? 0.35 : 1,
+                                transition: "opacity 0.2s ease",
                             }}
                         >
                             {pageItems.map((item) => (
@@ -328,7 +338,22 @@ export default function AEItemPage() {
                                 </Tooltip>
                             ))}
                         </Box>
-                        {pageItems.length === 0 && !(items.length === 0) && (
+                        {loadingItems && (
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    bgcolor: "rgba(255, 255, 255, 0.35)",
+                                    backdropFilter: "blur(1px)",
+                                }}
+                            >
+                                <CircularProgress />
+                            </Box>
+                        )}
+                        {!loadingItems && pageItems.length === 0 && !(items.length === 0) && (
                             <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
                                 无匹配结果
                             </Typography>

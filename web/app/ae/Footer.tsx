@@ -14,7 +14,7 @@ import type { ReadonlyURLSearchParams } from "next/navigation"
 
 export function Footer({ searchParams }: { searchParams: ReadonlyURLSearchParams }) {
     const str = searchParams.toString()
-    return <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center" }}>
+    return <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center", pt: 1 }}>
         <Button size="small" variant="outlined" startIcon={<AccountTreeIcon />}
             LinkComponent={LinkC} href={`/ae/node?${str}`}>节点信息</Button>
         <Button size="small" variant="outlined" startIcon={<MemoryIcon />}

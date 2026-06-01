@@ -112,6 +112,23 @@ export const AEItemStackSchema = ItemStackSchema.keys({
     stackSize: Joi.number().required(),
 });
 
+export const AEItemCellStatusSchema = Joi.object({
+    all: Joi.number().required(),
+    green: Joi.number().required(),
+    blue: Joi.number().required(),
+    orange: Joi.number().required(),
+    red: Joi.number().required(),
+});
+
+export const AEItemsResultSchema = Joi.object({
+    items: Joi.array().items(AEItemStackSchema).required(),
+    totalBytes: Joi.number().required(),
+    usedBytes: Joi.number().required(),
+    totalTypes: Joi.number().required(),
+    usedTypes: Joi.number().required(),
+    cellStatus: AEItemCellStatusSchema.required(),
+});
+
 export const AEHitResultSchema = Joi.object({
     message: Joi.string().required(),
 });
