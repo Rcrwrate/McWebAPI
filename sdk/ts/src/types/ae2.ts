@@ -98,6 +98,23 @@ export interface AECPUCancelResult {
 
 export type AEItemStack = ItemStack & { stackSize: number };
 
+export interface AEItemCellStatus {
+    all: number;
+    green: number;
+    blue: number;
+    orange: number;
+    red: number;
+}
+
+export interface AEItemsResult {
+    items: AEItemStack[];
+    totalBytes: number;
+    usedBytes: number;
+    totalTypes: number;
+    usedTypes: number;
+    cellStatus: AEItemCellStatus;
+}
+
 export interface AEHitResult {
     message: string;
 }
