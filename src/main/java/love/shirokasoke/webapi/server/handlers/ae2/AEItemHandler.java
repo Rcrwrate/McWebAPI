@@ -38,7 +38,8 @@ public class AEItemHandler extends AEBaseHandler {
                 if (minecraftStack != null) {
                     items.add(
                         Items.dump(minecraftStack)
-                            .put("stackSize", stack.getStackSize()));
+                            .put("stackSize", stack.getStackSize())
+                            .put("Craftable", stack.isCraftable()));
 
                 }
             }
