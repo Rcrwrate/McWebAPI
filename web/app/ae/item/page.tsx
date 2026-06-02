@@ -14,6 +14,7 @@ import {
     Box,
     Card,
     CardContent,
+    Chip,
     CircularProgress,
     Container,
     Grid,
@@ -78,6 +79,19 @@ const columns: GridColDef<AEItemRow>[] = [
         valueFormatter: (value: number) => formatCount(value),
     },
     {
+        field: "Craftable",
+        headerName: "可合成",
+        type: "boolean",
+        filterable: true,
+        renderCell: (params) => (
+            <Chip
+                label={params.row.Craftable ? "是" : "否"}
+                color={params.row.Craftable ? "success" : "warning"}
+                size="small"
+            />
+        ),
+    },
+    {
         field: "nbtstr",
         headerName: "NBT",
         width: 300,
@@ -92,7 +106,6 @@ export default function AEItemPage() {
     const [items, setItems] = useState<AEItemRow[]>([])
     const [storageStats, setStorageStats] = useState<AEItemStorageStats | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [loadingItems, setLoadingItems] = useState(false)
 
     const [viewMode, setViewMode] = useState<"list" | "icon">("icon")
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 })
@@ -106,7 +119,6 @@ export default function AEItemPage() {
     useEffect(() => {
         if (!api || !x) return
         setError(null)
-        setLoadingItems(true)
         api.aeItems({ x, y, z, dimension })
             .then((data) => {
                 const rows = data.items.map((it): AEItemRow => ({
@@ -123,7 +135,6 @@ export default function AEItemPage() {
                 })
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载物品失败"))
-            .finally(() => setLoadingItems(false))
     }, [api, x, y, z, dimension])
 
     useEffect(() => {
@@ -259,7 +270,7 @@ export default function AEItemPage() {
                                 display: "grid",
                                 gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))",
                                 gap: 1.5,
-                                opacity: loadingItems ? 0.35 : 1,
+                                opacity: items.length == 0 ? 0.35 : 1,
                                 transition: "opacity 0.2s ease",
                             }}
                         >
@@ -327,7 +338,7 @@ export default function AEItemPage() {
                                 </Tooltip>
                             ))}
                         </Box>
-                        {loadingItems && (
+                        {items.length == 0 && (
                             <Box
                                 sx={{
                                     position: "absolute",
@@ -342,8 +353,8 @@ export default function AEItemPage() {
                                 <CircularProgress />
                             </Box>
                         )}
-                        {!loadingItems && pageItems.length === 0 && !(items.length === 0) && (
-                            <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+                        {pageItems.length === 0 && items.length != 0 && (
+                            <Typography align="center" sx={{ py: 4 }}>
                                 无匹配结果
                             </Typography>
                         )}

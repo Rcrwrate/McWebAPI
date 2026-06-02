@@ -106,7 +106,6 @@ const columns: GridColDef<Block>[] = [
 export default function BlocksPage() {
     const api = useAPI()
     const [blocks, setBlocks] = useState<Block[]>([])
-    const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const [select, setSelect] = useState<"include" | "exclude">("include")
@@ -124,7 +123,6 @@ export default function BlocksPage() {
 
     useEffect(() => {
         if (!api) return
-        setLoading(true)
         setError(null)
         api.getBlocks()
             .then((data) => {
@@ -132,7 +130,6 @@ export default function BlocksPage() {
                 setDisplayRows(data)
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载失败"))
-            .finally(() => setLoading(false))
     }, [api])
 
 
@@ -225,7 +222,7 @@ export default function BlocksPage() {
                     <DataGrid apiRef={apiRef}
                         rows={blocks}
                         columns={columns}
-                        loading={loading}
+                        loading={blocks.length == 0}
                         getRowId={(row) => row.registryName}
                         pageSizeOptions={[25, 50, 100, 500]}
                         paginationModel={paginationModel}
@@ -313,8 +310,8 @@ export default function BlocksPage() {
                                 )
                             })}
                         </Box>
-                        {displayRows.length === 0 && !loading && (
-                            <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+                        {displayRows.length === 0 && blocks.length != 0 && (
+                            <Typography align="center" sx={{ py: 4 }}>
                                 无匹配结果
                             </Typography>
                         )}

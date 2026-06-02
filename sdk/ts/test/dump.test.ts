@@ -54,4 +54,11 @@ describe("dump", () => {
         assert.ok(icon2 instanceof ArrayBuffer)
         assert.ok(icon2.byteLength > 0)
     })
+
+    it("fluidIcon", async () => {
+        const one = await api.getFluidIcon({ id: 1 })
+        assert.ok(one instanceof ArrayBuffer)
+        const water = await api.getFluidIcon({ name: "water" })
+        assert.ok(water instanceof ArrayBuffer)
+    })
 })
