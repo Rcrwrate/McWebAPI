@@ -110,6 +110,7 @@ export const AECPUCancelResultSchema = Joi.object({
 
 export const AEItemStackSchema = ItemStackSchema.keys({
     stackSize: Joi.number().required(),
+    Craftable: Joi.boolean().required(),
 });
 
 export const AEItemCellStatusSchema = Joi.object({

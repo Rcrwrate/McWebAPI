@@ -2,8 +2,10 @@
 
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
+import Percent from "@/components/PerCent"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatCount } from "@/data/format"
+import useCoords from "@/data/useCoords"
 import ViewListIcon from "@mui/icons-material/ViewList"
 import ViewModuleIcon from "@mui/icons-material/ViewModule"
 import {
@@ -36,7 +38,6 @@ import { useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
-import Percent from "@/components/PerCent"
 
 type AEItemRow = AEItemStack & { uid: string }
 type AEItemStorageStats = Pick<AEItemsResult, "totalBytes" | "usedBytes" | "totalTypes" | "usedTypes">
@@ -87,6 +88,7 @@ const columns: GridColDef<AEItemRow>[] = [
 export default function AEItemPage() {
     const api = useAPI()
     const searchParams = useSearchParams()
+    const [x, y, z, dimension] = useCoords(searchParams)
     const [items, setItems] = useState<AEItemRow[]>([])
     const [storageStats, setStorageStats] = useState<AEItemStorageStats | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -101,24 +103,11 @@ export default function AEItemPage() {
     const [filterM, setFilterM] = useState<GridFilterModel>()
     const apiRef = useRef<GridApiCommunity>(null)
 
-    const x = searchParams.get("x")
-    const y = searchParams.get("y")
-    const z = searchParams.get("z")
-    const dimension = searchParams.get("dimension")
-
     useEffect(() => {
-        if (!api || !x || !y || !z || !dimension) return
-        const px = parseInt(x)
-        const py = parseInt(y)
-        const pz = parseInt(z)
-        const dim = parseInt(dimension)
-        if (isNaN(px) || isNaN(py) || isNaN(pz) || isNaN(dim)) {
-            setError("坐标参数无效")
-            return
-        }
+        if (!api || !x) return
         setError(null)
         setLoadingItems(true)
-        api.aeItems({ x: px, y: py, z: pz, dimension: dim })
+        api.aeItems({ x, y, z, dimension })
             .then((data) => {
                 const rows = data.items.map((it): AEItemRow => ({
                     ...it,

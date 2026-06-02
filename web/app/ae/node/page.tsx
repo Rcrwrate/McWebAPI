@@ -3,6 +3,7 @@
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import { useAPI } from "@/data/api"
+import useCoords from "@/data/useCoords"
 import AddToQueueIcon from "@mui/icons-material/AddToQueue"
 import CloseIcon from "@mui/icons-material/Close"
 import MapIcon from "@mui/icons-material/Map"
@@ -144,6 +145,7 @@ const columns: GridColDef<AENodeRow>[] = [
 export default function AENodePage() {
     const api = useAPI()
     const searchParams = useSearchParams()
+    const [x, y, z, dimension] = useCoords(searchParams)
     const [nodes, setNodes] = useState<AENodeRow[]>([])
     const [error, setError] = useState<string | null>(null)
     const [displayRows, setDisplayRows] = useState<AENodeRow[]>([])
@@ -155,23 +157,10 @@ export default function AENodePage() {
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
     const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
 
-    const x = searchParams.get("x")
-    const y = searchParams.get("y")
-    const z = searchParams.get("z")
-    const dimension = searchParams.get("dimension")
-
     useEffect(() => {
-        if (!api || !x || !y || !z || !dimension) return
-        const px = parseInt(x)
-        const py = parseInt(y)
-        const pz = parseInt(z)
-        const dim = parseInt(dimension)
-        if (isNaN(px) || isNaN(py) || isNaN(pz) || isNaN(dim)) {
-            setError("坐标参数无效")
-            return
-        }
+        if (!api || !x) return
         setError(null)
-        api.aeNodes({ x: px, y: py, z: pz, dimension: dim })
+        api.aeNodes({ x, y, z, dimension })
             .then((data) => {
                 const rows = data.map((n, i): AENodeRow => ({ ...n, id: String(i) }))
                 setNodes(rows)

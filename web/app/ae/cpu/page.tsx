@@ -2,11 +2,16 @@
 
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
+import Percent from "@/components/PerCent"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatDuration } from "@/data/format"
+import useCoords from "@/data/useCoords"
+import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend'
+import CloseIcon from "@mui/icons-material/Close"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import {
     Alert,
+    Button,
     Card,
     CardContent,
     Chip,
@@ -19,10 +24,11 @@ import {
     LinearProgress,
     MenuItem,
     Paper,
+    Popover,
     Select,
     Typography
 } from "@mui/material"
-import type { GridFilterModel, GridSortModel } from "@mui/x-data-grid"
+import type { GridFilterModel, GridRowSelectionModel, GridSortModel } from "@mui/x-data-grid"
 import {
     DataGrid,
     GridColDef,
@@ -31,10 +37,11 @@ import {
 import { GridApiCommunity } from "@mui/x-data-grid/internals"
 import type { AECPU } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
+import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 
-type AECPURow = AECPU & { id: string; storage: number }
+type AECPURow = AECPU & { id: number; storage: number }
 
 const columns: GridColDef<AECPURow>[] = [
     {
@@ -75,7 +82,7 @@ const columns: GridColDef<AECPURow>[] = [
                         color={pct > 90 ? "error" : pct > 70 ? "warning" : "primary"}
                         sx={{ flexGrow: 1, height: 6, borderRadius: 1 }}
                     />
-                    <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
+                    <Typography variant="caption" sx={{ whiteSpace: "nowrap" }}>
                         {pct.toFixed(0)}%
                     </Typography>
                 </div>
@@ -145,6 +152,8 @@ const columns: GridColDef<AECPURow>[] = [
 export default function AECPUPage() {
     const api = useAPI()
     const searchParams = useSearchParams()
+    const [x, y, z, dimension] = useCoords(searchParams)
+
     const [cpus, setCpus] = useState<AECPURow[]>([])
     const [error, setError] = useState<string | null>(null)
     const [displayRows, setDisplayRows] = useState<AECPURow[]>([])
@@ -152,30 +161,19 @@ export default function AECPUPage() {
     const [sortM, setSortM] = useState<GridSortModel>()
     const [filterM, setFilterM] = useState<GridFilterModel>()
     const apiRef = useRef<GridApiCommunity>(null)
+    const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
+    const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
 
-    const [refreshSec, setRefreshSec] = useState<number>(0)
-
-    const x = searchParams.get("x")
-    const y = searchParams.get("y")
-    const z = searchParams.get("z")
-    const dimension = searchParams.get("dimension")
+    const [refreshSec, setRefreshSec] = useState<number>(5)
 
     const loadCPUs = () => {
-        if (!api || !x || !y || !z || !dimension) return
-        const px = parseInt(x)
-        const py = parseInt(y)
-        const pz = parseInt(z)
-        const dim = parseInt(dimension)
-        if (isNaN(px) || isNaN(py) || isNaN(pz) || isNaN(dim)) {
-            setError("坐标参数无效")
-            return
-        }
+        if (!api || !x) return
         setError(null)
-        api.aeCPUs({ x: px, y: py, z: pz, dimension: dim })
+        api.aeCPUs({ x, y, z, dimension })
             .then((data) => {
                 const rows = data.map((c, i): AECPURow => ({
                     ...c,
-                    id: String(i),
+                    id: i,
                     storage: c.availableStorage > 0 ? c.usedStorage / c.availableStorage : 0,
                 }))
                 setCpus(rows)
@@ -186,9 +184,6 @@ export default function AECPUPage() {
 
     useEffect(() => {
         loadCPUs()
-    }, [api, x, y, z, dimension])
-
-    useEffect(() => {
         if (refreshSec <= 0) return
         const interval = setInterval(() => {
             loadCPUs()
@@ -230,73 +225,43 @@ export default function AECPUPage() {
 
             {!error && (
                 <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-                        <Card>
-                            <CardContent sx={{ textAlign: "center", py: 2 }}>
-                                <Typography variant="h4" color="primary">
-                                    {cpus.length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    CPU 总数
-                                </Typography>
-                            </CardContent>
-                        </Card>
+                    <Grid size={{ xs: 12, sm: 12, md: 4 }}>
+                        <Percent percent={busyCount / cpus.length * 100} title="CPU" subtitle={`${busyCount}忙碌中/${cpus.length - busyCount}空闲`} />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                         <Card>
-                            <CardContent sx={{ textAlign: "center", py: 2 }}>
-                                <Typography variant="h4" color={busyCount > 0 ? "warning" : "success"}>
-                                    {busyCount}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    忙碌中
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-                        <Card>
-                            <CardContent sx={{ textAlign: "center", py: 2 }}>
-                                <Typography variant="h4" color="info">
-                                    {cpus.filter((c) => !c.busy).length}
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    空闲
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
-                        <Card>
+                            <LinearProgress variant="determinate" color="secondary" sx={{ height: 6 }} value={100} />
                             <CardContent sx={{ textAlign: "center", py: 2 }}>
                                 <Typography variant="h4" color="secondary">
                                     {totalCoProcessors}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     协同处理器
                                 </Typography>
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                    <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                         <Card>
+                            <LinearProgress variant="determinate" color="primary" sx={{ height: 6 }} value={100} />
                             <CardContent sx={{ textAlign: "center", py: 2 }}>
                                 <Typography variant="h4" color="primary">
                                     {formatBytes(usedStorage)}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     已用存储
                                 </Typography>
                             </CardContent>
                         </Card>
                     </Grid>
-                    <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                    <Grid size={{ xs: 6, sm: 4, md: 3 }}>
                         <Card>
+                            <LinearProgress variant="determinate" color="inherit" sx={{ height: 6 }} value={100} />
                             <CardContent sx={{ textAlign: "center", py: 2 }}>
                                 <Typography variant="h4">
                                     {formatBytes(totalStorage)}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2">
                                     总存储
                                 </Typography>
                             </CardContent>
@@ -349,12 +314,46 @@ export default function AECPUPage() {
                     onSortModelChange={(s) => setSortM(s)}
                     density="compact"
                     slots={{ pagination: CustomPagination }}
+                    rowSelectionModel={rowSelectionModel}
+                    onRowSelectionModelChange={(model) => {
+                        setRowSelectionModel(model)
+                    }}
+                    onCellClick={(_, event) => {
+                        setMousePos({ left: event.clientX, top: event.clientY })
+                    }}
                     slotProps={{
                         loadingOverlay: {
                             variant: "skeleton",
                             noRowsVariant: "skeleton",
                         },
                     }} />
+                <Popover
+                    open={rowSelectionModel.ids.size > 0 && mousePos !== null}
+                    anchorReference="anchorPosition"
+                    anchorPosition={mousePos ?? { top: 0, left: 0 }}
+                    onClose={() => setMousePos(null)}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                    slotProps={{ paper: { sx: { p: 1, display: "flex", flexDirection: "column", gap: 1, minWidth: 180 } } }}
+                >
+                    <Button size="small" variant="outlined" startIcon={<CancelScheduleSendIcon />} color="error"
+                        onClick={async () => {
+                            const selected = cpus.find((n) => rowSelectionModel.ids.has(n.id))
+                            if (!x || !selected) return
+                            setMousePos(null)
+                            const r = await api.aeCancel({ x, y, z, dimension }, { id: selected.id, ...((selected?.name && selected.name.length > 0) ? { name: selected.name } : {}) })
+                            if (r.wasBusy) {
+                                enqueueSnackbar("已尝试取消合成任务", { variant: "info" })
+                            } else {
+                                enqueueSnackbar("CPU无合成任务", { variant: "warning" })
+                            }
+                            loadCPUs()
+                        }}>终止合成</Button>
+                    <Button size="small" color="inherit" startIcon={<CloseIcon />} onClick={() => {
+                        setRowSelectionModel({ type: "include", ids: new Set() })
+                        setMousePos(null)
+                    }}>取消选择</Button>
+                </Popover>
             </Paper>
             <Footer searchParams={searchParams} />
         </Container>
