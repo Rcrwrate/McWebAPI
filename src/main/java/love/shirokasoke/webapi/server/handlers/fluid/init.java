@@ -7,5 +7,6 @@ public class init {
     public static void i() {
         RouteRegistry.register(new FluidsHandler());
         RouteRegistry.register(new FluidContainersHandler());
+        RouteRegistry.register(new FluidIconHandler());
     }
 }

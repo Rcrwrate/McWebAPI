@@ -7,12 +7,29 @@ export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<ty
     const [url, setUrl] = useState<string | null>(null)
     useEffect(() => {
         let objectUrl: string | null = null
-        api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite })
-            .then((buf) => {
-                objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
-                setUrl(objectUrl)
-            })
-            .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+        if (item.registryName == "ae2fc:fluid_drop") {
+            api.getFluidIcon({ name: item.nbt?.Fluid as string })
+                .then((buf) => {
+                    objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
+                    setUrl(objectUrl)
+                })
+                .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+        } else if (item.registryName == "ae2fc:fluid_packet") {
+            api.getFluidIcon({ name: (item.nbt?.FluidStack as any)?.FluidName as string })
+                .then((buf) => {
+                    objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
+                    setUrl(objectUrl)
+                })
+                .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+        } else {
+            api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite })
+                .then((buf) => {
+                    objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
+                    setUrl(objectUrl)
+                })
+                .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+        }
+
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl)
         }

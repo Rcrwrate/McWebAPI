@@ -289,6 +289,16 @@ export class WebApiClient {
         return this.request<FluidContainer[]>("/fluidContainers");
     }
 
+    /**
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/fluid/FluidIconHandler.java)
+     * @param params.id 流体 ID（对应 Fluid 的 fluidID）
+     * @param params.name 流体名称（对应 Fluid 的 name）
+     * @returns 二进制 PNG 图片数据 (ArrayBuffer)
+     */
+    getFluidIcon(params: { id?: number; name?: string }): Promise<ArrayBuffer> {
+        return this.request<ArrayBuffer>(`/fluid/icon${buildQuery(params)}`);
+    }
+
     // ========== Entities ==========
 
     /**
