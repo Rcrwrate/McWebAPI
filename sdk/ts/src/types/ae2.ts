@@ -96,7 +96,7 @@ export interface AECPUCancelResult {
     wasBusy: boolean;
 }
 
-export type AEItemStack = ItemStack & { stackSize: number };
+export type AEItemStack = ItemStack & { stackSize: number, Craftable: boolean };
 
 export interface AEItemCellStatus {
     all: number;

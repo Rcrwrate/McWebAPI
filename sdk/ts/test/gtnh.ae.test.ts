@@ -41,6 +41,12 @@ describe("AE", async () => {
         assert.ok(Joi.array().items(v.AECPUSchema).validate(r).error == undefined)
     })
 
+    it("items", async () => {
+        const r = await api.aeItems({ x, y, z, dimension })
+        assert.ok(v.AEItemsResultSchema.validate(r).error == undefined)
+    })
+
+
     it("me", async () => {
         const r = await api.aeME({ x: -72, y: 118, z: 69 })
         const check = Joi.array().items(
