@@ -68,7 +68,7 @@ export default function AEPage() {
         api.getTPS()
             .then((data) => setWorlds(data))
             .catch((e) => setError(e instanceof Error ? e.message : "加载世界列表失败"))
-    }, [api])
+    }, [api != undefined])
 
     useEffect(() => {
         setSaved(getSavedCoords())
