@@ -1,6 +1,7 @@
 "use client"
 
 import { H2 } from "@/components/H2"
+import { SelectableIconPaper } from "@/components/SelectableIconPaper"
 import { useAPI } from "@/data/api"
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewModuleIcon from '@mui/icons-material/ViewModule'
@@ -291,21 +292,9 @@ export default function BlocksPage() {
                                             },
                                         }}
                                     >
-                                        <Paper elevation={selected ? 16 : 0}
-                                            onClick={() => toggleSelection(block.registryName)}
-                                            sx={{
-                                                p: 0.5,
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                aspectRatio: "1 / 1",
-                                                cursor: "pointer",
-                                                border: 1,
-                                                borderColor: selected ? "primary.main" : "divider",
-                                            }}
-                                        >
+                                        <SelectableIconPaper elevation={selected ? 16 : 0} selected={selected} onClick={() => toggleSelection(block.registryName)}>
                                             <BlockIcon api={api} block={block} />
-                                        </Paper>
+                                        </SelectableIconPaper>
                                     </Tooltip>
                                 )
                             })}

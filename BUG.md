@@ -8,6 +8,8 @@
 
 - [x] [4. 部分客户端导出的物品icon显示空白](#4部分客户端导出的物品icon显示空白)
 
+- [ ] [5.AE CPU下单必须使用非部件形式的接口](#5-ae-cpu下单必须使用非部件形式的接口)
+
 ## 1.NBT
 
 [ItemIconDumperThread.java](src/main/java/love/shirokasoke/webapi/client/thread/ItemIconDumperThread.java#L79)
@@ -138,3 +140,9 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 **粉尘**
 
 采用了NEI的渲染，但是未进入游戏真正激活NEI导致的渲染异常，改成游戏内指令形式的触发
+
+## 5. AE CPU下单必须使用非部件形式的接口
+
+[AECPUTaskHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUTaskHandler.java)
+
+FMP形式的接口尚未支持

@@ -2,16 +2,21 @@
 
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
+import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
+import { SelectableIconPaper } from "@/components/SelectableIconPaper"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatCount } from "@/data/format"
 import useCoords from "@/data/useCoords"
+import CloseIcon from "@mui/icons-material/Close"
+import SendIcon from '@mui/icons-material/Send'
 import ViewListIcon from "@mui/icons-material/ViewList"
 import ViewModuleIcon from "@mui/icons-material/ViewModule"
 import {
     Alert,
     Badge,
     Box,
+    Button,
     Card,
     CardContent,
     Chip,
@@ -21,13 +26,13 @@ import {
     LinearProgress,
     Pagination,
     Paper,
+    Popover,
     TextField,
     ToggleButton,
     ToggleButtonGroup,
-    Tooltip,
     Typography
 } from "@mui/material"
-import type { GridFilterModel, GridSortModel } from "@mui/x-data-grid"
+import type { GridFilterModel, GridRowSelectionModel, GridSortModel } from "@mui/x-data-grid"
 import {
     DataGrid,
     GridColDef,
@@ -36,10 +41,10 @@ import {
 import { GridApiCommunity } from "@mui/x-data-grid/internals"
 import type { AEItemStack, AEItemsResult } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
+import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
-
 type AEItemRow = AEItemStack & { uid: string }
 type AEItemStorageStats = Pick<AEItemsResult, "totalBytes" | "usedBytes" | "totalTypes" | "usedTypes">
 
@@ -115,6 +120,10 @@ export default function AEItemPage() {
     const [sortM, setSortM] = useState<GridSortModel>()
     const [filterM, setFilterM] = useState<GridFilterModel>()
     const apiRef = useRef<GridApiCommunity>(null)
+
+    const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
+    const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
+    const [craftCount, setCraftCount] = useState<number>(1)
 
     useEffect(() => {
         if (!api || !x) return
@@ -254,6 +263,13 @@ export default function AEItemPage() {
                         onSortModelChange={(s) => setSortM(s)}
                         density="compact"
                         slots={{ pagination: CustomPagination }}
+                        rowSelectionModel={rowSelectionModel}
+                        onRowSelectionModelChange={(model) => {
+                            setRowSelectionModel(model)
+                        }}
+                        onCellClick={(_, event) => {
+                            setMousePos({ left: event.clientX, top: event.clientY })
+                        }}
                         slotProps={{
                             loadingOverlay: {
                                 variant: "skeleton",
@@ -274,49 +290,13 @@ export default function AEItemPage() {
                                 transition: "opacity 0.2s ease",
                             }}
                         >
-                            {pageItems.map((item) => (
-                                <Tooltip
-                                    key={item.uid}
-                                    title={
-                                        <Box>
-                                            <Typography variant="body2">{item.localizedName}</Typography>
-                                            <Typography variant="caption" color="#aaa" component="div">
-                                                #{item.id}{item.damage ? `:${item.damage}` : ""}
-                                            </Typography>
-                                            <Typography variant="caption" color="#55aaff" component="div">
-                                                {item.registryName}
-                                            </Typography>
-                                            <Typography variant="caption" color="primary" component="div">
-                                                数量: {item.stackSize ?? 0}
-                                            </Typography>
-                                        </Box>
-                                    }
-                                    arrow
-                                    placement="top"
-                                    slotProps={{
-                                        tooltip: {
-                                            sx: {
-                                                bgcolor: "rgba(16, 0, 32, 0.92)",
-                                                border: "1px solid rgba(80, 0, 160, 0.7)",
-                                                boxShadow: 4,
-                                                maxWidth: 320,
-                                                "& .MuiTooltip-arrow": {
-                                                    color: "rgba(16, 0, 32, 0.92)",
-                                                },
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            position: "relative",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            aspectRatio: "1 / 1",
-                                            p: 0.5,
-                                        }}
-                                    >
+                            {pageItems.map((item) => {
+                                const selected = rowSelectionModel.ids.has(item.uid)
+                                return <MCToolitip k={item.uid} item={item}>
+                                    <SelectableIconPaper elevation={selected ? 16 : 0} selected={selected} onClick={(event) => {
+                                        setRowSelectionModel({ type: "include", ids: selected ? new Set([]) : new Set([item.uid]) })
+                                        setMousePos({ left: event.clientX, top: event.clientY })
+                                    }}>
                                         <Badge
                                             badgeContent={formatCount(item.stackSize || 0)}
                                             color="primary"
@@ -330,13 +310,12 @@ export default function AEItemPage() {
                                                     padding: "0 3px",
                                                     borderRadius: "8px",
                                                 },
-                                            }}
-                                        >
+                                            }}>
                                             <ItemIcon api={api} item={item} />
                                         </Badge>
-                                    </Box>
-                                </Tooltip>
-                            ))}
+                                    </SelectableIconPaper>
+                                </MCToolitip>
+                            })}
                         </Box>
                         {items.length == 0 && (
                             <Box
@@ -374,6 +353,46 @@ export default function AEItemPage() {
                     )}
                 </>
             )}
+            <Popover
+                open={rowSelectionModel.ids.size > 0 && mousePos !== null}
+                anchorReference="anchorPosition"
+                anchorPosition={mousePos ?? { top: 0, left: 0 }}
+                onClose={() => setMousePos(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                transformOrigin={{ vertical: "top", horizontal: "center" }}
+                slotProps={{ paper: { sx: { p: 1, display: "flex", flexDirection: "column", gap: 1, minWidth: 180 } } }}
+            >
+                <TextField size="small" type="number" label="合成数量" value={craftCount} onChange={(e) => {
+                    setCraftCount(Math.max(1, parseInt(e.target.value) || 1))
+                }} />
+                <Button size="small" variant="outlined" startIcon={<SendIcon />} color="secondary"
+                    onClick={async () => {
+                        const uid = Array.from(rowSelectionModel.ids)[0] as string;
+                        const item = items.find((it) => it.uid === uid);
+                        if (!item || !x) return;
+                        if (!item.Craftable) return enqueueSnackbar("此物品无合成配方", { variant: "warning" })
+                        try {
+                            const result = await api.aeCraft(
+                                { x, y, z, dimension },
+                                {
+                                    id: item.id,
+                                    Count: craftCount,
+                                    Damage: item.damage,
+                                    tag: item.nbtWrite,
+                                }
+                            );
+                            enqueueSnackbar(`已提交合成任务，输出: ${result.output.localizedName} x${result.output.stackSize}，CPU: ${result.cpu}`, { variant: "success" });
+                            setRowSelectionModel({ type: "include", ids: new Set() });
+                            setMousePos(null);
+                        } catch (e) {
+                            enqueueSnackbar(e instanceof Error ? e.message : "提交合成任务失败", { variant: "error" });
+                        }
+                    }}>提交合成任务</Button>
+                <Button size="small" color="inherit" startIcon={<CloseIcon />} onClick={() => {
+                    setRowSelectionModel({ type: "include", ids: new Set() })
+                    setMousePos(null)
+                }}>取消选择</Button>
+            </Popover>
             <Footer searchParams={searchParams} />
         </Container>
     )
