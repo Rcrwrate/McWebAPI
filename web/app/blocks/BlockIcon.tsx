@@ -12,7 +12,7 @@ export default function BlockIcon({ api, block }: { api: NonNullable<ReturnType<
                 setUrl(URL.createObjectURL(blob))
             })
             .catch(() => setUrl("https://cos.elysia.rip/block.png"))
-    }, [api, block.id, block.meta])
+    }, [block.id, block.meta])
     if (!url) return <Skeleton variant="rectangular" width={64} height={64} />
     return (
         <img
