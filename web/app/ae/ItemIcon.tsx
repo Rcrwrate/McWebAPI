@@ -1,9 +1,9 @@
-import { useAPI } from "@/data/api"
-import { Skeleton } from "@mui/material"
-import type { AEItemStack } from "@shirokasoke/webapi-sdk"
-import { useEffect, useState } from "react"
+import { useAPI } from "@/data/api";
+import { Skeleton } from "@mui/material";
+import type { ItemStack } from "@shirokasoke/webapi-sdk";
+import { useEffect, useState } from "react";
 
-export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<typeof useAPI>>; item: AEItemStack }) {
+export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<typeof useAPI>>; item: ItemStack }) {
     const [url, setUrl] = useState<string | null>(null)
     useEffect(() => {
         let objectUrl: string | null = null

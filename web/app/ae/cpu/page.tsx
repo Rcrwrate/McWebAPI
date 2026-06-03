@@ -2,6 +2,7 @@
 
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
+import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatDuration } from "@/data/format"
@@ -11,6 +12,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import {
     Alert,
+    Box,
     Button,
     Card,
     CardContent,
@@ -40,6 +42,7 @@ import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
+import ItemIcon from "../ItemIcon"
 
 type AECPURow = AECPU & { id: number; storage: number }
 
@@ -355,6 +358,48 @@ export default function AECPUPage() {
                     }}>取消选择</Button>
                 </Popover>
             </Paper>
+            {(() => {
+                const selectedCPU = cpus.find((c) => rowSelectionModel.ids.has(c.id))
+                if (!selectedCPU || !selectedCPU.tasks || selectedCPU.tasks.length === 0) return null
+                return (
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle1" sx={{ mb: 1 }} color="textPrimary">
+                            {selectedCPU.name || "CPU"} 正在进行的合成任务 ({selectedCPU.tasks.length} 个)
+                        </Typography>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            {selectedCPU.tasks.map((task, idx) => (
+                                <Paper key={idx} sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ minWidth: 28 }}>
+                                        #{idx + 1}
+                                    </Typography>
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", flex: 1 }}>
+                                        {task.inputs.map((input, i) => (
+                                            <MCToolitip k={`${idx}-${i}-${input.id}`} item={input}>
+                                                <Box sx={{ width: 48, height: 48 }}>
+                                                    <ItemIcon api={api} item={input} />
+                                                </Box>
+                                            </MCToolitip>
+                                        ))}
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary">→</Typography>
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", flex: 1 }}>
+                                        {task.outputs.map((output, i) => (
+                                            <MCToolitip k={`${idx}-${i}-${output.id}`} item={output}>
+                                                <Box sx={{ width: 48, height: 48 }}>
+                                                    <ItemIcon api={api} item={output} />
+                                                </Box>
+                                            </MCToolitip>
+                                        ))}
+                                    </Box>
+                                    <Typography variant="caption" color="primary" sx={{ minWidth: 50, textAlign: "right" }}>
+                                        剩余 {task.remaining}x
+                                    </Typography>
+                                </Paper>
+                            ))}
+                        </Box>
+                    </Box>
+                )
+            })()}
             <Footer searchParams={searchParams} />
         </Container>
     )
