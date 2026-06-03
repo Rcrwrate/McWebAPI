@@ -131,7 +131,7 @@ export default function BlocksPage() {
                 setDisplayRows(data)
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载失败"))
-    }, [api])
+    }, [api != undefined])
 
 
     useEffect(() => {

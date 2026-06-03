@@ -33,7 +33,7 @@ export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<ty
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl)
         }
-    }, [api, item.id, item.damage, item.nbtstr])
+    }, [item.id, item.damage, item.nbtstr])
     if (!url) return <Skeleton variant="rectangular" width={48} height={48} />
     return (
         <img

@@ -192,7 +192,7 @@ export default function AECPUPage() {
             loadCPUs()
         }, refreshSec * 1000)
         return () => clearInterval(interval)
-    }, [refreshSec, api, x, y, z, dimension])
+    }, [refreshSec, api != undefined, x, y, z, dimension])
 
     useEffect(() => {
         if (!apiRef.current) return

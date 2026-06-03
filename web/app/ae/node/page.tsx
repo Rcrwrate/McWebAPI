@@ -168,7 +168,7 @@ export default function AENodePage() {
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载节点失败"))
 
-    }, [api, x, y, z, dimension])
+    }, [api != undefined, x, y, z, dimension])
 
     useEffect(() => {
         if (!apiRef.current) return
