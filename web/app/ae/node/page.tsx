@@ -49,7 +49,7 @@ const columns: GridColDef<AENodeRow>[] = [
         renderCell: (params) => (
             <Chip
                 label={params.row.active ? "是" : "否"}
-                color={params.row.active ? "success" : "default"}
+                color={params.row.active ? "success" : "error"}
                 size="small"
             />
         ),
@@ -188,6 +188,9 @@ export default function AENodePage() {
         let skipped = 0
 
         const selected = nodes.filter((n) => rowSelectionModel.ids.has(n.id))
+        if (selected.find(i => i.isPart || i.isIActionHost != true)) {
+            enqueueSnackbar("如果需要AE下单，则必须满足[部件：否] [操作主机：是]", { variant: "error", autoHideDuration: 10000 })
+        }
         for (const row of selected) {
             const loc = row.location
             if (!loc) { skipped++; continue }
