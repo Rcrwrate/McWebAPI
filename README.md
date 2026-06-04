@@ -2,9 +2,17 @@
 
 ## 下载
 
-[![CodeQL Advanced](https://github.com/Rcrwrate/McWebAPI/actions/workflows/codeql.yml/badge.svg)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/codeql.yml)
+[![Build and test](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
 
-[在CodeQL Advanced的Artifacts中下载(想着不高兴再写一个就合并在一块了)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/codeql.yml)
+点击上方下载
+
+## 使用说明
+
+如果希望使用图标功能的话，请在下发下载预导出的文件并解压到服务端的根目录，或者自行在客户端安装mod使用`/export`指令进行导出再移动到服务端的dumps目录下
+
+> 默认目录为dumps，可在配置文件中修改
+
+[2.8.4.dumps.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.7z)
 
 ## BUG
 

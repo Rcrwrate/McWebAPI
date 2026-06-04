@@ -66,6 +66,19 @@ export const AECPUSchema = Joi.object({
             ).required(),
         })
     ).optional(),
+    tasking: Joi.array().items(
+        ItemStackSchema.keys({
+            stackSize: Joi.number().required(),
+            providers: Joi.array().items(
+                Joi.object({
+                    x: Joi.number().required(),
+                    y: Joi.number().required(),
+                    z: Joi.number().required(),
+                    dimension: Joi.number().required(),
+                })
+            ).required(),
+        })
+    ).optional(),
     tasksError: Joi.string().optional(),
 });
 
