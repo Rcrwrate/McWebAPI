@@ -8,6 +8,7 @@ import { useAPI } from "@/data/api"
 import { formatBytes, formatDuration } from "@/data/format"
 import useCoords from "@/data/useCoords"
 import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend'
+import MoreVertIcon from "@mui/icons-material/MoreVert"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import {
     Alert,
@@ -23,6 +24,7 @@ import {
     IconButton,
     InputLabel,
     LinearProgress,
+    Menu,
     MenuItem,
     Paper,
     Select,
@@ -165,6 +167,7 @@ export default function AECPUPage() {
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
 
     const [refreshSec, setRefreshSec] = useState<number>(5)
+    const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement | null; idx: number }>({ el: null, idx: -1 })
 
     const loadCPUs = () => {
         if (!api || !x) return
@@ -383,6 +386,19 @@ export default function AECPUPage() {
                                     <Typography variant="caption" color="primary" sx={{ minWidth: 50, textAlign: "right" }}>
                                         剩余 {task.remaining}x
                                     </Typography>
+                                    <IconButton size="small" onClick={(e) => setMenuAnchor({ el: e.currentTarget, idx })}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                    <Menu
+                                        anchorEl={menuAnchor.el}
+                                        open={menuAnchor.idx === idx}
+                                        onClose={() => setMenuAnchor({ el: null, idx: -1 })}
+                                        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                        transformOrigin={{ vertical: "top", horizontal: "right" }}
+                                    >
+                                        <MenuItem onClick={() => setMenuAnchor({ el: null, idx: -1 })}>查看区块地图</MenuItem>
+                                        <MenuItem onClick={() => setMenuAnchor({ el: null, idx: -1 })}>查看ME接口样板</MenuItem>
+                                    </Menu>
                                 </Paper>
                             ))}
                         </Box>

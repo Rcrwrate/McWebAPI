@@ -54,6 +54,10 @@ export interface AECPU {
             providers: Array<{ x: number; y: number; z: number; dimension: number }>;
         }>;
     }>;
+    tasking?: Array<ItemStack & {
+        stackSize: number;
+        providers: Array<{ x: number; y: number; z: number; dimension: number }>;
+    }>;
     tasksError?: string;
 }
 

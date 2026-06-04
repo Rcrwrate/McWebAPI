@@ -15,7 +15,7 @@ public class Config {
     public static String ItemIconFolder = "dumps/item_icons";
     public static int itemThreadDelayMs = 10;
     public static int itemThreadBatchSize = 100;
-    public static boolean itemThreadEnable = true;
+    public static boolean itemThreadEnable = false;
 
     public static String BlockFile = "dumps/blocks.json";
     public static String BlockTileFolder = "dumps/block_tiles";

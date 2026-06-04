@@ -28,8 +28,10 @@ export function FooterMore({ args, childrens }: { args: string, childrens: JSX.E
             LinkComponent={LinkC} href={`/ae/item?${args}`}>存储物品</Button>
         <Button size="small" variant="outlined" startIcon={<BuildIcon />}
             LinkComponent={LinkC} href={`/ae/me?${args}`}>ME 接口</Button>
+        <Button size="small" variant="outlined" startIcon={<BuildIcon />}
+            LinkComponent={LinkC} href={`/ae/mes?${args}`}>ME 接口列表</Button>
         <Button size="small" variant="outlined" startIcon={<ScienceIcon />}
-            LinkComponent={LinkC} href={`/ae/task?${args}`}>合成任务</Button>
+            LinkComponent={LinkC} href={`/ae/patterns?${args}`}>样板一览</Button>
         <Button size="small" variant="outlined" startIcon={<HelpIcon />}
             LinkComponent={LinkC} href={`/ae/me/support?${args}`}>支持列表</Button>
         {childrens}
