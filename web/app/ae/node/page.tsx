@@ -377,7 +377,7 @@ export default function AENodePage() {
                     }}>取消选择</Button>
                 </Popover>
             </Paper>
-            <Footer searchParams={searchParams} />
+            <Footer args={searchParams.toString()} />
         </Container>
     )
 }

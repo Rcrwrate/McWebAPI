@@ -2,15 +2,10 @@
 
 import { H2 } from "@/components/H2"
 import { useAPI } from "@/data/api"
-import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
-import BuildIcon from '@mui/icons-material/Build'
 import DeleteIcon from '@mui/icons-material/Delete'
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import HelpIcon from '@mui/icons-material/Help'
-import InventoryIcon from '@mui/icons-material/Inventory'
-import MemoryIcon from '@mui/icons-material/Memory'
-import ScienceIcon from '@mui/icons-material/Science'
 import StorageIcon from '@mui/icons-material/Storage'
 import {
     Accordion,
@@ -39,10 +34,10 @@ import {
     useMediaQuery
 } from "@mui/material"
 import type { TPSInfo } from "@shirokasoke/webapi-sdk"
-import { default as LinkC } from "next/link"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useState } from "react"
 import { createArgs, getSavedCoords, saveCoords, type SavedAECoord } from "./coords"
+import { FooterMore } from "./Footer"
 
 export default function AEPage() {
     const api = useAPI()
@@ -218,22 +213,16 @@ export default function AEPage() {
                                                     </Box>
                                                 </AccordionSummary>
                                                 <AccordionDetails>
-                                                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                                                        <Button size="small" variant="outlined" startIcon={<AccountTreeIcon />}
-                                                            LinkComponent={LinkC} href={`/ae/node?${args}`}>节点信息</Button>
-                                                        <Button size="small" variant="outlined" startIcon={<MemoryIcon />}>CPU 信息</Button>
-                                                        <Button size="small" variant="outlined" startIcon={<InventoryIcon />}>存储物品</Button>
-                                                        <Button size="small" variant="outlined" startIcon={<BuildIcon />}>ME 接口</Button>
-                                                        <Button size="small" variant="outlined" startIcon={<ScienceIcon />}>合成任务</Button>
-                                                        <Button size="small" variant="outlined" startIcon={<HelpIcon />}>支持列表</Button>
-                                                        <Button size="small" variant="outlined" onClick={() => { setRenameValue(coord.name); setRenameOpen(true) }} color="secondary">
+                                                    <FooterMore args={args} childrens={[
+                                                        <Button size="small" variant="outlined" key={args + "1"}
+                                                            startIcon={<DriveFileRenameOutlineIcon />}
+                                                            onClick={() => { setRenameValue(coord.name); setRenameOpen(true) }} color="secondary">
                                                             重命名
-                                                        </Button>
-                                                        <Button size="small" variant="outlined" color="error"
+                                                        </Button>,
+                                                        <Button size="small" variant="outlined" color="error" key={args + "2"}
                                                             startIcon={<DeleteIcon />} onClick={() => handleDelete(index)}>
                                                             删除此节点
-                                                        </Button>
-                                                    </Box>
+                                                        </Button>]} />
                                                 </AccordionDetails>
                                             </Accordion>
                                         </Grid>

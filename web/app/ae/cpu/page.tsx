@@ -8,7 +8,6 @@ import { useAPI } from "@/data/api"
 import { formatBytes, formatDuration } from "@/data/format"
 import useCoords from "@/data/useCoords"
 import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend'
-import CloseIcon from "@mui/icons-material/Close"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import {
     Alert,
@@ -26,7 +25,6 @@ import {
     LinearProgress,
     MenuItem,
     Paper,
-    Popover,
     Select,
     Typography
 } from "@mui/material"
@@ -165,7 +163,6 @@ export default function AECPUPage() {
     const [filterM, setFilterM] = useState<GridFilterModel>()
     const apiRef = useRef<GridApiCommunity>(null)
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
-    const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
 
     const [refreshSec, setRefreshSec] = useState<number>(5)
 
@@ -321,75 +318,67 @@ export default function AECPUPage() {
                     onRowSelectionModelChange={(model) => {
                         setRowSelectionModel(model)
                     }}
-                    onCellClick={(_, event) => {
-                        setMousePos({ left: event.clientX, top: event.clientY })
-                    }}
                     slotProps={{
                         loadingOverlay: {
                             variant: "skeleton",
                             noRowsVariant: "skeleton",
                         },
                     }} />
-                <Popover
-                    open={rowSelectionModel.ids.size > 0 && mousePos !== null}
-                    anchorReference="anchorPosition"
-                    anchorPosition={mousePos ?? { top: 0, left: 0 }}
-                    onClose={() => setMousePos(null)}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                    transformOrigin={{ vertical: "top", horizontal: "center" }}
-                    slotProps={{ paper: { sx: { p: 1, display: "flex", flexDirection: "column", gap: 1, minWidth: 180 } } }}
-                >
-                    <Button size="small" variant="outlined" startIcon={<CancelScheduleSendIcon />} color="error"
-                        onClick={async () => {
-                            const selected = cpus.find((n) => rowSelectionModel.ids.has(n.id))
-                            if (!x || !selected) return
-                            setMousePos(null)
-                            const r = await api.aeCancel({ x, y, z, dimension }, { id: selected.id, ...((selected?.name && selected.name.length > 0) ? { name: selected.name } : {}) })
-                            if (r.wasBusy) {
-                                enqueueSnackbar("已尝试取消合成任务", { variant: "info" })
-                            } else {
-                                enqueueSnackbar("CPU无合成任务", { variant: "warning" })
-                            }
-                            loadCPUs()
-                        }}>终止合成</Button>
-                    <Button size="small" color="inherit" startIcon={<CloseIcon />} onClick={() => {
-                        setRowSelectionModel({ type: "include", ids: new Set() })
-                        setMousePos(null)
-                    }}>取消选择</Button>
-                </Popover>
             </Paper>
             {(() => {
                 const selectedCPU = cpus.find((c) => rowSelectionModel.ids.has(c.id))
-                if (!selectedCPU || !selectedCPU.tasks || selectedCPU.tasks.length === 0) return null
+                if (!selectedCPU) return null
                 return (
                     <Box sx={{ mb: 2 }}>
-                        <Typography variant="subtitle1" sx={{ mb: 1 }} color="textPrimary">
-                            {selectedCPU.name || "CPU"} 正在进行的合成任务 ({selectedCPU.tasks.length} 个)
-                        </Typography>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                            {selectedCPU.tasks.map((task, idx) => (
+                        <Button fullWidth variant="outlined" color="error" disabled={!selectedCPU.busy}
+                            startIcon={<CancelScheduleSendIcon />}
+                            onClick={async () => {
+                                if (!x) return
+                                const r = await api.aeCancel(
+                                    { x, y, z, dimension },
+                                    {
+                                        id: selectedCPU.id,
+                                        ...((selectedCPU?.name && selectedCPU.name.length > 0) ? { name: selectedCPU.name } : {}),
+                                    }
+                                )
+                                if (r.wasBusy) {
+                                    enqueueSnackbar("已尝试取消合成任务", { variant: "info" })
+                                } else {
+                                    enqueueSnackbar("CPU无合成任务", { variant: "warning" })
+                                }
+                                setRowSelectionModel({ type: "include", ids: new Set() })
+                                loadCPUs()
+                            }}>
+                            {selectedCPU.busy
+                                ? `取消 ${selectedCPU.name || "CPU"} 正在进行的合成任务 (${selectedCPU?.tasks ? selectedCPU.tasks.length + "个" : "无法获取数量"} )`
+                                : `${selectedCPU.name || "CPU"} 无正在进行的合成任务`}
+                        </Button>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, pt: 1 }}>
+                            {selectedCPU?.tasks?.map((task, idx) => (
                                 <Paper key={idx} sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-                                    <Typography variant="caption" color="text.secondary" sx={{ minWidth: 28 }}>
+                                    <Typography variant="caption" sx={{ minWidth: 28 }}>
                                         #{idx + 1}
                                     </Typography>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", flex: 1 }}>
-                                        {task.inputs.map((input, i) => (
-                                            <MCToolitip k={`${idx}-${i}-${input.id}`} item={input}>
-                                                <Box sx={{ width: 48, height: 48 }}>
-                                                    <ItemIcon api={api} item={input} />
-                                                </Box>
-                                            </MCToolitip>
-                                        ))}
-                                    </Box>
-                                    <Typography variant="body2" color="text.secondary">→</Typography>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", flex: 1 }}>
-                                        {task.outputs.map((output, i) => (
-                                            <MCToolitip k={`${idx}-${i}-${output.id}`} item={output}>
-                                                <Box sx={{ width: 48, height: 48 }}>
-                                                    <ItemIcon api={api} item={output} />
-                                                </Box>
-                                            </MCToolitip>
-                                        ))}
+                                    <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                                            {task.inputs.map((input, i) => (
+                                                <MCToolitip k={`${idx}-${i}-${input.id}`} item={input}>
+                                                    <Box sx={{ width: 48, height: 48 }}>
+                                                        <ItemIcon api={api} item={input} />
+                                                    </Box>
+                                                </MCToolitip>
+                                            ))}
+                                        </Box>
+                                        <Typography variant="body2">→</Typography>
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                                            {task.outputs.map((output, i) => (
+                                                <MCToolitip k={`${idx}-${i}-${output.id}`} item={output}>
+                                                    <Box sx={{ width: 48, height: 48 }}>
+                                                        <ItemIcon api={api} item={output} />
+                                                    </Box>
+                                                </MCToolitip>
+                                            ))}
+                                        </Box>
                                     </Box>
                                     <Typography variant="caption" color="primary" sx={{ minWidth: 50, textAlign: "right" }}>
                                         剩余 {task.remaining}x
@@ -400,7 +389,7 @@ export default function AECPUPage() {
                     </Box>
                 )
             })()}
-            <Footer searchParams={searchParams} />
+            <Footer args={searchParams.toString()} />
         </Container>
     )
 }
