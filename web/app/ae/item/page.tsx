@@ -339,7 +339,7 @@ export default function AEItemPage() {
                         )}
                     </Paper>
                     {pageCount > 1 && (
-                        <Box sx={{ display: "flex", justifyContent: "center" }}>
+                        <Box sx={{ display: "flex", justifyContent: "center", pb: 1 }}>
                             <Pagination
                                 count={pageCount}
                                 page={paginationModel.page + 1}
@@ -393,7 +393,7 @@ export default function AEItemPage() {
                     setMousePos(null)
                 }}>取消选择</Button>
             </Popover>
-            <Footer searchParams={searchParams} />
+            <Footer args={searchParams.toString()} />
         </Container>
     )
 }
