@@ -331,6 +331,7 @@ export default function AECPUPage() {
             {(() => {
                 const selectedCPU = cpus.find((c) => rowSelectionModel.ids.has(c.id))
                 if (!selectedCPU) return null
+
                 return (
                     <Box sx={{ mb: 2 }}>
                         <Button fullWidth variant="outlined" color="error" disabled={!selectedCPU.busy}
@@ -353,10 +354,31 @@ export default function AECPUPage() {
                                 loadCPUs()
                             }}>
                             {selectedCPU.busy
-                                ? `取消 ${selectedCPU.name || "CPU"} 正在进行的合成任务 (${selectedCPU?.tasks ? selectedCPU.tasks.length + "个" : "无法获取数量"} )`
+                                ? `取消 ${selectedCPU.name || "CPU"} 正在进行的合成任务 (${(selectedCPU.tasking?.length ?? 0) + (selectedCPU.tasks?.length ?? 0)}个 )`
                                 : `${selectedCPU.name || "CPU"} 无正在进行的合成任务`}
                         </Button>
                         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, pt: 1 }}>
+                            {selectedCPU?.tasking && selectedCPU.tasking.length > 0 && (
+                                <Paper sx={{
+                                    p: 1.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap",
+                                    border: "1px solid",
+                                    borderColor: "primary.main",
+                                    animation: "pulse-glow 2s ease-in-out infinite",
+                                    "@keyframes pulse-glow": {
+                                        "0%, 100%": { boxShadow: "0 0 4px rgba(25,118,210,0.25)" },
+                                        "50%": { boxShadow: "0 0 18px rgba(25,118,210,0.65)" },
+                                    },
+                                }}>
+                                    <Typography variant="subtitle2" sx={{ minWidth: 80 }}>正在合成中</Typography>
+                                    {selectedCPU.tasking.map((item, idx) => (
+                                        <MCToolitip key={idx} k={`tasking-${idx}-${item.id}`} item={item}>
+                                            <Box sx={{ width: 48, height: 48, position: "relative" }}>
+                                                <ItemIcon api={api} item={item} badge />
+                                            </Box>
+                                        </MCToolitip>
+                                    ))}
+                                </Paper>
+                            )}
                             {selectedCPU?.tasks?.map((task, idx) => (
                                 <Paper key={idx} sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
                                     <Typography variant="caption" sx={{ minWidth: 28 }}>

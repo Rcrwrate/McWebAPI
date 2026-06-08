@@ -19,3 +19,13 @@
 [blocks](app/blocks/page.tsx#L180-L186)
 
 因为表格已经卸载，ref为空
+
+## 3.重渲染
+
+因使用列表顺序做为key，每一次变动都会导致重渲染
+
+```tsx
+{
+  something.map((item, i) => <div key={i}>{item.name}</div>);
+}
+```

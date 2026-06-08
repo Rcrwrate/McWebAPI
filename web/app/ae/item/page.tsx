@@ -297,22 +297,7 @@ export default function AEItemPage() {
                                         setRowSelectionModel({ type: "include", ids: selected ? new Set([]) : new Set([item.uid]) })
                                         setMousePos({ left: event.clientX, top: event.clientY })
                                     }}>
-                                        <Badge
-                                            badgeContent={formatCount(item.stackSize || 0)}
-                                            color="primary"
-                                            overlap="rectangular"
-                                            anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                                            sx={{
-                                                "& .MuiBadge-badge": {
-                                                    fontSize: "0.65rem",
-                                                    minWidth: 16,
-                                                    height: 16,
-                                                    padding: "0 3px",
-                                                    borderRadius: "8px",
-                                                },
-                                            }}>
-                                            <ItemIcon api={api} item={item} />
-                                        </Badge>
+                                        <ItemIcon api={api} item={item} badge />
                                     </SelectableIconPaper>
                                 </MCToolitip>
                             })}
