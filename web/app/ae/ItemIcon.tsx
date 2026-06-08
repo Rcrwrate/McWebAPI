@@ -1,9 +1,12 @@
 import { useAPI } from "@/data/api";
-import { Skeleton } from "@mui/material";
+import { formatCount } from "@/data/format";
+import { Badge, Skeleton } from "@mui/material";
 import type { ItemStack } from "@shirokasoke/webapi-sdk";
 import { useEffect, useState } from "react";
 
-export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<typeof useAPI>>; item: ItemStack }) {
+const err_img = "/block.png"
+
+export default function ItemIcon({ api, item, badge }: { api: NonNullable<ReturnType<typeof useAPI>>; item: ItemStack, badge?: boolean }) {
     const [url, setUrl] = useState<string | null>(null)
     useEffect(() => {
         let objectUrl: string | null = null
@@ -13,21 +16,21 @@ export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<ty
                     objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
                     setUrl(objectUrl)
                 })
-                .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+                .catch(() => setUrl(err_img))
         } else if (item.registryName == "ae2fc:fluid_packet") {
             api.getFluidIcon({ name: (item.nbt?.FluidStack as any)?.FluidName as string })
                 .then((buf) => {
                     objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
                     setUrl(objectUrl)
                 })
-                .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+                .catch(() => setUrl(err_img))
         } else {
             api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite })
                 .then((buf) => {
                     objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
                     setUrl(objectUrl)
                 })
-                .catch(() => setUrl("https://cos.elysia.rip/block.png"))
+                .catch(() => setUrl(err_img))
         }
 
         return () => {
@@ -35,12 +38,32 @@ export default function ItemIcon({ api, item }: { api: NonNullable<ReturnType<ty
         }
     }, [item.id, item.damage, item.nbtstr])
     if (!url) return <Skeleton variant="rectangular" width={48} height={48} />
-    return (
+
+
+
+    return badge ? <Badge badgeContent={formatCount(item.stackSize || 0)}
+        color="primary" overlap="rectangular" max={999}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        sx={{
+            "& .MuiBadge-badge": {
+                fontSize: "0.65rem",
+                minWidth: 16,
+                height: 16,
+                padding: "0 3px",
+                borderRadius: "8px",
+            },
+        }}>
         <img
             key={url}
             src={url}
             alt={item.localizedName}
             style={{ width: 48, height: 48, imageRendering: "pixelated" }}
         />
-    )
+    </Badge> :
+        <img
+            key={url}
+            src={url}
+            alt={item.localizedName}
+            style={{ width: 48, height: 48, imageRendering: "pixelated" }}
+        />
 }
