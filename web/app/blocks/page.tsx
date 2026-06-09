@@ -1,6 +1,7 @@
 "use client"
 
 import { H2 } from "@/components/H2"
+import { RContainer } from "@/components/RContainer"
 import { SelectableIconPaper } from "@/components/SelectableIconPaper"
 import { useAPI } from "@/data/api"
 import ViewListIcon from '@mui/icons-material/ViewList'
@@ -10,7 +11,6 @@ import {
     Box,
     Chip,
     CircularProgress,
-    Container,
     Grid,
     Pagination,
     Paper,
@@ -145,10 +145,10 @@ export default function BlocksPage() {
 
     if (!api) {
         return (
-            <Container sx={{ pt: 10, textAlign: "center" }}>
+            <RContainer sx={{ pt: 10, textAlign: "center" }}>
                 <CircularProgress size={80} />
                 <Typography sx={{ mt: 2 }}>正在初始化 API...</Typography>
-            </Container>
+            </RContainer>
         )
     }
 
@@ -171,7 +171,7 @@ export default function BlocksPage() {
     }
 
     return (
-        <Container sx={{ p: 0 }}>
+        <RContainer>
             <H2>Blocks</H2>
             <Grid container spacing={2} sx={{ mb: 2, alignItems: "center", justifyContent: "center" }}>
                 <Grid>
@@ -320,6 +320,6 @@ export default function BlocksPage() {
                     )}
                 </>
             )}
-        </Container>
+        </RContainer>
     )
 }

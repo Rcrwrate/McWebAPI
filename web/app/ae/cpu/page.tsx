@@ -4,6 +4,7 @@ import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
+import { RContainer } from "@/components/RContainer"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatDuration } from "@/data/format"
 import useCoords from "@/data/useCoords"
@@ -18,7 +19,6 @@ import {
     CardContent,
     Chip,
     CircularProgress,
-    Container,
     FormControl,
     Grid,
     IconButton,
@@ -210,15 +210,15 @@ export default function AECPUPage() {
 
     if (!api) {
         return (
-            <Container sx={{ pt: 10, textAlign: "center" }}>
+            <RContainer sx={{ pt: 10, textAlign: "center" }}>
                 <CircularProgress size={80} />
                 <Typography sx={{ mt: 2 }}>正在初始化 API...</Typography>
-            </Container>
+            </RContainer>
         )
     }
 
     return (
-        <Container sx={{ p: 1 }}>
+        <RContainer>
             <H2>AE CPU 信息</H2>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
@@ -370,8 +370,8 @@ export default function AECPUPage() {
                                     },
                                 }}>
                                     <Typography variant="subtitle2" sx={{ minWidth: 80 }}>正在合成中</Typography>
-                                    {selectedCPU.tasking.map((item, idx) => (
-                                        <MCToolitip key={idx} k={`tasking-${idx}-${item.id}`} item={item}>
+                                    {selectedCPU.tasking.map((item) => (
+                                        <MCToolitip key={`t1${item.localizedName}`} k={`t2${item.localizedName}`} item={item}>
                                             <Box sx={{ width: 48, height: 48, position: "relative" }}>
                                                 <ItemIcon api={api} item={item} badge />
                                             </Box>
@@ -379,55 +379,54 @@ export default function AECPUPage() {
                                     ))}
                                 </Paper>
                             )}
-                            {selectedCPU?.tasks?.map((task, idx) => (
-                                <Paper key={idx} sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-                                    <Typography variant="caption" sx={{ minWidth: 28 }}>
-                                        #{idx + 1}
-                                    </Typography>
-                                    <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
-                                            {task.inputs.map((input, i) => (
-                                                <MCToolitip k={`${idx}-${i}-${input.id}`} item={input}>
-                                                    <Box sx={{ width: 48, height: 48 }}>
-                                                        <ItemIcon api={api} item={input} />
-                                                    </Box>
-                                                </MCToolitip>
-                                            ))}
-                                        </Box>
-                                        <Typography variant="body2">→</Typography>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
-                                            {task.outputs.map((output, i) => (
-                                                <MCToolitip k={`${idx}-${i}-${output.id}`} item={output}>
-                                                    <Box sx={{ width: 48, height: 48 }}>
-                                                        <ItemIcon api={api} item={output} />
-                                                    </Box>
-                                                </MCToolitip>
-                                            ))}
-                                        </Box>
+                            {selectedCPU?.tasks?.map((task, idx) => <Paper key={idx} sx={{ p: 1.5, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                                <Typography variant="caption" sx={{ minWidth: 28 }}>
+                                    #{idx + 1}
+                                </Typography>
+                                <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                                        {task.inputs.map((input) => (
+                                            <MCToolitip key={`i2${input.localizedName}`} k={`i${input.localizedName}`} item={input}>
+                                                <Box sx={{ width: 48, height: 48 }}>
+                                                    <ItemIcon api={api} item={input} />
+                                                </Box>
+                                            </MCToolitip>
+                                        ))}
                                     </Box>
-                                    <Typography variant="caption" color="primary" sx={{ minWidth: 50, textAlign: "right" }}>
-                                        剩余 {task.remaining}x
-                                    </Typography>
-                                    <IconButton size="small" onClick={(e) => setMenuAnchor({ el: e.currentTarget, idx })}>
-                                        <MoreVertIcon />
-                                    </IconButton>
-                                    <Menu
-                                        anchorEl={menuAnchor.el}
-                                        open={menuAnchor.idx === idx}
-                                        onClose={() => setMenuAnchor({ el: null, idx: -1 })}
-                                        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                                        transformOrigin={{ vertical: "top", horizontal: "right" }}
-                                    >
-                                        <MenuItem onClick={() => setMenuAnchor({ el: null, idx: -1 })}>查看区块地图</MenuItem>
-                                        <MenuItem onClick={() => setMenuAnchor({ el: null, idx: -1 })}>查看ME接口样板</MenuItem>
-                                    </Menu>
-                                </Paper>
-                            ))}
+                                    <Typography variant="body2">→</Typography>
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                                        {task.outputs.map((output) => (
+                                            <MCToolitip key={`o2${output.localizedName}`} k={`o${output.localizedName}`} item={output}>
+                                                <Box sx={{ width: 48, height: 48 }}>
+                                                    <ItemIcon api={api} item={output} />
+                                                </Box>
+                                            </MCToolitip>
+                                        ))}
+                                    </Box>
+                                </Box>
+                                <Typography variant="caption" color="primary" sx={{ minWidth: 50, textAlign: "right" }}>
+                                    剩余 {task.remaining}x
+                                </Typography>
+                                <IconButton size="small" onClick={(e) => setMenuAnchor({ el: e.currentTarget, idx })}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                                <Menu
+                                    anchorEl={menuAnchor.el}
+                                    open={menuAnchor.idx === idx}
+                                    onClose={() => setMenuAnchor({ el: null, idx: -1 })}
+                                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                    transformOrigin={{ vertical: "top", horizontal: "right" }}
+                                >
+                                    <MenuItem onClick={() => setMenuAnchor({ el: null, idx: -1 })}>查看区块地图</MenuItem>
+                                    <MenuItem onClick={() => setMenuAnchor({ el: null, idx: -1 })}>查看ME接口样板</MenuItem>
+                                </Menu>
+                            </Paper>
+                            )}
                         </Box>
                     </Box>
                 )
             })()}
             <Footer args={searchParams.toString()} />
-        </Container>
+        </RContainer>
     )
 }
