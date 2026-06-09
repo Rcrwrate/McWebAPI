@@ -84,9 +84,13 @@ export default function Setting() {
                 <H2>
                     <SettingsIcon /> WebAPI地址
                 </H2>
-                <Grid container sx={{ p: 2, justifyContent: "center", }} spacing={2}>
-                    <TextField label="WebAPI地址" variant="outlined" value={url} onChange={(e) => { setUrl(e.target.value) }} />
-                    <TextField label="Auth" variant="outlined" value={auth} onChange={(e) => { setAuth(e.target.value) }} />
+                <Grid container sx={{ p: 2, justifyContent: "center" }} spacing={2}>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <TextField label="WebAPI地址" variant="outlined" value={url} onChange={(e) => { setUrl(e.target.value) }} />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 6 }}>
+                        <TextField label="Auth" variant="outlined" value={auth} onChange={(e) => { setAuth(e.target.value) }} />
+                    </Grid>
 
                     <Button variant="contained" color="success" onClick={() => {
                         localStorage.setItem("url", url)
