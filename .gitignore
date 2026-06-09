@@ -52,3 +52,6 @@ NotEnoughItems/
 ServerUtilities/
 
 nesql-exporter/
+
+tools/*
+!*.sh
