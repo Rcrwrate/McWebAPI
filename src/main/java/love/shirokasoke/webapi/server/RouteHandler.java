@@ -110,6 +110,7 @@ public interface RouteHandler extends HttpHandler {
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(message.getBytes());
         }
+        exchange.close();
     }
 
     default void sendResponse(HttpExchange exchange, int statusCode, Object json, boolean direct) throws IOException {
@@ -141,6 +142,7 @@ public interface RouteHandler extends HttpHandler {
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(data);
         }
+        exchange.close();
     }
 
     default void sendErrorResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
