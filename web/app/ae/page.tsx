@@ -1,6 +1,7 @@
 "use client"
 
 import { H2 } from "@/components/H2"
+import { RContainer } from "@/components/RContainer"
 import { useAPI } from "@/data/api"
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -18,7 +19,6 @@ import {
     CardContent,
     CardHeader,
     CircularProgress,
-    Container,
     Dialog,
     DialogActions,
     DialogContent,
@@ -124,15 +124,15 @@ export default function AEPage() {
 
     if (!api) {
         return (
-            <Container sx={{ pt: 10, textAlign: "center" }}>
+            <RContainer sx={{ pt: 10, textAlign: "center" }}>
                 <CircularProgress size={80} />
                 <Typography sx={{ mt: 2 }}>正在初始化 API...</Typography>
-            </Container>
+            </RContainer>
         )
     }
 
     return (
-        <Container sx={{ p: 2 }}>
+        <RContainer>
             <H2>AE 网络管理</H2>
 
             {error && (
@@ -252,6 +252,6 @@ export default function AEPage() {
                     <Button variant="contained" onClick={handleRename}>保存</Button>
                 </DialogActions>
             </Dialog>}
-        </Container>
+        </RContainer>
     )
 }

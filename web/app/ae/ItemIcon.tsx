@@ -39,8 +39,6 @@ export default function ItemIcon({ api, item, badge }: { api: NonNullable<Return
     }, [item.id, item.damage, item.nbtstr])
     if (!url) return <Skeleton variant="rectangular" width={48} height={48} />
 
-
-
     return badge ? <Badge badgeContent={formatCount(item.stackSize || 0)}
         color="primary" overlap="rectangular" max={999}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}

@@ -4,6 +4,7 @@ import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
+import { RContainer } from "@/components/RContainer"
 import { SelectableIconPaper } from "@/components/SelectableIconPaper"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatCount } from "@/data/format"
@@ -14,14 +15,12 @@ import ViewListIcon from "@mui/icons-material/ViewList"
 import ViewModuleIcon from "@mui/icons-material/ViewModule"
 import {
     Alert,
-    Badge,
     Box,
     Button,
     Card,
     CardContent,
     Chip,
     CircularProgress,
-    Container,
     Grid,
     LinearProgress,
     Pagination,
@@ -167,10 +166,10 @@ export default function AEItemPage() {
 
     if (!api) {
         return (
-            <Container sx={{ pt: 10, textAlign: "center" }}>
+            <RContainer sx={{ pt: 10, textAlign: "center" }}>
                 <CircularProgress size={80} />
                 <Typography sx={{ mt: 2 }}>正在初始化 API...</Typography>
-            </Container>
+            </RContainer>
         )
     }
 
@@ -183,7 +182,7 @@ export default function AEItemPage() {
         : 0
 
     return (
-        <Container sx={{ p: 1 }}>
+        <RContainer>
             <H2>AE 存储物品</H2>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
@@ -379,6 +378,6 @@ export default function AEItemPage() {
                 }}>取消选择</Button>
             </Popover>
             <Footer args={searchParams.toString()} />
-        </Container>
+        </RContainer>
     )
 }

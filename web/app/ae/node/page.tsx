@@ -2,6 +2,7 @@
 
 import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
+import { RContainer } from "@/components/RContainer"
 import { useAPI } from "@/data/api"
 import useCoords from "@/data/useCoords"
 import AddToQueueIcon from "@mui/icons-material/AddToQueue"
@@ -14,7 +15,6 @@ import {
     CardContent,
     Chip,
     CircularProgress,
-    Container,
     Grid,
     Paper,
     Popover,
@@ -219,15 +219,15 @@ export default function AENodePage() {
 
     if (!api) {
         return (
-            <Container sx={{ pt: 10, textAlign: "center" }}>
+            <RContainer sx={{ pt: 10, textAlign: "center" }}>
                 <CircularProgress size={80} />
                 <Typography sx={{ mt: 2 }}>正在初始化 API...</Typography>
-            </Container>
+            </RContainer>
         )
     }
 
     return (
-        <Container sx={{ p: 1 }}>
+        <RContainer>
             <H2>AE 节点列表</H2>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
@@ -378,6 +378,6 @@ export default function AENodePage() {
                 </Popover>
             </Paper>
             <Footer args={searchParams.toString()} />
-        </Container>
+        </RContainer>
     )
 }

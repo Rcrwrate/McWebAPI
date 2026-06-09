@@ -20,7 +20,8 @@ export default function Home() {
                     <div style={{ height: "20%" }}> </div>
                     <Typography variant="h3">GTNH WebAPI</Typography>
                     <p>GTNH Web控制台</p>
-                    <p>项目地址：<Link href='https://github.com/Rcrwrate/McWebAPI'>McWebAPI</Link></p>
+                    <p>项目地址：<Link href='https://github.com/Rcrwrate/McWebAPI'>GITHUB</Link></p>
+                    <p>项目地址：<Link href='https://cnb.cool/shirokasoke/McWebAPI'>CNB</Link></p>
                 </Grid>
             </Grid>
         </Container>
