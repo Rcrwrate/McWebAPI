@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import love.shirokasoke.webapi.CommonProxy;
 import love.shirokasoke.webapi.MyMod;
 
 public class ChunkForceHandler extends ChunkHandler {
@@ -144,6 +145,13 @@ public class ChunkForceHandler extends ChunkHandler {
 
         ChunkCoordIntPair chunk = new ChunkCoordIntPair(chunkX, chunkZ);
         ForgeChunkManager.forceChunk(ticket, chunk);
+
+        // Ensure the chunk is actually loaded into memory
+        try {
+            CommonProxy.runOnServerThread(() -> { world.theChunkProviderServer.loadChunk(chunkX, chunkZ); });
+        } catch (Exception e) {
+            throw new Error(500, "Failed to load chunk " + ticketKey);
+        }
 
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
