@@ -184,6 +184,6 @@ java.lang.Throwable: Caller stacktrace
 **性能评估**
 
 - snapshot fast path：~0.3μs（纳秒级）
-- `runOnServerThread`：~25ms（平均等待半个 tick，tick 周期 50ms）
+- `runOnServerThread`：~48ms（平均等待半个 tick，tick 周期 50ms）
 
 根据性能评估，**不处理**只读的请求，后续允许用户自行选择是否使用线程安全的调用方式

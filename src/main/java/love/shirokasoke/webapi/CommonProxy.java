@@ -55,6 +55,7 @@ public class CommonProxy {
             .bus()
             .register(new ServerThreadDispatcher());
         ServerThreadDispatcher.setSlowTasksPerTick(Config.MaxPerTick);
+        ServerThreadDispatcher.setSlowQueueBudgetMs(Config.slowQueueBudgetMs);
     }
 
     public void serverStarted(FMLServerStartedEvent event) {

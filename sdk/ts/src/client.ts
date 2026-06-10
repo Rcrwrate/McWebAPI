@@ -11,6 +11,9 @@ import type {
     AEMEInterface,
     AENode,
     ApiResponse,
+    BatchSetBlockJobResult,
+    BatchSetBlockSubmitResult,
+    BatchSetBlockTask,
     Block,
     BlockDetail,
     ChunkForceList,
@@ -47,6 +50,8 @@ import type {
     AEItemsResultSchema,
     AEMEInterfaceSchema,
     AENodeSchema,
+    BatchSetBlockJobResultSchema,
+    BatchSetBlockSubmitResultSchema,
     BlockDetailSchema,
     BlockSchema,
     ChunkForceListSchema,
@@ -215,6 +220,29 @@ export class WebApiClient {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
+    }
+
+    /**
+     * 提交批量 setblock 任务到慢队列，异步执行。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BatchSetBlockHandler.java)
+     * @param tasks 使用 {@link BatchSetBlockTaskSchema}[] 验证
+     * @returns 使用 {@link BatchSetBlockSubmitResultSchema} 验证
+     */
+    batchSetBlock(tasks: BatchSetBlockTask[]): Promise<BatchSetBlockSubmitResult> {
+        return this.request<BatchSetBlockSubmitResult>("/batchsetblock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tasks),
+        });
+    }
+
+    /**
+     * 查询批量 setblock 任务执行结果。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BatchSetBlockHandler.java)
+     * @returns 使用 {@link BatchSetBlockJobResultSchema} 验证
+     */
+    getBatchSetBlockJob(params: { id: string }): Promise<BatchSetBlockJobResult> {
+        return this.request<BatchSetBlockJobResult>(`/batchsetblock${buildQuery(params)}`);
     }
 
     /**

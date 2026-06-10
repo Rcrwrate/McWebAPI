@@ -55,3 +55,41 @@ export interface SetBlockBody {
 }
 
 export type SetBlockResult = null
+
+export interface BatchSetBlockTask {
+    x: number;
+    y: number;
+    z: number;
+    dim?: number;
+    id: number;
+    metadata?: number;
+    flag?: number;
+}
+
+export interface BatchSetBlockSubmitResult {
+    id: string;
+    total: number;
+}
+
+export type BatchSetBlockJobStatus = "pending" | "running" | "completed";
+
+export interface BatchSetBlockFailure {
+    x: number;
+    y: number;
+    z: number;
+    reason: string;
+}
+
+export interface BatchSetBlockJobResult {
+    id: string;
+    total: number;
+    completed: number;
+    success: number;
+    failed: number;
+    status: BatchSetBlockJobStatus;
+    createTime: number;
+    finishTime?: number;
+    durationMs?: number;
+    failures?: BatchSetBlockFailure[];
+    failuresTruncated?: number;
+}

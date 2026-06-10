@@ -48,7 +48,7 @@ describe("normal", () => {
         const r = await api.getFluids()
         assert.ok(Joi.array().items(v.FluidSchema).validate(r).error == undefined)
     })
-    it("fluidContainers",async () => {
+    it("fluidContainers", async () => {
         const r = await api.getFluidContainers()
         assert.ok(Joi.array().items(v.FluidContainerSchema).validate(r).error == undefined)
     })
@@ -72,6 +72,13 @@ describe("chunks", () => {
             assert.ok(v.ChunkLoadResultSchema.validate(first).error == undefined)
             assert.ok(first.chunkX = tmp[0].chunkX)
             assert.rejects(async () => api.loadChunk(tmp[0]), { name: "WebApiError", message: `Chunk already being force loaded: ${first.dimension}:${first.chunkX}:${first.chunkZ}` })
+
+            it("verifyLoaded", async () => {
+                const r = await api.getChunks()
+                const loaded = r["0"].chunks.find(c => c.chunkX === tmp[0].chunkX && c.chunkZ === tmp[0].chunkZ)
+                assert.ok(loaded, "chunk should exist in chunks list")
+                assert.ok(loaded.isChunkLoaded, "chunk should be loaded")
+            })
 
             it("unload", async () => {
                 const unload = await api.unloadChunk(tmp[0]);
