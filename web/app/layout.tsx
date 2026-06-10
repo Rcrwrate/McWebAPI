@@ -5,6 +5,7 @@ import Loading from './loading';
 import Snackbar from './Snackbar';
 import { Root } from './Drawer';
 import BackDropProvider from '@/components/BackDrop';
+import { APIProvider } from '@/data/api';
 
 export const metadata: Metadata = {
     title: 'GTNH WebAPI',
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body style={{ margin: "auto" }}>
             <Root>
                 <BackDropProvider>
-                    <Snackbar>
-                        {children}
-                    </Snackbar>
+                    <APIProvider>
+                        <Snackbar>
+                            {children}
+                        </Snackbar>
+                    </APIProvider>
                 </BackDropProvider>
             </Root>
         </body>
