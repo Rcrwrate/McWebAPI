@@ -25,9 +25,7 @@ public class Config {
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
-    // dump
-    // server
-    public static boolean itemTranslate = false;
+    public static int MaxPerTick = 2;
 
     // client
     public static int itemIconDelayMs = 10;
@@ -92,13 +90,8 @@ public class Config {
             "localization",
             langFiles,
             "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
-        // dump
-        // server
-        itemTranslate = configuration.getBoolean(
-            "itemTranslate",
-            "server.command.item",
-            itemTranslate,
-            "enable item translation command register");
+        MaxPerTick = configuration
+            .getInt("MaxPerTick", "server", MaxPerTick, 1, 20, "Max Count of Slow Tasks can be runed per Tick");
 
         // client
         itemIconDelayMs = configuration.getInt(

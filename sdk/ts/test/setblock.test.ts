@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 import { WebApiClient } from "../src/client";
-import { BlockDetail } from "../src/types/block";
+import type { Block, BlockDetail } from "../src/types/block";
 import * as v from "../src/validators";
 
 const api = new WebApiClient({ baseUrl: "http://localhost:40002" })
@@ -23,16 +23,23 @@ describe(`setBlocks?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
     })
 
     let before: BlockDetail
+    let targetBlock: Block | undefined
     await it("get", async () => {
         before = await api.getBlock({ x, y, z, dim });
         assert.ok(v.BlockDetailSchema.validate(before).error == undefined)
-    })
-    await it("set", async () => {
         const blocks = await api.getBlocks();
-        const targetBlock = blocks.find(b => b.id !== before.block.id);
+        targetBlock = blocks.find(b => b.id !== before.block.id);
+        assert.ok(targetBlock)
+    })
+
+    await it("set", async () => {
         assert.ok(targetBlock)
         const setResult = await api.setBlock({ x, y, z, dim }, { id: targetBlock.id, metadataIn: 0 });
         assert.strictEqual(setResult, null);
+    })
+    await it("set again", async () => {
+        assert.ok(targetBlock)
+        assert.rejects(api.setBlock({ x, y, z, dim }, { id: targetBlock.id, metadataIn: 0 }))
     })
 
     await it("after", async () => {

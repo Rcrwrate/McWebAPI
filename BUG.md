@@ -2,7 +2,7 @@
 
 - [x] [1.NBT](#1nbt)
 
-- [x] [2.NBT -> JSON -> NBT](#2nbt---json---nbt)
+- [ ] [2.NBT -> JSON -> NBT](#2nbt---json---nbt)
 
 - [x] [3.客户端与服务端直接的物品数据ID不一致](#3客户端与服务端直接的物品数据id不一致)
 
