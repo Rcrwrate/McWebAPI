@@ -25,6 +25,9 @@ public class Config {
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
+    // dump
+    // server
+    public static boolean itemTranslate = false;
 
     // client
     public static int itemIconDelayMs = 10;
@@ -46,20 +49,20 @@ public class Config {
 
         ItemFile = configuration.getString(
             "ItemFile",
-            "server",
+            "server.static",
             ItemFile,
             "if ItemFile is set and valid, itemThread will be disable forcely");
         ItemIconFolder = configuration
-            .getString("ItemIconFolder", "server", ItemIconFolder, "Client dumped Item Icon Folder");
+            .getString("ItemIconFolder", "server.static", ItemIconFolder, "Client dumped Item Icon Folder");
         BlockFile = configuration.getString(
             "BlockFile",
-            "server",
+            "server.static",
             BlockFile,
             "if BlockFile is set and valid, block data will be loaded from this file");
         BlockTileFolder = configuration
-            .getString("BlockTileFolder", "server", BlockTileFolder, "Client dumped Block Tile Folder");
+            .getString("BlockTileFolder", "server.static", BlockTileFolder, "Client dumped Block Tile Folder");
         FluidIconFolder = configuration
-            .getString("FluidIconFolder", "server", FluidIconFolder, "Client dumped Fluid Icon Folder");
+            .getString("FluidIconFolder", "server.static", FluidIconFolder, "Client dumped Fluid Icon Folder");
         itemThreadEnable = configuration
             .getBoolean("enable", "server.itemThread", itemThreadEnable, "enable Itemscache auto build");
         itemThreadDelayMs = configuration.getInt(
@@ -89,52 +92,44 @@ public class Config {
             "localization",
             langFiles,
             "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
+        // dump
+        // server
+        itemTranslate = configuration.getBoolean(
+            "itemTranslate",
+            "server.command.item",
+            itemTranslate,
+            "enable item translation command register");
 
         // client
         itemIconDelayMs = configuration.getInt(
             "DelayMs",
-            "client.item.IconDumper",
+            "client.item",
             itemIconDelayMs,
             0,
             1000,
             "ItemIconDumper delay between items in milliseconds");
-        itemIconSize = configuration.getInt(
-            "iconSize",
-            "client.item.IconDumper",
-            itemIconSize,
-            16,
-            256,
-            "ItemIconDumper output icon size in pixels");
+        itemIconSize = configuration
+            .getInt("iconSize", "client.item", itemIconSize, 16, 256, "ItemIconDumper output icon size in pixels");
 
         blockTileDelayMs = configuration.getInt(
             "DelayMs",
-            "client.block.TileDumper",
+            "client.block",
             blockTileDelayMs,
             0,
             1000,
             "MapTileDumper delay between blocks in milliseconds");
-        blockTileSize = configuration.getInt(
-            "tileSize",
-            "client.block.TileDumper",
-            blockTileSize,
-            16,
-            256,
-            "MapTileDumper output tile size in pixels");
+        blockTileSize = configuration
+            .getInt("tileSize", "client.block", blockTileSize, 16, 256, "MapTileDumper output tile size in pixels");
 
         fluidIconDelayMs = configuration.getInt(
             "DelayMs",
-            "client.fluid.IconDumper",
+            "client.fluid",
             fluidIconDelayMs,
             0,
             1000,
             "FluidIconDumper delay between fluids in milliseconds");
-        fluidIconSize = configuration.getInt(
-            "iconSize",
-            "client.fluid.IconDumper",
-            fluidIconSize,
-            16,
-            256,
-            "FluidIconDumper output icon size in pixels");
+        fluidIconSize = configuration
+            .getInt("iconSize", "client.fluid", fluidIconSize, 16, 256, "FluidIconDumper output icon size in pixels");
 
         if (configuration.hasChanged()) {
             configuration.save();

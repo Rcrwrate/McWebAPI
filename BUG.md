@@ -58,7 +58,7 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 }
 ```
 
-[`/item/ae`](src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java#L106)
+[`/item/ae`](src/main/java/love/shirokasoke/webapi/webserver/handlers/item/AEHandler.java#L106)
 
 ## 2.NBT -> JSON -> NBT
 
@@ -127,13 +127,13 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 服务端数据：
 
-[ItemHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemHandler.java)
+[ItemHandler.java](src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemHandler.java)
 
-[ItemsHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemsHandler.java)
+[ItemsHandler.java](src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemsHandler.java)
 
 客户端数据：
 
-[ItemStaticHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemStaticHandler.java)
+[ItemStaticHandler.java](src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemStaticHandler.java)
 
 ## 4.部分客户端导出的物品icon显示空白
 
@@ -145,7 +145,7 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 ## 5. AE CPU下单必须使用非部件形式的接口
 
-[AECPUTaskHandler.java](src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUTaskHandler.java)
+[AECPUTaskHandler.java](src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUTaskHandler.java)
 
 FMP形式的接口尚未支持
 
