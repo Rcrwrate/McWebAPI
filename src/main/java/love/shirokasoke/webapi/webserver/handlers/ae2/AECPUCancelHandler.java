@@ -11,7 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
-import love.shirokasoke.webapi.CommonProxy;
+import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 
 /**
  * 取消 AE 合成 CPU 上正在执行的合成任务
@@ -89,7 +89,7 @@ public class AECPUCancelHandler extends AEBaseHandler {
         boolean wasBusy = targetCpu.isBusy();
         if (targetCpu instanceof CraftingCPUCluster cluster) {
             try {
-                CommonProxy.runOnServerThread(cluster::cancel);
+                ServerThreadDispatcher.runOnServerThread(cluster::cancel);
             } catch (Exception e) {
                 throw new Error(500, "Cancel failed: " + e.getMessage());
             }
