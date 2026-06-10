@@ -25,7 +25,11 @@ public class Config {
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
-    public static int MaxPerTick = 2;
+    public static int MaxPerTick = 10000;
+    public static int slowQueueBudgetMs = 50;
+
+    // safe
+    public static boolean chunkSafe = false;
 
     // client
     public static int itemIconDelayMs = 10;
@@ -91,7 +95,17 @@ public class Config {
             langFiles,
             "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
         MaxPerTick = configuration
-            .getInt("MaxPerTick", "server", MaxPerTick, 1, 20, "Max Count of Slow Tasks can be runed per Tick");
+            .getInt("MaxPerTick", "server.tick", MaxPerTick, 1, 10000, "Max Count of Slow Tasks can be run per Tick");
+        slowQueueBudgetMs = configuration.getInt(
+            "SlowQueueBudgetMs",
+            "server.tick",
+            slowQueueBudgetMs,
+            1,
+            50,
+            "Max time in ms for slow queue execution per tick");
+
+        // safe
+        chunkSafe = configuration.getBoolean("chunk", "server.safe", chunkSafe, "enable chunk thread safe mode");
 
         // client
         itemIconDelayMs = configuration.getInt(

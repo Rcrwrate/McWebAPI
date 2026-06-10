@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import love.shirokasoke.webapi.Config;
+import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Blocks;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Items;
@@ -22,6 +24,7 @@ public class BlockHandler implements RouteHandler {
 
     protected MinecraftServer server;
     protected WorldServer world;
+    final boolean chunkSafe = Config.chunkSafe;
 
     @Override
     public String getPath() {
@@ -43,7 +46,17 @@ public class BlockHandler implements RouteHandler {
         if (world == null) {
             throw new Error(404, "Invalid dimension: " + co.dimension);
         }
-        if (!world.blockExists(co.posX, co.posY, co.posZ)) {
+        Boolean t = false;
+        if (chunkSafe) {
+            try {
+                t = !ServerThreadDispatcher.callOnServerThread(() -> world.blockExists(co.posX, co.posY, co.posZ));
+            } catch (Exception e) {
+                throw new Error(500, "Error checking block existence: " + e.getMessage());
+            }
+        } else {
+            t = !world.blockExists(co.posX, co.posY, co.posZ);
+        }
+        if (t) {
             throw new Error(404, "Chunk not loaded at coordinates: " + co.toString());
         }
         return co;

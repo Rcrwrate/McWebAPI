@@ -55,3 +55,41 @@ export const SetBlockBodySchema = Joi.object({
 });
 
 export const SetBlockResultSchema = Joi.valid(null);
+
+export const BatchSetBlockTaskSchema = Joi.object({
+    x: Joi.number().required(),
+    y: Joi.number().required(),
+    z: Joi.number().required(),
+    dim: Joi.number().optional(),
+    id: Joi.number().required(),
+    metadata: Joi.number().optional(),
+    flag: Joi.number().optional(),
+});
+
+export const BatchSetBlockSubmitResultSchema = Joi.object({
+    id: Joi.string().required(),
+    total: Joi.number().required(),
+});
+
+export const BatchSetBlockJobStatusSchema = Joi.valid("pending", "running", "completed");
+
+export const BatchSetBlockFailureSchema = Joi.object({
+    x: Joi.number().required(),
+    y: Joi.number().required(),
+    z: Joi.number().required(),
+    reason: Joi.string().required(),
+});
+
+export const BatchSetBlockJobResultSchema = Joi.object({
+    id: Joi.string().required(),
+    total: Joi.number().required(),
+    completed: Joi.number().required(),
+    success: Joi.number().required(),
+    failed: Joi.number().required(),
+    status: BatchSetBlockJobStatusSchema.required(),
+    createTime: Joi.number().required(),
+    finishTime: Joi.number().optional(),
+    durationMs: Joi.number().optional(),
+    failures: Joi.array().items(BatchSetBlockFailureSchema).optional(),
+    failuresTruncated: Joi.number().optional(),
+});
