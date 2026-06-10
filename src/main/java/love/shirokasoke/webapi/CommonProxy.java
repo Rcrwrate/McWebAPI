@@ -15,10 +15,10 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import love.shirokasoke.webapi.server.Auth;
 import love.shirokasoke.webapi.server.Lang;
-import love.shirokasoke.webapi.server.WebServer;
-import love.shirokasoke.webapi.server.handlers.item.ItemStaticHandler;
+import love.shirokasoke.webapi.webserver.Auth;
+import love.shirokasoke.webapi.webserver.WebServer;
+import love.shirokasoke.webapi.webserver.handlers.item.ItemStaticHandler;
 
 public class CommonProxy {
 

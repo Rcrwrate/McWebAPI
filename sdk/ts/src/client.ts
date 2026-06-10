@@ -143,7 +143,7 @@ export class WebApiClient {
     // ========== Root / Status ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/RootHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/RootHandler.java)
      * @returns 使用 {@link RootInfoSchema} 验证
      */
     getRoot(): Promise<RootInfo> {
@@ -153,7 +153,7 @@ export class WebApiClient {
     // ========== TPS / Performance ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/TPSHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/TPSHandler.java)
      * @returns 使用 `Joi.object().pattern(Joi.string(), {@link TPSInfoSchema})` 验证
      */
     getTPS(): Promise<Record<string, TPSInfo>> {
@@ -161,7 +161,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ProfilerHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ProfilerHandler.java)
      * @returns 使用 {@link ProfilerDataSchema} 验证
      */
     getProfiler(): Promise<ProfilerData> {
@@ -169,7 +169,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/LagAnalyzerHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/LagAnalyzerHandler.java)
      * @returns 使用 {@link LagAnalyzerDataSchema} 验证
      */
     getLagAnalyzer(): Promise<LagAnalyzerData> {
@@ -179,7 +179,7 @@ export class WebApiClient {
     // ========== World ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/WorldInfoHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/WorldInfoHandler.java)
      * @returns 使用 `Joi.object().pattern(Joi.string(), {@link WorldInfoDataSchema})` 验证
      */
     getWorldInfo(): Promise<Record<string, WorldInfoData>> {
@@ -189,7 +189,7 @@ export class WebApiClient {
     // ========== Blocks ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/BlocksHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BlocksHandler.java)
      * @returns 使用 {@link BlockSchema}[] 验证
      */
     getBlocks(): Promise<Block[]> {
@@ -197,7 +197,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/BlockHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BlockHandler.java)
      * @returns 使用 {@link BlockDetailSchema} 验证
      */
     getBlock(params: { x: number, y: number, z: number, dim?: number }): Promise<BlockDetail> {
@@ -205,7 +205,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/SetBlockHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/SetBlockHandler.java)
      * @param body 使用 {@link SetBlockBodySchema} 验证
      * @returns 使用 {@link SetBlockResultSchema} 验证
      */
@@ -218,7 +218,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/FMPHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/FMPHandler.java)
      * @returns 使用 {@link FMPPartSchema}[] 验证
      */
     getBlockFMP(params: Coordinates): Promise<FMPPart[]> {
@@ -226,7 +226,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/block/BlockTileHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BlockTileHandler.java)
      * @returns 二进制数据，无 JSON Schema
      */
     getBlockTile(params: { id?: number; regName?: string; meta?: number }): Promise<ArrayBuffer> {
@@ -236,7 +236,7 @@ export class WebApiClient {
     // ========== Items ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemsHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemsHandler.java)
      * @returns 使用 {@link ItemSchema}[] 验证
      */
     getItems(): Promise<Item[]> {
@@ -244,8 +244,8 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemHandler.java)
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemStaticHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemStaticHandler.java)
      * @returns 使用 {@link ItemDetailSchema} 验证
      */
     getItem(params: { id: number }): Promise<ItemDetail> {
@@ -253,7 +253,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/ItemIconHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemIconHandler.java)
      * @param params.id 物品 ID（对应 ItemStack 的 id）
      * @param params.damage 物品损伤值/元数据（可选，默认 0）
      * @param params.tag Base64 编码的 NBTTagCompound（可选）
@@ -264,7 +264,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/item/AEHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/AEHandler.java)
      * @returns 使用 {@link AEItemDefinitionsSchema} 验证
      */
     getAEItems(): Promise<AEItemDefinitions> {
@@ -274,7 +274,7 @@ export class WebApiClient {
     // ========== Fluids ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/fluid/FluidsHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidsHandler.java)
      * @returns 使用 {@link FluidSchema}[] 验证
      */
     getFluids(): Promise<Fluid[]> {
@@ -282,7 +282,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/fluid/FluidContainersHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidContainersHandler.java)
      * @returns 使用 {@link FluidContainerSchema}[] 验证
      */
     getFluidContainers(): Promise<FluidContainer[]> {
@@ -290,7 +290,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/fluid/FluidIconHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidIconHandler.java)
      * @param params.id 流体 ID（对应 Fluid 的 fluidID）
      * @param params.name 流体名称（对应 Fluid 的 name）
      * @returns 二进制 PNG 图片数据 (ArrayBuffer)
@@ -302,7 +302,7 @@ export class WebApiClient {
     // ========== Entities ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/entity/EntitiesHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/entity/EntitiesHandler.java)
      * @returns 使用 `Joi.object().pattern(Joi.string(),`{@link EntitiesByDimensionSchema}`)` 验证
      * 
      * 其中实体为 {@link EntitySummarySchema} 精简结构
@@ -312,7 +312,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/entity/EntityHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/entity/EntityHandler.java)
      * @returns 使用 {@link EntitySchema} 验证
      */
     getEntity(params: { id: number }): Promise<Entity> {
@@ -322,7 +322,7 @@ export class WebApiClient {
     // ========== Chunks ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunksHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunksHandler.java)
      * @returns 使用 `Joi.object().pattern(Joi.string(),`{@link ChunksByDimensionSchema}`)` 验证
      */
     getChunks(): Promise<Record<string, ChunksByDimension>> {
@@ -330,7 +330,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunkHandler.java)
      * @returns 使用 {@link ChunkWithDimensionSchema} 验证
      */
     getChunk(
@@ -340,7 +340,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkMapHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunkMapHandler.java)
      * @returns JSON 模式使用 {@link ChunkMapCellSchema}[][] 验证；raw 模式为 ArrayBuffer
      */
     getChunkMap(
@@ -355,7 +355,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkForceHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunkForceHandler.java)
      * @returns 使用 {@link ChunkForceListSchema} 验证
      */
     getChunkForceList(): Promise<ChunkForceList> {
@@ -363,7 +363,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkForceHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunkForceHandler.java)
      * @returns 使用 {@link ChunkLoadResultSchema} 验证
      */
     loadChunk(params: { x: number; z: number; dim?: number; duration?: number } | { chunkX: number; chunkZ: number; dim?: number; duration?: number }): Promise<ChunkLoadResult> {
@@ -373,7 +373,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/chunk/ChunkForceHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunkForceHandler.java)
      * @returns 使用 {@link ChunkLoadResultSchema} 验证
      */
     unloadChunk(params: { x: number; z: number; dim?: number } | { chunkX: number; chunkZ: number; dim?: number }): Promise<ChunkLoadResult> {
@@ -385,7 +385,7 @@ export class WebApiClient {
     // ========== AE2 ==========
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEBaseHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEBaseHandler.java)
      * @returns 使用 {@link AEHitResultSchema} 验证
      */
     aeHit(params: { x: number, y: number, z: number, dimension?: number }): Promise<AEHitResult> {
@@ -393,7 +393,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AENodesHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AENodesHandler.java)
      * @returns 使用 {@link AENodeSchema}[] 验证
      */
     aeNodes(params: { x: number, y: number, z: number, dimension?: number }): Promise<AENode[]> {
@@ -401,7 +401,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUHandler.java)
      * @returns 使用 {@link AECPUSchema}[] 验证
      */
     aeCPUs(params: { x: number, y: number, z: number, dimension?: number }): Promise<AECPU[]> {
@@ -409,7 +409,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEMEHandler.java)
      * @returns 使用 `Joi.array().items(`{@link AE2PatternSchema}`.keys({ slot: Joi.number().required(), direction: Joi.string().optional() }))` 验证
      */
     aeME(params: { x: number, y: number, z: number, dimension?: number }): Promise<Array<AE2Pattern & { slot: number; direction?: string }>> {
@@ -419,7 +419,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEsHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEMEsHandler.java)
      * @returns 使用 {@link AEMEInterfaceSchema}[] 验证
      */
     aeMEs(params: { x: number, y: number, z: number, dimension?: number, load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
@@ -427,7 +427,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEMEsupportHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEMEsupportHandler.java)
      * @returns 字符串数组，无专用 Schema
      */
     aeMESupport(): Promise<string[]> {
@@ -435,7 +435,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AEItemHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEItemHandler.java)
      * @returns 使用 {@link AEItemsResultSchema} 验证
      */
     aeItems(params: { x: number, y: number, z: number, dimension?: number }): Promise<AEItemsResult> {
@@ -443,7 +443,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUTaskHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUTaskHandler.java)
      * @param body 使用 {@link AECraftingTaskBodySchema} 验证
      * @returns 使用 {@link AECraftingTaskResultSchema} 验证
      */
@@ -456,7 +456,7 @@ export class WebApiClient {
     }
 
     /**
-     * @java [java](../../../src/main/java/love/shirokasoke/webapi/server/handlers/ae2/AECPUCancelHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUCancelHandler.java)
      * @param body 使用 {@link AECPUCancelBodySchema} 验证
      * @returns 使用 {@link AECPUCancelResultSchema} 验证
      */
