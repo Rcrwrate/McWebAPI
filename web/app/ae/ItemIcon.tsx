@@ -55,13 +55,15 @@ export default function ItemIcon({ api, item, badge }: { api: NonNullable<Return
             key={url}
             src={url}
             alt={item.localizedName}
-            style={{ width: 48, height: 48, imageRendering: "pixelated" }}
+            onContextMenu={(e) => e.preventDefault()}
+            style={{ width: 48, height: 48, imageRendering: "pixelated", WebkitTouchCallout: "none", userSelect: "none" }}
         />
     </Badge> :
         <img
             key={url}
             src={url}
             alt={item.localizedName}
-            style={{ width: 48, height: 48, imageRendering: "pixelated" }}
+            onContextMenu={(e) => e.preventDefault()}
+            style={{ width: 48, height: 48, imageRendering: "pixelated", WebkitTouchCallout: "none", userSelect: "none" }}
         />
 }

@@ -250,7 +250,7 @@ export default function AEItemPage() {
                     <DataGrid
                         apiRef={apiRef}
                         rows={items}
-                        columns={columns}
+                        columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                         loading={items.length === 0}
                         getRowId={(row) => row.uid}
                         pageSizeOptions={[25, 50, 100, 500]}

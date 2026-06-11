@@ -246,6 +246,20 @@ export class WebApiClient {
     }
 
     /**
+     * 轮询等待批量 setblock 任务完成。
+     * @param jobId 任务 ID（由 batchSetBlock 返回）
+     * @param intervalMs 轮询间隔 (ms)，默认 100
+     * @returns 最终的 {@link BatchSetBlockJobResult}
+     */
+    async waitForBatchSetBlockJob(jobId: string, intervalMs = 100): Promise<BatchSetBlockJobResult> {
+        while (true) {
+            const job = await this.getBatchSetBlockJob({ id: jobId });
+            if (job.status === "completed") return job;
+            await new Promise(r => setTimeout(r, intervalMs));
+        }
+    }
+
+    /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/FMPHandler.java)
      * @returns 使用 {@link FMPPartSchema}[] 验证
      */
@@ -377,7 +391,7 @@ export class WebApiClient {
     ): Promise<ArrayBuffer | ChunkMapCell[][]> {
         const q = buildQuery({
             ...(params as object),
-            raw: raw !== undefined ? String(raw) : undefined,
+            raw: raw == true ? String(raw) : undefined,
         } as object);
         return this.request<ArrayBuffer | ChunkMapCell[][]>(`/chunk/map${q}`);
     }

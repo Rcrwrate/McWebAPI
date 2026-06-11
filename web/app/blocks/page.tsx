@@ -222,7 +222,7 @@ export default function BlocksPage() {
                 <Paper sx={{ height: "70vh", width: "100%" }}>
                     <DataGrid apiRef={apiRef}
                         rows={blocks}
-                        columns={columns}
+                        columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                         loading={blocks.length == 0}
                         getRowId={(row) => row.registryName}
                         pageSizeOptions={[25, 50, 100, 500]}

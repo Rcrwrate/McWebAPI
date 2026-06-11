@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 
 import { WebApiClient } from "../src/client";
-import type { Block, BlockDetail, BatchSetBlockTask, BatchSetBlockSubmitResult, BatchSetBlockJobResult } from "../src/types/block";
+import type { Block, BlockDetail, BatchSetBlockTask } from "../src/types/block";
 import * as v from "../src/validators";
 
 const api = new WebApiClient({ baseUrl: "http://localhost:40002" })
@@ -87,8 +87,7 @@ describe(`batchSetBlock?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
     })
 
     await it("batch query", async () => {
-        await sleep(2000)
-        const jobResult = await api.getBatchSetBlockJob({ id: jobId });
+        const jobResult = await api.waitForBatchSetBlockJob(jobId);
         assert.ok(v.BatchSetBlockJobResultSchema.validate(jobResult).error == undefined)
         assert.strictEqual(jobResult.id, jobId)
         assert.strictEqual(jobResult.total, 1)

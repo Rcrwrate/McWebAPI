@@ -27,18 +27,6 @@ async function parallel<T>(tasks: (() => Promise<T>)[], concurrency: number): Pr
 const Y_MIN = 0;
 const Y_MAX = 100;
 
-/** 轮询间隔 (ms) */
-const POLL_INTERVAL = 100;
-
-/** 等待批量任务完成 */
-async function waitForJob(jobId: string): Promise<ReturnType<typeof api.getBatchSetBlockJob>> {
-    while (true) {
-        const job = await api.getBatchSetBlockJob({ id: jobId });
-        if (job.status === "completed") return job;
-        await new Promise(r => setTimeout(r, POLL_INTERVAL));
-    }
-}
-
 describe(`batchSetBlock performance (y=${Y_MIN}-${Y_MAX})`, async () => {
     // 获取方块列表，随机选一个
     const blocks = await api.getBlocks();
@@ -92,7 +80,7 @@ describe(`batchSetBlock performance (y=${Y_MIN}-${Y_MAX})`, async () => {
         const submit = await api.batchSetBlock(tasks);
         const submitTime = performance.now() - start;
 
-        const job = await waitForJob(submit.id);
+        const job = await api.waitForBatchSetBlockJob(submit.id);
         const totalTime = performance.now() - start;
 
         console.log(
@@ -117,7 +105,7 @@ describe(`batchSetBlock performance (y=${Y_MIN}-${Y_MAX})`, async () => {
 
         const start = performance.now();
         const submit = await api.batchSetBlock(tasks);
-        const job = await waitForJob(submit.id);
+        const job = await api.waitForBatchSetBlockJob(submit.id);
         const elapsed = performance.now() - start;
 
         console.log(`[perf] Restore done in ${elapsed.toFixed(1)}ms, success=${job.success}, failed=${job.failed}`);
