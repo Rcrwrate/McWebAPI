@@ -307,7 +307,7 @@ export default function AECPUPage() {
                 <DataGrid
                     apiRef={apiRef}
                     rows={cpus}
-                    columns={columns}
+                    columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                     loading={cpus.length == 0}
                     getRowId={(row) => row.id}
                     pageSizeOptions={[25, 50, 100]}

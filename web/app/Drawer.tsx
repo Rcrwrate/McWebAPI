@@ -8,6 +8,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import SettingsIcon from '@mui/icons-material/Settings';
 import StarIcon from '@mui/icons-material/Star';
+import MapIcon from '@mui/icons-material/Map';
 import StorageIcon from '@mui/icons-material/Storage';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
@@ -23,6 +24,7 @@ const DRAWER_WIDTH = 240;
 const LINKS = [
     { text: 'Home', href: '/i', icon: HomeIcon },
     { text: 'Blocks', href: '/blocks', icon: ViewModuleIcon },
+    { text: 'Map', href: '/map', icon: MapIcon },
     { text: 'AE', href: '/ae', icon: StorageIcon },
     { text: 'Search', href: '/search', icon: SearchIcon },
     { text: 'Popular', href: '/popular', icon: WhatshotIcon },
