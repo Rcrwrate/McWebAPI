@@ -27,4 +27,5 @@ export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 export interface RootInfo {
     modid: string;
     version: string;
+    buildTime?: number;
 }

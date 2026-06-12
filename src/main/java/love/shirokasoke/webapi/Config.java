@@ -28,6 +28,9 @@ public class Config {
     public static int MaxPerTick = 10000;
     public static int slowQueueBudgetMs = 50;
 
+    // update checker
+    public static boolean enableUpdateCheck = true;
+
     // safe
     public static boolean chunkSafe = false;
 
@@ -103,6 +106,10 @@ public class Config {
             1,
             50,
             "Max time in ms for slow queue execution per tick");
+
+        // update checker
+        enableUpdateCheck = configuration
+            .getBoolean("enableUpdateCheck", "update", enableUpdateCheck, "Enable update checking on server start");
 
         // safe
         chunkSafe = configuration.getBoolean("chunk", "server.safe", chunkSafe, "enable chunk thread safe mode");

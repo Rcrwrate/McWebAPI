@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.Tags;
+import love.shirokasoke.webapi.thread.UpdateChecker;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
@@ -29,6 +30,11 @@ public class RootHandler implements RouteHandler {
         ObjectNode response = mapper.createObjectNode();
         response.put("modid", MyMod.MODID);
         response.put("version", Tags.VERSION);
+
+        java.util.Date buildTime = UpdateChecker.readLocalBuildTime();
+        if (buildTime != null) {
+            response.put("buildTime", buildTime.getTime() / 1000);
+        }
 
         setCache(exchange, 86400);
         sendResponse(exchange, response);
