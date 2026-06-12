@@ -12,7 +12,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import love.shirokasoke.webapi.server.Lang;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
-import love.shirokasoke.webapi.webserver.Auth;
+import love.shirokasoke.webapi.webserver.Auth.Auth;
 import love.shirokasoke.webapi.webserver.WebServer;
 import love.shirokasoke.webapi.webserver.handlers.item.ItemStaticHandler;
 
@@ -48,16 +48,17 @@ public class CommonProxy {
     // register server commands in this event handler (Remove if not needed)
     public void serverStarting(FMLServerStartingEvent event) {
         MyMod.LOG.info("Server Starting");
-        Auth.setup(Config.authUrlPrefixes);
+        Auth.init();
         WebServer.start(Config.httpPort, Config.nThreads);
-        Lang.setup(Config.langFiles);
+        for (String i : Config.disabledRoutes) {
+            WebServer.removeRoute(i);
+        }
         FMLCommonHandler.instance()
             .bus()
             .register(new ServerThreadDispatcher());
         ServerThreadDispatcher.setSlowTasksPerTick(Config.MaxPerTick);
         ServerThreadDispatcher.setSlowQueueBudgetMs(Config.slowQueueBudgetMs);
 
-        // Async update check
         if (Config.enableUpdateCheck) {
             new love.shirokasoke.webapi.thread.UpdateChecker().checkAsync();
         }
@@ -74,11 +75,11 @@ public class CommonProxy {
         if (Config.itemThreadEnable) {
             new love.shirokasoke.webapi.thread.ItemsThread().start();
         }
+        Lang.setup(Config.langFiles);
     }
 
     // Called when the server is stopping
     public void serverStopping(FMLServerStoppingEvent event) {
-        // 停止HTTP服务器
         WebServer.stop();
     }
 }

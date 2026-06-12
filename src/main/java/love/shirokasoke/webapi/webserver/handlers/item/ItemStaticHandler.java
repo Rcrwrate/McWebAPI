@@ -68,7 +68,7 @@ public class ItemStaticHandler implements RouteHandler {
     }
 
     public void inject() {
-        WebServer.remove("/item");
+        WebServer.removeRoute("/item");
         WebServer.addRoute(this);
     }
 

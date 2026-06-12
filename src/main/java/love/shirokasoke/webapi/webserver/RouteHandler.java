@@ -20,6 +20,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.webserver.Auth.Auth;
 
 /**
  * Route handler interface for WebAPI Implement this interface to create new API

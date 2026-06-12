@@ -123,7 +123,7 @@ public class WebServer {
         }
     }
 
-    public static void remove(String path) {
+    public static void removeRoute(String path) {
         server.removeContext(path);
     }
 }

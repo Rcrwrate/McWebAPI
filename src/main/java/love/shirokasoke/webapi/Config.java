@@ -24,7 +24,11 @@ public class Config {
 
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
+    public static String[] bannedPrefixes = new String[] {};
+    public static String[] disabledRoutes = new String[] { "/test" };
+
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
+
     public static int MaxPerTick = 10000;
     public static int slowQueueBudgetMs = 50;
 
@@ -92,6 +96,17 @@ public class Config {
             "server.security",
             authUrlPrefixes,
             "List of URL prefixes (e.g., '/setblock|GET|POST', '/chunk/force|GET|POST') which need auth");
+        bannedPrefixes = configuration.getStringList(
+            "bannedPrefixes",
+            "server.security",
+            bannedPrefixes,
+            "List of URL prefixes (e.g., '/setblock|GET|POST', '/chunk/force|GET|POST') to ban");
+        disabledRoutes = configuration.getStringList(
+            "disabledRoutes",
+            "server.security",
+            disabledRoutes,
+            "List of route paths to disable completely (e.g., '/test', '/profiler')");
+
         langFiles = configuration.getStringList(
             "langFiles",
             "localization",
