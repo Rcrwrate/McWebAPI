@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.utils.CItems;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.NBT;
 import love.shirokasoke.webapi.utils.log;
 
 /**
@@ -53,10 +55,10 @@ public class ItemIconDumperThread extends Thread {
     private final Minecraft mc;
     /** 独立 Framebuffer，用于离屏渲染物品图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
+    private final int mode;
 
-    private boolean useNEI = false;
-
-    public ItemIconDumperThread(boolean useNEI) {
+    /** @param mode 0=默认, 1=NEI, 2=missing */
+    public ItemIconDumperThread(int mode) {
         super("ItemIcon-Dumper");
         setDaemon(true);
         this.mc = Minecraft.getMinecraft();
@@ -65,136 +67,200 @@ public class ItemIconDumperThread extends Thread {
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
-        this.useNEI = useNEI;
+        this.mode = mode;
     }
 
     @Override
     public void run() {
         try {
-            MyMod.LOG.info("开始收集物品列表...");
-            List<ItemStack> allStacks;
-            if (useNEI) {
-                allStacks = ItemList.items;
-            } else {
-                allStacks = CItems.getAllItems();
+            switch (mode) {
+                case 2:
+                    runMissingMode();
+                    break;
+                default:
+                    runFullMode();
+                    break;
             }
-            MyMod.LOG.info("开始导出物品数据到 items.json...");
-            File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
-            Map<String, ObjectNode> merged = new LinkedHashMap<>();
+        } catch (Throwable e) {
+            MyMod.LOG.error("导出物品图标时出错");
+            log.e(e);
+        }
+    }
 
-            if (dumpsFile.exists()) {
-                try {
-                    JsonNode existing = Constant.mapper.readTree(dumpsFile);
-                    if (existing.isArray()) {
-                        for (JsonNode node : existing) {
-                            if (node.isObject()) {
-                                ObjectNode obj = (ObjectNode) node;
-                                merged.put(getUniqueKey(obj), obj);
-                            }
-                        }
-                    }
-                    MyMod.LOG.info("已加载现有 items.json，共 {} 条记录", merged.size());
-                } catch (IOException e) {
-                    MyMod.LOG.error("读取已存在的 items.json 失败");
-                    log.e(e);
-                }
-            }
+    private void runMissingMode() throws Exception {
+        File missingFile = new File(mc.mcDataDir, "dumps/missing-icons.json");
+        if (!missingFile.exists()) {
+            MyMod.LOG.error("missing-icons.json 不存在: {}", missingFile.getAbsolutePath());
+            return;
+        }
 
-            for (ItemStack stack : allStacks) {
-                try {
-                    ObjectNode data = Items.dump(stack);
-                    merged.put(getUniqueKey(data), data);
-                } catch (Throwable t) {
-                    MyMod.LOG.error("导出物品数据失败: {}", stack, t);
-                }
-            }
+        JsonNode root;
+        try {
+            root = Constant.mapper.readTree(missingFile);
+        } catch (IOException e) {
+            MyMod.LOG.error("读取 missing-icons.json 失败");
+            log.e(e);
+            return;
+        }
 
-            ArrayNode dumps = Constant.mapper.createArrayNode();
-            for (ObjectNode data : merged.values()) {
-                dumps.add(data);
-            }
+        if (!root.isArray()) {
+            MyMod.LOG.error("missing-icons.json 格式错误，期望数组");
+            return;
+        }
 
+        List<ItemStack> stacks = new ArrayList<>();
+        for (JsonNode node : root) {
+            if (!node.isObject()) continue;
+            ObjectNode obj = (ObjectNode) node;
             try {
-                Constant.mapper.writeValue(dumpsFile, dumps);
-                MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
-            } catch (IOException e) {
-                MyMod.LOG.error("写入 items.json 失败");
+                ItemStack stack = fromDump(obj);
+                if (stack != null && stack.getItem() != null) {
+                    stacks.add(stack);
+                } else {
+                    MyMod.LOG.warn(
+                        "无法恢复物品: id={}, damage={}",
+                        node.path("id")
+                            .asInt(),
+                        node.path("damage")
+                            .asInt());
+                }
+            } catch (Exception e) {
+                MyMod.LOG.error(
+                    "恢复物品失败: id={}, damage={}",
+                    node.path("id")
+                        .asInt(),
+                    node.path("damage")
+                        .asInt());
                 log.e(e);
             }
-            MyMod.LOG.info("共 {} 个物品需要导出", allStacks.size());
+        }
 
-            int exported = 0;
-            long startTime = System.currentTimeMillis();
+        MyMod.LOG.info("missing-icons.json 共 {} 条记录，成功恢复 {} 个物品", root.size(), stacks.size());
+        exportIcons(stacks);
+    }
 
-            for (ItemStack stack : allStacks) {
-                if (interrupted()) {
-                    MyMod.LOG.warn("被中断，停止导出");
-                    break;
-                }
+    private void runFullMode() throws Exception {
+        MyMod.LOG.info("开始收集物品列表...");
+        List<ItemStack> allStacks;
+        if (mode == 1) {
+            allStacks = ItemList.items;
+        } else {
+            allStacks = CItems.getAllItems();
+        }
+        MyMod.LOG.info("开始导出物品数据到 items.json...");
+        File dumpsFile = new File(mc.mcDataDir, "dumps/items.json");
+        Map<String, ObjectNode> merged = new LinkedHashMap<>();
 
-                String fileName = Items.getFileName(stack);
-                File outFile = new File(outputDir, fileName + ".png");
-                if (outFile.exists()) {
-                    MyMod.LOG.warn(fileName + "\tskiped");
-                    continue;
-                }
-
-                // 复制 ItemStack 防止并发修改
-                final ItemStack stackRef = stack.copy();
-                final RenderResult result = new RenderResult();
-
-                // 将渲染任务投递到客户端主线程（拥有 OpenGL Context）
-                mc.func_152344_a(() -> {
-                    try {
-                        BufferedImage img = renderItem(stackRef);
-                        result.image = img;
-                    } catch (Exception e) {
-                        MyMod.LOG.error("渲染物品失败: {}", stackRef);
-                        log.e(e);
-                        result.image = null;
-                    } finally {
-                        result.done = true;
-                        synchronized (result) {
-                            result.notifyAll();
+        if (dumpsFile.exists()) {
+            try {
+                JsonNode existing = Constant.mapper.readTree(dumpsFile);
+                if (existing.isArray()) {
+                    for (JsonNode node : existing) {
+                        if (node.isObject()) {
+                            ObjectNode obj = (ObjectNode) node;
+                            merged.put(getUniqueKey(obj), obj);
                         }
                     }
-                });
-                // 后台线程阻塞等待主线程渲染完成
-                synchronized (result) {
-                    while (!result.done) {
+                }
+                MyMod.LOG.info("已加载现有 items.json，共 {} 条记录", merged.size());
+            } catch (IOException e) {
+                MyMod.LOG.error("读取已存在的 items.json 失败");
+                log.e(e);
+            }
+        }
+        for (ItemStack stack : allStacks) {
+            try {
+                ObjectNode data = Items.dump(stack);
+                merged.put(getUniqueKey(data), data);
+            } catch (Throwable t) {
+                MyMod.LOG.error("导出物品数据失败: {}", stack, t);
+            }
+        }
+        ArrayNode dumps = Constant.mapper.createArrayNode();
+        for (ObjectNode data : merged.values()) {
+            dumps.add(data);
+        }
+        try {
+            Constant.mapper.writeValue(dumpsFile, dumps);
+            MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
+        } catch (IOException e) {
+            MyMod.LOG.error("写入 items.json 失败");
+            log.e(e);
+        }
+        exportIcons(allStacks);
+    }
+
+    private void exportIcons(List<ItemStack> stacks) {
+        MyMod.LOG.info("共 {} 个物品需要导出图标", stacks.size());
+        int exported = 0;
+        long startTime = System.currentTimeMillis();
+        for (ItemStack stack : stacks) {
+            if (interrupted()) {
+                MyMod.LOG.warn("被中断，停止导出");
+                break;
+            }
+            String fileName = Items.getFileName(stack);
+            File outFile = new File(outputDir, fileName + ".png");
+            if (outFile.exists()) {
+                MyMod.LOG.warn(fileName + "\tskiped");
+                continue;
+            }
+            // 复制 ItemStack 防止并发修改
+            final ItemStack stackRef = stack.copy();
+            final RenderResult result = new RenderResult();
+            // 将渲染任务投递到客户端主线程（拥有 OpenGL Context）
+            mc.func_152344_a(() -> {
+                try {
+                    BufferedImage img = renderItem(stackRef);
+                    result.image = img;
+                } catch (Exception e) {
+                    MyMod.LOG.error("渲染物品失败: {}", stackRef);
+                    log.e(e);
+                    result.image = null;
+                } finally {
+                    result.done = true;
+                    synchronized (result) {
+                        result.notifyAll();
+                    }
+                }
+            });
+            // 后台线程阻塞等待主线程渲染完成
+            synchronized (result) {
+                while (!result.done) {
+                    try {
                         result.wait(50);
-                    }
-                }
-                if (result.image != null) {
-                    try {
-                        ImageIO.write(result.image, "png", outFile);
-                        exported++;
-                    } catch (IOException e) {
-                        MyMod.LOG.error("保存图片失败: {}", outFile.getAbsolutePath());
-                        log.e(e);
-                    }
-                }
-                // 可配置的延迟，降低 CPU/GPU 占用
-                if (Config.itemIconDelayMs > 0) {
-                    try {
-                        Thread.sleep(Config.itemIconDelayMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread()
                             .interrupt();
                         break;
                     }
                 }
-                if (exported % 100 == 0 && exported > 0) {
-                    MyMod.LOG.info("已导出 {} / {} 个物品", exported, allStacks.size());
+            }
+            if (result.image != null) {
+                try {
+                    ImageIO.write(result.image, "png", outFile);
+                    exported++;
+                } catch (IOException e) {
+                    MyMod.LOG.error("保存图片失败: {}", outFile.getAbsolutePath());
+                    log.e(e);
                 }
             }
-
-            long duration = System.currentTimeMillis() - startTime;
-            MyMod.LOG.info("导出完成，共 {} 个物品，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
-        } catch (Throwable e) {
-            MyMod.LOG.error("导出物品图标时出错");
-            log.e(e);
+            // 可配置的延迟，降低 CPU/GPU 占用
+            if (Config.itemIconDelayMs > 0) {
+                try {
+                    Thread.sleep(Config.itemIconDelayMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread()
+                        .interrupt();
+                    break;
+                }
+            }
+            if (exported % 100 == 0 && exported > 0) {
+                MyMod.LOG.info("已导出 {} / {} 个物品", exported, stacks.size());
+            }
         }
+        long duration = System.currentTimeMillis() - startTime;
+        MyMod.LOG.info("导出完成，共 {} 个物品，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
     }
 
     /**
@@ -299,6 +365,36 @@ public class ItemIconDumperThread extends Thread {
             return value.asText();
         }
         return "";
+    }
+
+    private static ItemStack fromDump(JsonNode node) {
+        if (node == null || !node.has("id")) return null;
+        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
+        nbt.setShort(
+            "id",
+            (short) node.get("id")
+                .asInt());
+        nbt.setByte("Count", (byte) 1);
+        nbt.setShort(
+            "Damage",
+            (short) node.path("damage")
+                .asInt(0));
+
+        if (node.has("tag") && !node.get("tag")
+            .isNull()) {
+            String nbtWrite = node.get("tag")
+                .asText();
+            if (nbtWrite != null && !nbtWrite.isEmpty()) {
+                net.minecraft.nbt.NBTTagCompound tagNbt = NBT.readFromBase64(nbtWrite);
+                if (tagNbt != null) {
+                    nbt.setTag("tag", tagNbt);
+                }
+            }
+        }
+
+        ItemStack stack = ItemStack.loadItemStackFromNBT(nbt);
+        if (stack == null || stack.getItem() == null) return null;
+        return stack;
     }
 
     private static class RenderResult {

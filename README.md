@@ -2,17 +2,53 @@
 
 ## 下载
 
-[![Build and test](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
+[![最新构建(测试)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
 
-点击上方下载
+[![最新发布](https://img.shields.io/github/v/release/Rcrwrate/MCWebAPI)](https://github.com/Rcrwrate/McWebAPI/releases/latest)
 
 ## 使用说明
 
-如果希望使用图标功能的话，请在下发下载预导出的文件并解压到服务端的根目录，或者自行在客户端安装mod使用`/export`指令进行导出再移动到服务端的dumps目录下
+如果希望使用图标相关的功能的话，请在下载预导出的文件并解压到服务端的根目录，或者自行在客户端安装mod使用`/export`指令进行导出再移动到服务端的dumps目录下
 
 > 默认目录为dumps，可在配置文件中修改
 
 [2.8.4.dumps.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.7z)
+
+请在下方两个仓库中寻找预导出的压缩包
+
+> https://cnb.cool/Cool_Sapphire/file
+> 
+> https://cnb.cool/shirokasoke/McWebAPI/-/releases
+
+## 自行导出图片
+
+在客户端（需要安装mod）中使用 `/export` 命令导出游戏内资源为图片文件，所有图片输出到 `.minecraft/dumps/item_icons/` 目录。
+
+### 命令格式
+
+```
+/export <items|nei|missing|blocks|fluids>
+```
+
+| 子命令 | 说明 |
+|--------|------|
+| `items` | 默认模式。遍历游戏中所有注册物品及子物品，导出图标并生成 `items.json` |
+| `nei` | NEI 模式。使用 NEI 物品列表进行导出，生成 `items.json` + 图标 |
+| `missing` | 缺失模式。读取 `dumps/missing-icons.json` 中的物品列表，仅导出缺失的图标，不生成 `items.json` |
+| `blocks` | 导出方块纹理贴图 |
+| `fluids` | 导出流体图标 |
+
+### missing 模式说明
+
+1. 启动游戏**服务端**，运行 WebAPI
+2. 使用 TS SDK 中的检测脚本扫描缺失图标的物品：
+   - `tool.checkicon.ts` — 扫描全物品（含子物品）
+   - `tool.checkaeicon.ts` — 扫描你 AE 网络存储中的物品
+3. 两个脚本的结果统一写入 `missing-icons.json`，自动去重并排除 `ae2fc:fluid_drop`
+4. 将 `missing-icons.json` 放入**客户端** `.minecraft/dumps/` 目录
+5. 打开**客户端**，执行 `/export missing`，自动读取 JSON 并补导出缺失图标
+
+> 已存在的图标会自动跳过，不会重复导出。
 
 ## BUG
 

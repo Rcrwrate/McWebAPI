@@ -22,7 +22,7 @@ public class ExportCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/export <nei|items|blocks|fluids>";
+        return "/export <items|nei|missing|blocks|fluids>";
     }
 
     @Override
@@ -32,14 +32,16 @@ public class ExportCommand extends CommandBase {
             return;
         }
         String sub = args[0].toLowerCase();
-        if ("items".equals(sub) || "nei".equals(sub)) {
+        if ("items".equals(sub) || "nei".equals(sub) || "missing".equals(sub)) {
             if (itemThread != null && itemThread.isAlive()) {
                 sender.addChatMessage(new ChatComponentText("[WebAPI] 物品图标导出线程已在运行中。"));
                 return;
             }
-            MyMod.LOG.info("[ExportImagesCommand] 用户手动触发，启动 ItemIconDumperThread...");
-            sender.addChatMessage(new ChatComponentText("[WebAPI] 正在启动物品图标导出线程..."));
-            itemThread = new ItemIconDumperThread("nei".equals(sub));
+            int mode = "nei".equals(sub) ? 1 : "missing".equals(sub) ? 2 : 0;
+            String modeName = mode == 0 ? "默认" : mode == 1 ? "NEI" : "missing";
+            MyMod.LOG.info("[ExportImagesCommand] 用户触发 {} 模式，启动 ItemIconDumperThread...", modeName);
+            sender.addChatMessage(new ChatComponentText("[WebAPI] 正在启动物品图标导出线程（模式: " + modeName + "）..."));
+            itemThread = new ItemIconDumperThread(mode);
             itemThread.start();
             sender.addChatMessage(new ChatComponentText("[WebAPI] 物品图标导出线程已启动，请查看后台日志。"));
         } else if ("blocks".equals(sub)) {
