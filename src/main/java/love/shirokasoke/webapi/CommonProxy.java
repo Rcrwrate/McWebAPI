@@ -56,6 +56,11 @@ public class CommonProxy {
             .register(new ServerThreadDispatcher());
         ServerThreadDispatcher.setSlowTasksPerTick(Config.MaxPerTick);
         ServerThreadDispatcher.setSlowQueueBudgetMs(Config.slowQueueBudgetMs);
+
+        // Async update check
+        if (Config.enableUpdateCheck) {
+            new love.shirokasoke.webapi.thread.UpdateChecker().checkAsync();
+        }
     }
 
     public void serverStarted(FMLServerStartedEvent event) {

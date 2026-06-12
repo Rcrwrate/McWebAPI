@@ -108,6 +108,28 @@ export default function MapPage() {
     const animFrameRef = useRef(0)
     const loadingSetRef = useRef(new Set<string>())
 
+    // Concurrency limiter
+    const MAX_CONCURRENT = 8
+    const concurrentRef = useRef({ running: 0, queue: [] as (() => void)[] })
+    const acquire = useCallback(() => new Promise<void>((resolve) => {
+        const c = concurrentRef.current
+        if (c.running < MAX_CONCURRENT) {
+            c.running++
+            resolve()
+        } else {
+            c.queue.push(resolve)
+        }
+    }), [])
+    const release = useCallback(() => {
+        const c = concurrentRef.current
+        c.running--
+        const next = c.queue.shift()
+        if (next) {
+            c.running++
+            next()
+        }
+    }, [])
+
     // Flag to skip first render before URL params are applied
     const urlAppliedRef = useRef(false)
 
@@ -177,6 +199,7 @@ export default function MapPage() {
             loadingSetRef.current.add(key)
             cache.set(key, { loading: true })
 
+            await acquire()
             try {
                 if (viewMode === "image") {
                     const buf = (await api.getChunkMap(
@@ -205,10 +228,11 @@ export default function MapPage() {
                 cache.set(key, { loading: false, error: msg })
                 setRenderTick((t) => t + 1)
             } finally {
+                release()
                 loadingSetRef.current.delete(key)
             }
         },
-        [api, dim, viewMode, cacheKey],
+        [api, dim, viewMode, cacheKey, acquire, release],
     )
 
     // Render function
@@ -370,6 +394,7 @@ export default function MapPage() {
         }
         cacheRef.current.clear()
         loadingSetRef.current.clear()
+        concurrentRef.current.queue = []
         setRenderTick((t) => t + 1)
     }, [dim, viewMode])
 

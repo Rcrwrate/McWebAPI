@@ -31,4 +31,5 @@ export const ApiResponseSchema = <T>(dataSchema: Joi.Schema<T>) =>
 export const RootInfoSchema = Joi.object({
     modid: Joi.string().required(),
     version: Joi.string().required(),
+    buildTime: Joi.number().optional(),
 });
