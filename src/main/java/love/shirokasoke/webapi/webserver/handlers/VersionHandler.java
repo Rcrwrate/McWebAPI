@@ -13,11 +13,11 @@ import love.shirokasoke.webapi.webserver.RouteHandler;
 /**
  * Root route handler - Returns basic information about the WebAPI
  */
-public class RootHandler implements RouteHandler {
+public class VersionHandler implements RouteHandler {
 
     @Override
     public String getPath() {
-        return "/";
+        return "/version";
     }
 
     @Override

@@ -35,7 +35,7 @@ public class RouteRegistry {
      * Initialize and register all default routes
      */
     public static void initializeDefaultRoutes() {
-        register(new love.shirokasoke.webapi.webserver.handlers.RootHandler());
+        register(new love.shirokasoke.webapi.webserver.handlers.VersionHandler());
         register(
             new love.shirokasoke.webapi.webserver.handlers.StaticFileHandler(
                 "/static/favicon.ico",
@@ -53,5 +53,7 @@ public class RouteRegistry {
         register(new love.shirokasoke.webapi.webserver.handlers.ProfilerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.LagAnalyzerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.WorldInfoHandler());
+
+        register(new love.shirokasoke.webapi.webserver.handlers.NotFoundHandler());
     }
 }

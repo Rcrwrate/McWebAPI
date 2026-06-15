@@ -152,7 +152,7 @@ export class WebApiClient {
      * @returns 使用 {@link RootInfoSchema} 验证
      */
     getRoot(): Promise<RootInfo> {
-        return this.request<RootInfo>("/");
+        return this.request<RootInfo>("/version");
     }
 
     // ========== TPS / Performance ==========

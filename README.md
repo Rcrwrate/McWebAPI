@@ -44,8 +44,8 @@
 2. 使用 TS SDK 中的检测脚本扫描缺失图标的物品：
    - `tool.checkicon.ts` — 扫描全物品（含子物品）
    - `tool.checkaeicon.ts` — 扫描你 AE 网络存储中的物品
-3. 两个脚本的结果统一写入 `missing-icons.json`，自动去重并排除 `ae2fc:fluid_drop`
-4. 将 `missing-icons.json` 放入**客户端** `.minecraft/dumps/` 目录
+3. 两个脚本的结果会统一写入 `missing-icons.json`，自动去重并排除 `ae2fc:fluid_drop`
+4. 将脚本生成的 `missing-icons.json` 放入**客户端** `.minecraft/dumps/` 目录
 5. 打开**客户端**，执行 `/export missing`，自动读取 JSON 并补导出缺失图标
 
 > 已存在的图标会自动跳过，不会重复导出。

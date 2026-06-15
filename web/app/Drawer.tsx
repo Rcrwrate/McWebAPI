@@ -2,16 +2,13 @@
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import HomeIcon from '@mui/icons-material/Home';
+import Inventory2Icon from '@mui/icons-material/Inventory2';
 import LoginIcon from '@mui/icons-material/Login';
-import LoyaltyIcon from '@mui/icons-material/Loyalty';
-import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import SettingsIcon from '@mui/icons-material/Settings';
-import StarIcon from '@mui/icons-material/Star';
 import MapIcon from '@mui/icons-material/Map';
+import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import WhatshotIcon from '@mui/icons-material/Whatshot';
 import { AppBar, Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Slide, SwipeableDrawer, Toolbar, Typography, useScrollTrigger } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import Link from 'next/link';
@@ -24,17 +21,13 @@ const DRAWER_WIDTH = 240;
 const LINKS = [
     { text: 'Home', href: '/i', icon: HomeIcon },
     { text: 'Blocks', href: '/blocks', icon: ViewModuleIcon },
+    { text: 'Items', href: '/items', icon: Inventory2Icon },
     { text: 'Map', href: '/map', icon: MapIcon },
     { text: 'AE', href: '/ae', icon: StorageIcon },
-    { text: 'Search', href: '/search', icon: SearchIcon },
-    { text: 'Popular', href: '/popular', icon: WhatshotIcon },
-    { text: 'Subscription', href: '/watched', icon: LoyaltyIcon },
-    { text: 'Favourite', href: '/favorites', icon: StarIcon },
 ];
 
 const PLACEHOLDER_LINKS = [
     { text: 'Settings', href: '/settings', icon: SettingsIcon },
-    
     { text: 'Login', href: '/login', icon: LoginIcon },
     // { text: 'Logout', href: '/api/auth/signout', icon: LogoutIcon },
 ];
