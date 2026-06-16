@@ -37,10 +37,10 @@ dependencies {
     //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
     
     // 临时屏蔽cofh-core-69162,由于该maven不可用
-    api("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-695-GTNH:dev") {
+    api("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-702-GTNH:dev") {
         exclude(group: "curse.maven", module: "cofh-core-69162")
     }
-    // api("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-695-GTNH:dev") 
+    api('com.github.GTNewHorizons:GT5-Unofficial:5.09.51.482:dev')
     api('com.github.GTNewHorizons:ForgeMultipart:1.7.2:dev')
     api('com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev')
     api('com.github.GTNewHorizons:NotEnoughItems:2.8.44-GTNH:dev')

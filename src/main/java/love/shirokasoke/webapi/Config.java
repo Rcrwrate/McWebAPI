@@ -30,7 +30,7 @@ public class Config {
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
 
     public static int MaxPerTick = 10000;
-    public static int slowQueueBudgetMs = 50;
+    public static int budgetMs = 50;
 
     // update checker
     public static boolean enableUpdateCheck = true;
@@ -114,13 +114,13 @@ public class Config {
             "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
         MaxPerTick = configuration
             .getInt("MaxPerTick", "server.tick", MaxPerTick, 1, 10000, "Max Count of Slow Tasks can be run per Tick");
-        slowQueueBudgetMs = configuration.getInt(
-            "SlowQueueBudgetMs",
+        budgetMs = configuration.getInt(
+            "BudgetMs",
             "server.tick",
-            slowQueueBudgetMs,
+            budgetMs,
             1,
             50,
-            "Max time in ms for slow queue execution per tick");
+            "Max time in ms for background tasks (pausable + slow queue) execution per tick");
 
         // update checker
         enableUpdateCheck = configuration

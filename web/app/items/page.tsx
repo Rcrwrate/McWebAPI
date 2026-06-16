@@ -80,7 +80,6 @@ const SubIconPaper = styled(Paper, {
     },
 }))
 
-// DataGrid 扁平行类型
 interface FlatRow {
     _rowId: string
     _rowType: "parent" | "sub"
@@ -144,9 +143,9 @@ export default function ItemsPage() {
             setDisplayRows(entries.map((e) => e.model as FlatRow))
         }, 200)
         return () => clearTimeout(timer)
+        // BUG: 如果items.length数量没变将不会刷新icon模式
     }, [filterM, sortM, items.length])
 
-    // 懒加载子物品 - 直接插入到 items 列表中
     const loadSubItems = useCallback(async (itemId: number) => {
         if (!api) return
         if (loadedIds.current.has(itemId)) return
@@ -191,7 +190,6 @@ export default function ItemsPage() {
         }
     }, [api])
 
-    // 切换选中状态（同步列表模式与图标模式）
     const toggleSelection = (rowId: string) => {
         setSelectionModel((prev) =>
             prev.includes(rowId)
@@ -200,7 +198,6 @@ export default function ItemsPage() {
         )
     }
 
-    // DataGrid 列定义
     const listColumns: GridColDef<FlatRow>[] = [
         {
             field: "_expand",

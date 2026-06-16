@@ -124,6 +124,12 @@ public class WebServer {
     }
 
     public static void removeRoute(String path) {
-        server.removeContext(path);
+        try {
+            MyMod.LOG.info("[WebServer] Removing route '{}'...", path);
+            server.removeContext(path);
+        } catch (Exception e) {
+            MyMod.LOG.error("[WebServer] Error removing route '{}': {}", path, e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

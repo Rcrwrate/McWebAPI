@@ -11,11 +11,12 @@ import love.shirokasoke.webapi.MyMod;
 
 public class log {
 
-    public static void e(Throwable e) {
+    public static String e(Throwable e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         MyMod.LOG.error(sw);
+        return sw.toString();
     }
 
     public static void debugFields(Object obj) {

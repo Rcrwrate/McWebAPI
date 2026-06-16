@@ -2,7 +2,7 @@
 
 - [ ] [1.Blocks 列表筛选](#1blocks-列表筛选)
 
-- [ ] [1.Blocks 列表筛选](#2blocks-icon模式筛选功能不生效)
+- [ ] [2.Blocks 列表筛选](#2blocks-icon模式筛选功能不生效)
 
 ## 1.Blocks 列表筛选
 

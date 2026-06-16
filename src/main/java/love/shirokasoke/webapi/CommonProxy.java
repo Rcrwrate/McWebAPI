@@ -57,7 +57,7 @@ public class CommonProxy {
             .bus()
             .register(new ServerThreadDispatcher());
         ServerThreadDispatcher.setSlowTasksPerTick(Config.MaxPerTick);
-        ServerThreadDispatcher.setSlowQueueBudgetMs(Config.slowQueueBudgetMs);
+        ServerThreadDispatcher.setBudgetMs(Config.budgetMs);
 
         if (Config.enableUpdateCheck) {
             new love.shirokasoke.webapi.thread.UpdateChecker().checkAsync();

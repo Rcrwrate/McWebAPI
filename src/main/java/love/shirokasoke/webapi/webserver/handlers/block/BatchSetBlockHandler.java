@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.utils.log;
 
 public class BatchSetBlockHandler extends BlockHandler {
 
@@ -97,7 +98,6 @@ public class BatchSetBlockHandler extends BlockHandler {
             batchTasks.add(new SetBlockTask(world, x, y, z, block, metadata, flag));
         }
 
-        // 创建批量任务
         String jobId = String.valueOf(ID_GENERATOR.incrementAndGet());
         BatchJob job = new BatchJob(jobId, size);
         JOBS.put(jobId, job);
@@ -115,9 +115,7 @@ public class BatchSetBlockHandler extends BlockHandler {
                     }
                 } catch (Exception e) {
                     job.failCount.incrementAndGet();
-                    job.addFailure(task.x, task.y, task.z, e.getMessage());
-                    love.shirokasoke.webapi.MyMod.LOG
-                        .error("[BatchSetBlock] Failed at ({}, {}, {})", task.x, task.y, task.z, e);
+                    job.addFailure(task.x, task.y, task.z, log.e(e));
                 } finally {
                     int completed = job.completedCount.incrementAndGet();
                     if (completed >= job.total) {
@@ -205,8 +203,6 @@ public class BatchSetBlockHandler extends BlockHandler {
             }
         }
     }
-
-    // ---- 内部类 ----
 
     private static class BatchJob {
 
