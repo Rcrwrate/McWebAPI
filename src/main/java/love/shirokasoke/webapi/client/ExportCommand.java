@@ -7,6 +7,7 @@ import net.minecraft.util.ChatComponentText;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.thread.FluidIconDumperThread;
 import love.shirokasoke.webapi.client.thread.ItemIconDumperThread;
+import love.shirokasoke.webapi.client.thread.LangDumperThread;
 import love.shirokasoke.webapi.client.thread.MapTileDumperThread;
 
 public class ExportCommand extends CommandBase {
@@ -14,6 +15,7 @@ public class ExportCommand extends CommandBase {
     private static volatile Thread itemThread = null;
     private static volatile Thread blockThread = null;
     private static volatile Thread fluidThread = null;
+    private static volatile Thread langThread = null;
 
     @Override
     public String getCommandName() {
@@ -22,7 +24,7 @@ public class ExportCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/export <items|nei|missing|blocks|fluids>";
+        return "/export <items|nei|missing|blocks|fluids|lang>";
     }
 
     @Override
@@ -64,6 +66,16 @@ public class ExportCommand extends CommandBase {
             fluidThread = new FluidIconDumperThread();
             fluidThread.start();
             sender.addChatMessage(new ChatComponentText("[WebAPI] 流体图标导出线程已启动，请查看后台日志。"));
+        } else if ("lang".equals(sub)) {
+            if (langThread != null && langThread.isAlive()) {
+                sender.addChatMessage(new ChatComponentText("[WebAPI] 语言文件导出线程已在运行中。"));
+                return;
+            }
+            MyMod.LOG.info("[ExportImagesCommand] 用户触发，启动 LangDumperThread...");
+            sender.addChatMessage(new ChatComponentText("[WebAPI] 正在启动语言文件导出线程..."));
+            langThread = new LangDumperThread();
+            langThread.start();
+            sender.addChatMessage(new ChatComponentText("[WebAPI] 语言文件导出线程已启动，请查看后台日志。"));
         } else {
             sender.addChatMessage(new ChatComponentText("[WebAPI] 未知子命令 '" + sub + "'。用法: " + getCommandUsage(sender)));
         }
