@@ -19,10 +19,8 @@ import com.sun.net.httpserver.HttpExchange;
 
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
-import gregtech.api.metatileentity.implementations.MTEBasicMachine;
-import gregtech.api.metatileentity.implementations.MTEHatch;
-import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.utils.GT5Utils;
 import love.shirokasoke.webapi.utils.log;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
@@ -230,15 +228,8 @@ public class GT5ChunkScanHandler implements RouteHandler {
         int height = chunk.getHeightValue(colX, colZ);
         for (int y = 0; y <= height; y++) {
             TileEntity te = world.getTileEntity(worldX, y, worldZ);
-            if (!(te instanceof IGregTechTileEntity)) continue;
-
-            IGregTechTileEntity igte = (IGregTechTileEntity) te;
-            if (!igte.canAccessData()) continue;
-
-            Object rawMte = igte.getMetaTileEntity();
-            // 排除GT线缆
-            if (!(rawMte instanceof MetaTileEntity)) continue;
-            MetaTileEntity mte = (MetaTileEntity) rawMte;
+            MetaTileEntity mte = GT5Utils.extractValidMTE(te);
+            if (mte == null) continue;
 
             job.successCount.incrementAndGet();
 
@@ -246,12 +237,7 @@ public class GT5ChunkScanHandler implements RouteHandler {
             machine.put("x", worldX);
             machine.put("y", y);
             machine.put("z", worldZ);
-            machine.put("machineType", getMachineType(mte).name());
-            machine.put("localName", mte.getLocalName());
-            machine.put("internalName", mte.mName);
-            machine.put("metaTileID", igte.getMetaTileID());
-            machine.put("isActive", igte.isActive());
-            machine.put("owner", igte.getOwnerName());
+            GT5Utils.writeBasicMachineInfo((IGregTechTileEntity) te, mte, machine);
 
             job.machines.add(machine);
         }
@@ -268,16 +254,5 @@ public class GT5ChunkScanHandler implements RouteHandler {
                 it.remove();
             }
         }
-    }
-
-    private static GT5BaseHandler.MachineType getMachineType(MetaTileEntity mte) {
-        if (mte instanceof MTEMultiBlockBase) {
-            return GT5BaseHandler.MachineType.MULTIBLOCK;
-        } else if (mte instanceof MTEHatch) {
-            return GT5BaseHandler.MachineType.HATCH;
-        } else if (mte instanceof MTEBasicMachine) {
-            return GT5BaseHandler.MachineType.SINGLE;
-        }
-        return GT5BaseHandler.MachineType.UNKNOWN;
     }
 }

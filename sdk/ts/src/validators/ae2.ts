@@ -85,6 +85,7 @@ export const AECPUSchema = Joi.object({
 export const AEMEInterfaceSchema = Joi.object({
     display: Joi.boolean().required(),
     name: Joi.string().required(),
+    rawName: Joi.string().allow(null).required(),
     active: Joi.boolean().required(),
     allowsPatternOptimization: Joi.boolean().required(),
     playerID: Joi.number().required(),

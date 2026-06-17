@@ -464,7 +464,10 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEMEsHandler.java)
      * @returns 使用 {@link AEMEInterfaceSchema}[] 验证
      */
-    aeMEs(params: { x: number, y: number, z: number, dimension?: number, load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
+    aeMEs(params: { x: number, y: number, z: number, dimension?: number, pattern?: boolean, load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
+        if (params.load || params.world) {
+            params.pattern = true;
+        }
         return this.request<AEMEInterface[]>(`/ae/mes${buildQuery(params)}`);
     }
 

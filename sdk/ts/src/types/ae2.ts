@@ -64,6 +64,7 @@ export interface AECPU {
 export interface AEMEInterface {
     display: boolean;
     name: string;
+    rawName: string | null;
     active: boolean;
     allowsPatternOptimization: boolean;
     playerID: number;

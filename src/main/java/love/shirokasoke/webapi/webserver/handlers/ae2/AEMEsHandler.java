@@ -6,6 +6,7 @@ import java.util.Set;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,11 +38,20 @@ public class AEMEsHandler extends AEBaseHandler {
             for (IGridNode node : grid.getMachines(clazz)) {
                 IInterfaceViewable machine = (IInterfaceViewable) node.getMachine();
                 ItemStack displayRep = machine.getDisplayRep();
-                String displayName = displayRep != null ? displayRep.getDisplayName() : machine.getName();
+                String name = null;
+                if (displayRep != null) {
+                    NBTTagCompound nbt = displayRep.getTagCompound();
+                    if (nbt != null && nbt.hasKey("display")) {
+                        nbt.removeTag("display");
+                        displayRep.setTagCompound(nbt);
+                    }
+                    name = displayRep.getDisplayName();
+                }
+
                 ObjectNode iface = interfaces.addObject()
                     .put("display", machine.shouldDisplay())
-                    .put("name", displayName)
-                    .put("rawName", machine.getName())
+                    .put("rawName", name)
+                    .put("name", machine.getName())
                     .put("active", node.isActive())
                     .put("allowsPatternOptimization", machine.allowsPatternOptimization())
                     .put("playerID", node.getPlayerID());
@@ -55,7 +65,8 @@ public class AEMEsHandler extends AEBaseHandler {
 
                 ArrayNode patterns = iface.putArray("patterns");
                 IInventory patternInv = machine.getPatterns();
-                if (patternInv != null) {
+                if (params.getOrDefault("pattern", "false")
+                    .equalsIgnoreCase("true") && patternInv != null) {
                     for (int i = 0; i < patternInv.getSizeInventory(); i++) {
                         ItemStack patternStack = patternInv.getStackInSlot(i);
                         if (patternStack != null) {

@@ -1,7 +1,7 @@
 {
     "name": "@shirokasoke/webapi-sdk",
-    "version": "0.1.0",
-    "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod server",
+    "version": "0.1.1",
+    "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod",
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",

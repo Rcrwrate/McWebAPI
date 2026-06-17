@@ -46,7 +46,7 @@ public String getTermName() {
     // 优先级2: 目标机器图标物品的未本地化名称
     final ItemStack item = getCrafterIcon();
     if (item != null) {
-        return item.getUnlocalizedName();  // ← 语言键如 "gt.blockmachines.multimachine.chemicalreactor"
+        return item.getUnlocalizedName();
     } else {
         return "Nothing";
     }
