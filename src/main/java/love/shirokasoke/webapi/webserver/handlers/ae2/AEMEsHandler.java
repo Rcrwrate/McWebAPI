@@ -36,9 +36,12 @@ public class AEMEsHandler extends AEBaseHandler {
         for (Class<? extends IInterfaceViewable> clazz : supportedClasses) {
             for (IGridNode node : grid.getMachines(clazz)) {
                 IInterfaceViewable machine = (IInterfaceViewable) node.getMachine();
+                ItemStack displayRep = machine.getDisplayRep();
+                String displayName = displayRep != null ? displayRep.getDisplayName() : machine.getName();
                 ObjectNode iface = interfaces.addObject()
                     .put("display", machine.shouldDisplay())
-                    .put("name", machine.getName())
+                    .put("name", displayName)
+                    .put("rawName", machine.getName())
                     .put("active", node.isActive())
                     .put("allowsPatternOptimization", machine.allowsPatternOptimization())
                     .put("playerID", node.getPlayerID());

@@ -14,7 +14,6 @@ import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
-import appeng.api.util.DimensionalCoord;
 import appeng.api.util.NamedDimensionalCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import love.shirokasoke.webapi.utils.ClassUtils;
@@ -161,7 +160,7 @@ public class AECPUHandler extends AEBaseHandler {
                         ArrayNode providersArray = outputNode.putArray("providers");
                         try {
                             List<NamedDimensionalCoord> providers = cluster.getProviders(output);
-                            for (DimensionalCoord coord : providers) {
+                            for (NamedDimensionalCoord coord : providers) {
                                 ObjectNode coordNode = mapper.createObjectNode();
                                 coordNode.put("x", coord.x);
                                 coordNode.put("y", coord.y);
@@ -194,7 +193,7 @@ public class AECPUHandler extends AEBaseHandler {
                     ArrayNode providersArray = itemNode.putArray("providers");
                     try {
                         List<NamedDimensionalCoord> providers = cluster.getProviders(item);
-                        for (DimensionalCoord coord : providers) {
+                        for (NamedDimensionalCoord coord : providers) {
                             ObjectNode coordNode = mapper.createObjectNode();
                             coordNode.put("x", coord.x);
                             coordNode.put("y", coord.y);

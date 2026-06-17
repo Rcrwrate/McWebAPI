@@ -1,179 +1,149 @@
-用户想知道如何在AE2源代码中解析一个ForgeMultipart方块的所有信息。我需要先查看AE2的源代码结构，找到与ForgeMultipart相关的代码。
+## AE2 与 ForgeMultipart (FMP) 集成
 
-首先，我需要：
-1. 查看tools目录下的AE2源代码结构
-2. 搜索与ForgeMultipart相关的类或文件
-3. 找到解析方块信息的入口点
+AE2 通过 ForgeMultipart 实现线缆总线和石英火把等方块的多部件共存，使它们可以与其他 FMP 部件（如遮盖板、微方块等）共享同一个方块空间。
 
-让我先列出目录结构并搜索相关文件。
-用户想了解如何解析一个ForgeMultipart方块的所有信息。我找到了相关文件，现在需要读取FMP集成模块、CableBusPart、PartRegistry等关键文件来理解AE2是如何处理ForgeMultipart方块的。
+### 架构概览
 
-让我并行读取几个关键文件：
-1. FMP.java - FMP集成模块
-2. CableBusPart.java - FMP的Part实现
-3. PartRegistry.java - Part注册表
-4. QuartzTorchPart.java - 另一个FMP part示例
-用户想知道如何解析一个ForgeMultipart方块的所有信息。我已经读取了AE2中处理FMP的关键文件。
-
-从代码中可以看出：
-
-1. `FMP.java` 是AE2与ForgeMultipart的集成模块，实现了 `IPartFactory` 和 `IPartConverter`。
-2. `CableBusPart.java` 是AE2的核心FMP部件，继承自 `JCuboidPart`，内部封装了 `CableBusContainer`。
-3. `PartRegistry.java` 是AE2的FMP部件注册表。
-4. `QuartzTorchPart.java` 是一个简单的FMP部件示例。
-
-要解析一个ForgeMultipart方块，关键是：
-1. 判断一个TileEntity是否是 `TileMultipart`
-2. 从 `TileMultipart` 中获取 `partList()`
-3. 遍历partList，检查每个TMultiPart的类型
-
-让我再搜索一下FMP事件处理和TileMultipart的使用，以提供更完整的信息。同时我也需要看看AEHandler.java，因为用户项目中可能有相关的处理代码。
-用户想知道如何解析一个ForgeMultipart方块的所有信息。根据我在AE2源码中找到的信息，我现在可以给出一个完整的回答。
-
-核心要点：
-1. ForgeMultipart方块使用 `TileMultipart` 作为TileEntity
-2. 通过 `TileMultipart.getOrConvertTile(world, pos)` 获取TileMultipart实例
-3. `partList()` 返回一个Scala集合，包含所有的 `TMultiPart`
-4. 遍历 `partList()` 可以获取每个part的信息
-5. AE2中的 `CableBusPart` 继承自 `JCuboidPart`，内部包含 `CableBusContainer`，可以通过 `getCableBus()` 获取线缆总线信息
-6. 对于普通方块转换来的part，如 `QuartzTorchPart`，继承自 `McSidedMetaPart`，可以通过 `getBlock()` 获取原始Block
-
-我需要把这些信息整理成一个清晰的回答，告诉用户如何在自己的WebAPI项目中解析FMP方块。
-
-同时，我也可以看看用户项目中是否有相关的依赖。让我查看dependencies.gradle。
-根据AE2源码，解析ForgeMultipart方块信息的核心步骤如下：
-
-## 1. 基本依赖
-
-```groovy
-// dependencies.gradle 中需要包含 FMP
-compile("codechicken:ForgeMultipart:版本号:dev")
+```
+TileMultipart (FMP 容器 TileEntity)
+  └── partList() → 所有 TMultiPart
+       ├── CableBusPart → getCableBus() → CableBusContainer (AE2 线缆总线)
+       │     └── 各面 IPart (线缆/面板/终端等)
+       └── QuartzTorchPart → getBlock() (石英火把)
 ```
 
-## 2. 核心API入口
+### 关键源文件
+
+| 文件 | 职责 |
+|------|------|
+| [`FMP.java`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java) | FMP 集成入口，实现 `IPartFactory` + `IPartConverter` |
+| [`CableBusPart.java`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/CableBusPart.java) | AE2 线缆总线的 FMP Part 实现，封装 `CableBusContainer` |
+| [`PartRegistry.java`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/PartRegistry.java) | FMP Part 注册表，映射 AE2 方块到 FMP Part |
+| [`QuartzTorchPart.java`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/QuartzTorchPart.java) | 石英火把的 FMP Part 实现 |
+| [`FMPEvent.java`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/FMPEvent.java) | FMP 放置事件处理 |
+| [`FMPPlacementHelper.java`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/FMPPlacementHelper.java) | FMP 放置辅助 |
+
+### 1. 初始化与注册
+
+[`FMP.init()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java#L93) 中完成三件事：
+
+1. **注册微方块材料**：将 AE2 的石英、陨石等方块注册为 FMP 微方块材料（`BlockMicroMaterial.createAndRegister`）
+2. **注册 Part 工厂**：`MultiPartRegistry.registerParts(this, data)` — `this` 实现了 `IPartFactory`，FMP 通过 [`createPart()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java#L54) 按名称创建 Part
+3. **注册方块转换器**：`MultiPartRegistry.registerConverter(this)` — `this` 实现了 `IPartConverter`，[`convert()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java#L65) 将普通 AE2 方块转为 FMP Part
+
+[`PartRegistry`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/PartRegistry.java#L23) 枚举定义了两种 Part：
 
 ```java
-import codechicken.multipart.TileMultipart;
-import codechicken.multipart.TMultiPart;
-import codechicken.lib.vec.BlockCoord;
-import scala.collection.Iterator;
-
-// 获取 TileMultipart（如果不存在会尝试转换）
-TileMultipart mp = TileMultipart.getOrConvertTile(world, new BlockCoord(x, y, z));
-if (mp == null) return;
-
-// 遍历所有 Part
-Iterator<TMultiPart> it = mp.partList().iterator();
-while (it.hasNext()) {
-    TMultiPart part = it.next();
-    // 解析 part...
-}
+QuartzTorchPart("ae2_torch", BlockQuartzTorch.class, QuartzTorchPart.class),
+CableBusPart("ae2_cablebus", BlockCableBus.class, CableBusPart.class);
 ```
 
-## 3. 解析AE2的CableBusPart
+### 2. CableBusPart — 核心适配器
 
-AE2的线缆总线方块在FMP中以 `CableBusPart` 形式存在：
+[`CableBusPart`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/CableBusPart.java#L75) 继承自 `JCuboidPart`，实现了 `AEMultiTile` 接口，内部封装了一个 [`CableBusContainer`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/parts/CableBusContainer.java)：
 
 ```java
-import appeng.fmp.CableBusPart;
+private CableBusContainer cb = new CableBusContainer(this);
+```
 
-if (part instanceof CableBusPart) {
-    CableBusPart cbp = (CableBusPart) part;
-    
-    // 获取内部的 CableBusContainer
-    CableBusContainer cbc = cbp.getCableBus();
-    
-    // 获取各面安装的Part（线缆、总线、面板等）
-    for (ForgeDirection dir : ForgeDirection.values()) {
-        IPart sidePart = cbc.getPart(dir);
-        if (sidePart != null) {
-            // 获取物品形式
-            ItemStack stack = sidePart.getItemStack(PartItemStack.Break);
-            // 获取线缆类型
-            if (sidePart instanceof IPartCable) {
-                AECableType cableType = ((IPartCable) sidePart).getCableConnectionType(dir);
-            }
+它将所有 `IPartHost` 接口方法委托给 `cb`：
+
+| CableBusPart 方法 | 委托给 CableBusContainer |
+|---|---|
+| `getPart(side)` | `cb.getPart(side)` |
+| `addPart(is, side, owner)` | `cb.addPart(is, side, owner)` |
+| `removePart(side, suppressUpdate)` | `cb.removePart(side, suppressUpdate)` |
+| `getFacadeContainer()` | `cb.getFacadeContainer()` |
+| `getColor()` | `cb.getColor()` |
+| `selectPart(pos)` | `cb.selectPart(pos)` |
+| `isEmpty()` | `cb.isEmpty()` |
+
+`getType()` 返回 [`PartRegistry.CableBusPart.getName()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/CableBusPart.java#L143) = `"ae2_cablebus"`。
+
+### 3. 从 TileEntity 获取 AE2 信息
+
+[`FMP.getOrCreateHost()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java#L129) 展示了标准流程：
+
+```java
+TileMultipart mp = TileMultipart.getOrConvertTile(tile.getWorldObj(), loc);
+if (mp != null) {
+    Iterator<TMultiPart> i = mp.partList().iterator();
+    while (i.hasNext()) {
+        TMultiPart p = i.next();
+        if (p instanceof CableBusPart) {
+            return (IPartHost) p;  // CableBusPart 实现了 IPartHost
         }
     }
-    
-    // 获取伪装板(Facade)
-    IFacadeContainer facades = cbc.getFacadeContainer();
-    for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-        IFacadePart facade = facades.getFacade(dir);
-        if (facade != null) {
-            ItemStack facadeStack = facade.getItemStack();
-        }
-    }
-    
-    // 颜色
-    AEColor color = cbc.getColor();
 }
 ```
 
-## 4. 解析其他AE2 Part
+[`FMP.getCableContainer()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java#L152) 更直接地获取 `CableBusContainer`：
 
 ```java
-import appeng.fmp.QuartzTorchPart;
-import appeng.fmp.PartRegistry;
-
-// Part类型名称
-String typeName = part.getType();
-
-// 石英火把Part
-if (part instanceof QuartzTorchPart) {
-    Block block = ((QuartzTorchPart) part).getBlock();
-    int meta = part.meta; // 朝向信息
-}
-
-// 或者通过注册表识别
-if (PartRegistry.CableBusPart.getName().equals(typeName)) { ... }
-```
-
-## 5. 通用Part信息
-
-所有 `TMultiPart` 都包含：
-
-```java
-// 边界框
-Cuboid6 bounds = part.getBounds();
-
-// 光照
-int light = part.getLightValue();
-
-// 是否可以碰撞
-part.getCollisionBoxes();
-
-// Part的NBT数据（保存/加载）
-NBTTagCompound tag = new NBTTagCompound();
-part.save(tag);
-part.load(tag);
-
-// 掉落物
-Iterable<ItemStack> drops = part.getDrops();
-```
-
-## 6. 在你的WebAPI中使用的建议
-
-参考你现有的 `AEHandler.java` 结构，可以创建一个 `/block/fmp` 或扩展 `/block/ae2` 的处理器：
-
-```java
-TileEntity te = world.getTileEntity(x, y, z);
 if (te instanceof TileMultipart mp) {
-    ArrayNode parts = mapper.createArrayNode();
-    Iterator<TMultiPart> it = mp.partList().iterator();
-    while (it.hasNext()) {
-        TMultiPart part = it.next();
-        ObjectNode pNode = mapper.createObjectNode();
-        pNode.put("type", part.getType());
-        // ...解析具体信息
-        parts.add(pNode);
+    Iterator<TMultiPart> i = mp.partList().iterator();
+    while (i.hasNext()) {
+        TMultiPart p = i.next();
+        if (p instanceof CableBusPart) {
+            return ((CableBusPart) p).getCableBus();
+        }
     }
-    root.set("multipart", parts);
 }
 ```
 
-关键文件参考：
-- `src/main/java/appeng/integration/modules/FMP.java` — FMP集成入口
-- `src/main/java/appeng/fmp/CableBusPart.java` — AE线缆总线Part实现
-- `src/main/java/appeng/fmp/PartRegistry.java` — AE Part注册表
-- `src/main/java/appeng/fmp/FMPEvent.java` — FMP事件处理示例
+### 4. 解析 CableBusPart 内部信息
+
+获取到 `CableBusContainer` 后，可以访问：
+
+```java
+CableBusContainer cbc = cableBusPart.getCableBus();
+
+// 各面安装的 Part（线缆、终端、面板等）
+for (ForgeDirection dir : ForgeDirection.values()) {
+    IPart sidePart = cbc.getPart(dir);
+    if (sidePart != null) {
+        ItemStack stack = sidePart.getItemStack(PartItemStack.Break);
+        if (sidePart instanceof IPartCable) {
+            AECableType cableType = sidePart.getCableConnectionType(dir);
+        }
+    }
+}
+
+// 伪装板
+IFacadeContainer facades = cbc.getFacadeContainer();
+for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+    IFacadePart facade = facades.getFacade(dir);
+    if (facade != null) {
+        ItemStack facadeStack = facade.getItemStack();
+    }
+}
+
+// 频道颜色
+AEColor color = cbc.getColor();
+```
+
+### 5. QuartzTorchPart
+
+[`QuartzTorchPart`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/QuartzTorchPart.java#L27) 继承自 `McSidedMetaPart`，是石英火把的 FMP 封装：
+
+- `getType()` 返回 `"ae2_torch"`
+- [`getBlock()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/QuartzTorchPart.java#L80) 返回原始的 `BlockQuartzTorch`
+- `meta` 字段存储朝向（`ForgeDirection` 的 ordinal）
+
+### 6. 方块转换
+
+[`FMP.convert()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/integration/modules/FMP.java#L65) 将普通 AE2 方块转为 FMP Part，使已有方块可以合并到多方块容器中：
+
+```java
+public TMultiPart convert(final World world, final BlockCoord pos) {
+    final Block blk = world.getBlock(pos.x, pos.y, pos.z);
+    final int meta = world.getBlockMetadata(pos.x, pos.y, pos.z);
+    final TMultiPart part = PartRegistry.getPartByBlock(blk, meta);
+    if (part instanceof CableBusPart cbp) {
+        cbp.convertFromTile(world.getTileEntity(pos.x, pos.y, pos.z));
+    }
+    return part;
+}
+```
+
+[`PartRegistry.getPartByBlock()`](../../tools/Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH/src/main/java/appeng/fmp/PartRegistry.java#L39) 通过方块类型匹配对应的 Part 类型。
