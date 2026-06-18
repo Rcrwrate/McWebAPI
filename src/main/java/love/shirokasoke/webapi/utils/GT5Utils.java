@@ -84,6 +84,7 @@ public final class GT5Utils {
     }
 
     public static void write(MetaTileEntity mte, ObjectNode data) {
+        ClassUtils.getClassInfo(mte, data);
         MachineType type = GT5Utils.getMachineType(mte);
         switch (type) {
             case MULTIBLOCK:
@@ -111,7 +112,7 @@ public final class GT5Utils {
         data.put("euT", multi.mEUt);
         data.put("efficiency", multi.mEfficiency);
         data.put("pollution", multi.mPollution);
-        data.put("inputVoltageTier", multi.getInputVoltageTier());
+        data.put("inputVoltageTier", multi.getAverageInputVoltage());
         data.put("maxInputEu", multi.getMaxInputEu());
         data.put("maxInputAmps", multi.getMaxInputAmps());
         data.put("maxParallelRecipes", multi.getMaxParallelRecipes());

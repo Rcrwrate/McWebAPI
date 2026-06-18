@@ -10,7 +10,7 @@
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
         "@mui/x-data-grid": "^9.3.0",
-        "@shirokasoke/webapi-sdk": "^0.1.0",
+        "@shirokasoke/webapi-sdk": "^0.1.1",
         "next": "16.2.6",
         "notistack": "^3.0.2",
         "react": "19.2.4",
@@ -253,7 +253,7 @@
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@rtsao/scc/-/scc-1.1.0.tgz", {}, "sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g=="],
 
-    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@0.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@shirokasoke/webapi-sdk/-/@shirokasoke/webapi-sdk-0.1.0.tgz", { "dependencies": { "joi": "^18.2.1" } }, "sha512-CtWKk8eHtve/NVvQ8zBN61BKt9f7ndDxXKc58ZVUmJNVzm+kv04NkQnnELGGvukXrxsU870KPKpGz9k71LtTxA=="],
+    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@0.1.1", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@shirokasoke/webapi-sdk/-/@shirokasoke/webapi-sdk-0.1.1.tgz", { "dependencies": { "joi": "^18.2.1" } }, "sha512-qmyumAgrALeFXroEv/D9IGrw4pOXAzjASaWbci7jKYv1J/kfsxd2kaUbRx9fJJTOUx5xlMSBWF6jhAbQgrFMbA=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@standard-schema/spec/-/spec-1.1.0.tgz", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

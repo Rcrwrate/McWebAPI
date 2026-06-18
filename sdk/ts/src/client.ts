@@ -27,6 +27,13 @@ import type {
     FMPPart,
     Fluid,
     FluidContainer,
+    GT5BatchJobResult,
+    GT5BatchMachineCoord,
+    GT5BatchRerunResult,
+    GT5BatchSubmitResult,
+    GT5MachineInfo,
+    GT5ScanJobResult,
+    GT5ScanSubmitResult,
     Item,
     ItemDetail,
     LagAnalyzerData,
@@ -65,6 +72,13 @@ import type {
     FMPPartSchema,
     FluidSchema,
     FluidContainerSchema,
+    GT5BatchJobResultSchema,
+    GT5BatchMachineCoordSchema,
+    GT5BatchRerunResultSchema,
+    GT5BatchSubmitResultSchema,
+    GT5MachineInfoSchema,
+    GT5ScanJobResultSchema,
+    GT5ScanSubmitResultSchema,
     ItemDetailSchema,
     ItemSchema,
     LagAnalyzerDataSchema,
@@ -422,6 +436,101 @@ export class WebApiClient {
         return this.request<ChunkLoadResult>(`/chunk/force${buildQuery({ action: "unload", ...params })}`, {
             method: "POST",
         });
+    }
+
+    // ========== GT5 ==========
+
+    /**
+     * 查询单个 GT5 机器信息。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BaseHandler.java)
+     * @returns 使用 {@link GT5MachineInfoSchema} 验证
+     */
+    getGT5Machine(params: { x: number; y: number; z: number; dim?: number }): Promise<GT5MachineInfo> {
+        return this.request<GT5MachineInfo>(`/gt5${buildQuery(params)}`);
+    }
+
+    /**
+     * 提交批量 GT5 机器查询任务。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BatchHandler.java)
+     * @param machines 使用 {@link GT5BatchMachineCoordSchema}[] 验证
+     * @returns 使用 {@link GT5BatchSubmitResultSchema} 验证
+     */
+    submitGT5Batch(machines: GT5BatchMachineCoord[]): Promise<GT5BatchSubmitResult> {
+        return this.request<GT5BatchSubmitResult>("/gt5/batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(machines),
+        });
+    }
+
+    /**
+     * 查询批量 GT5 机器任务状态。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BatchHandler.java)
+     * @returns 使用 {@link GT5BatchJobResultSchema} 验证
+     */
+    getGT5BatchJob(params: { id: string }): Promise<GT5BatchJobResult> {
+        return this.request<GT5BatchJobResult>(`/gt5/batch${buildQuery(params)}`);
+    }
+
+    /**
+     * 重新执行已有的批量 GT5 机器查询任务。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BatchHandler.java)
+     * @returns 使用 {@link GT5BatchRerunResultSchema} 验证
+     */
+    rerunGT5Batch(params: { id: string }): Promise<GT5BatchRerunResult> {
+        return this.request<GT5BatchRerunResult>(`/gt5/batch${buildQuery(params)}`, {
+            method: "PATCH",
+        });
+    }
+
+    /**
+     * 轮询等待批量 GT5 机器任务完成。
+     * @param jobId 任务 ID（由 submitGT5Batch 返回）
+     * @param intervalMs 轮询间隔 (ms)，默认 100
+     * @returns 最终的 {@link GT5BatchJobResult}
+     */
+    async waitForGT5BatchJob(jobId: string, intervalMs = 100): Promise<GT5BatchJobResult> {
+        while (true) {
+            const job = await this.getGT5BatchJob({ id: jobId });
+            if (job.status === "completed") return job;
+            await new Promise(r => setTimeout(r, intervalMs));
+        }
+    }
+
+    /**
+     * 提交区块扫描任务，异步扫描指定区块内所有 GT5 机器。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5ChunkScanHandler.java)
+     * @returns 使用 {@link GT5ScanSubmitResultSchema} 验证
+     */
+    submitGT5ChunkScan(
+        params: { chunkX: number; chunkZ: number; dim?: number } | { x: number; z: number; dim?: number }
+    ): Promise<GT5ScanSubmitResult> {
+        return this.request<GT5ScanSubmitResult>(`/gt5/scan${buildQuery(params)}`, {
+            method: "POST",
+        });
+    }
+
+    /**
+     * 查询区块扫描任务状态。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5ChunkScanHandler.java)
+     * @returns 使用 {@link GT5ScanJobResultSchema} 验证
+     */
+    getGT5ScanJob(params: { id: string }): Promise<GT5ScanJobResult> {
+        return this.request<GT5ScanJobResult>(`/gt5/scan${buildQuery(params)}`);
+    }
+
+    /**
+     * 轮询等待区块扫描任务完成。
+     * @param jobId 任务 ID（由 submitGT5ChunkScan 返回）
+     * @param intervalMs 轮询间隔 (ms)，默认 100
+     * @returns 最终的 {@link GT5ScanJobResult}
+     */
+    async waitForGT5ScanJob(jobId: string, intervalMs = 100): Promise<GT5ScanJobResult> {
+        while (true) {
+            const job = await this.getGT5ScanJob({ id: jobId });
+            if (job.status === "completed") return job;
+            await new Promise(r => setTimeout(r, intervalMs));
+        }
     }
 
     // ========== AE2 ==========

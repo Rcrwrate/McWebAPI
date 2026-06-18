@@ -7,5 +7,6 @@ public class init {
     public static void i() {
         RouteRegistry.register(new GT5BaseHandler());
         RouteRegistry.register(new GT5ChunkScanHandler());
+        RouteRegistry.register(new GT5BatchHandler());
     }
 }

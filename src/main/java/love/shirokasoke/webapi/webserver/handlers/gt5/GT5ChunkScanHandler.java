@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
@@ -26,14 +25,11 @@ import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
  * 异步扫描指定区块内所有 GT5 机器，按 (x,z) 拆分为 256 个子任务投入慢队列。
- * POST /gt5/scan?chunkX=&chunkZ=&dim= → 提交扫描任务，返回 taskId
- * GET /gt5/scan?id= → 查询任务状态与结果
  */
 public class GT5ChunkScanHandler implements RouteHandler {
 
     private static final ConcurrentHashMap<String, ScanJob> JOBS = new ConcurrentHashMap<>();
     private static final long JOB_TTL_MS = 30 * 60 * 1000L;
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
 
     private static class ScanJob {
 
@@ -130,7 +126,7 @@ public class GT5ChunkScanHandler implements RouteHandler {
             throw new RouteHandler.Error(404, "Chunk not found: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
         }
 
-        String jobId = String.valueOf(ID_GENERATOR.incrementAndGet());
+        String jobId = dim + ":" + chunkX + "_" + chunkZ;
         ScanJob job = new ScanJob(jobId, 256, chunkX, chunkZ, dim);
         JOBS.put(jobId, job);
 
@@ -209,7 +205,6 @@ public class GT5ChunkScanHandler implements RouteHandler {
             }
         }
 
-        // 完成时附带结果
         if (job.completedCount.get() >= job.total) {
             ObjectNode result = mapper.createObjectNode();
             result.put("chunkX", job.chunkX);
@@ -219,7 +214,6 @@ public class GT5ChunkScanHandler implements RouteHandler {
             result.set("machines", job.machines);
             data.set("result", result);
         }
-
         sendResponse(exchange, data);
     }
 

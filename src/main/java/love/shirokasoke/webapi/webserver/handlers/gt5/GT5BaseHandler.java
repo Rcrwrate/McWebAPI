@@ -9,12 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
-import gregtech.api.metatileentity.implementations.MTEBasicMachine;
-import gregtech.api.metatileentity.implementations.MTEHatch;
-import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
-import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.GT5Utils;
-import love.shirokasoke.webapi.utils.GT5Utils.MachineType;
 import love.shirokasoke.webapi.webserver.handlers.block.BlockHandler;
 
 public class GT5BaseHandler extends BlockHandler {
@@ -75,24 +70,7 @@ public class GT5BaseHandler extends BlockHandler {
 
         GT5Utils.writeBasicMachineInfo(igte, mte, data);
         GT5Utils.writeState(igte, data.putObject("state"));
-
-        // 类型特有信息
-        MachineType type = GT5Utils.getMachineType(mte);
-        switch (type) {
-            case MULTIBLOCK:
-                GT5Utils.writeMultiBlockInfo((MTEMultiBlockBase) mte, data.putObject("multi"));
-                break;
-            case HATCH:
-                GT5Utils.writeHatchInfo((MTEHatch) mte, data.putObject("hatch"));
-                break;
-            case SINGLE:
-                GT5Utils.writeSingleBlockInfo((MTEBasicMachine) mte, data.putObject("single"));
-                break;
-            default:
-                break;
-        }
-
-        ClassUtils.getClassInfo(mte, data);
+        GT5Utils.write(mte, data);
         return data;
     }
 }
