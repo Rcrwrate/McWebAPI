@@ -20,6 +20,7 @@ export interface ApiSuccessResponse<T> {
 export interface ApiErrorResponse {
     success: false;
     message: string;
+    stack?: string | null;
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;

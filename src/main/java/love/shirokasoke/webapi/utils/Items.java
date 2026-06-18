@@ -177,12 +177,39 @@ public class Items {
         net.minecraft.nbt.NBTTagCompound nbt = stack.getTagCompound();
         if (nbt != null) {
             sb.append("_")
-                .append(
-                    Integer.toHexString(
-                        nbt.toString()
-                            .hashCode() & 0xFFFF));
+                .append(sha256Hex(nbt.toString(), 16));
         }
         return sb.toString();
+    }
+
+    private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
+    /**
+     * 计算字符串的 SHA-256 哈希，并返回指定长度的十六进制前缀。
+     *
+     * <p>
+     * 16 位十六进制（64 bit）对于任意规模的 NBT 数量都是足够安全的：
+     * 即使有 100 万个不同 NBT，碰撞概率仍低于 3e-6。
+     *
+     * @param hexLength 返回的十六进制字符数（从哈希结果左侧截取）
+     */
+    private static String sha256Hex(String input, int hexLength) {
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                .digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            char[] hex = new char[digest.length * 2];
+            for (int i = 0; i < digest.length; i++) {
+                int v = digest[i] & 0xFF;
+                hex[i * 2] = HEX_CHARS[v >>> 4];
+                hex[i * 2 + 1] = HEX_CHARS[v & 0x0F];
+            }
+            String full = new String(hex);
+            return hexLength > 0 && hexLength < full.length() ? full.substring(0, hexLength) : full;
+        } catch (java.security.NoSuchAlgorithmException e) {
+            // SHA-256 是 JDK 标准算法，理论上不会缺失
+            log.e(e);
+            return Integer.toHexString(input.hashCode());
+        }
     }
 
     /**

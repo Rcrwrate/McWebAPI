@@ -63,7 +63,7 @@ public interface RouteHandler extends HttpHandler {
             method,
             exchange.getRequestHeaders()
                 .get("Authorization"))) {
-            sendErrorResponse(exchange, 401, "not auth");
+            sendErrorResponse(exchange, 401, "not auth", null);
             return;
         }
         try {
@@ -74,19 +74,19 @@ public interface RouteHandler extends HttpHandler {
             long duration = System.currentTimeMillis() - startTime;
             if (e instanceof Error) {
                 Error e2 = (Error) e;
-                sendErrorResponse(exchange, e2.code, e2.getMessage());
+                sendErrorResponse(exchange, e2.code, e2.getMessage(), null);
                 MyMod.LOG.error("[{}]\t{} - Error after {}ms\t{}", method, uri, duration, e2.getMessage());
                 return;
             }
 
             MyMod.LOG.error("[{}]\t{} - Error after {}ms", method, uri, duration);
-            log.e(e);
             sendErrorResponse(
                 exchange,
                 500,
                 e.getMessage() != null ? e.getMessage()
                     : e.getClass()
-                        .getSimpleName());
+                        .getSimpleName(),
+                log.e(e));
         }
     }
 
@@ -146,11 +146,13 @@ public interface RouteHandler extends HttpHandler {
         exchange.close();
     }
 
-    default void sendErrorResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
+    default void sendErrorResponse(HttpExchange exchange, int statusCode, String message, String stack)
+        throws IOException {
         String response = mapper.writeValueAsString(
             mapper.createObjectNode()
                 .put("success", false)
-                .put("message", message));
+                .put("message", message)
+                .put("stack", stack));
         sendResponse(exchange, statusCode, response);
     }
 

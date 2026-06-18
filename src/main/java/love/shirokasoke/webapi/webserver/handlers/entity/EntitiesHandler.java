@@ -1,7 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers.entity;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
@@ -26,8 +25,7 @@ public class EntitiesHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws Exception {
-        @SuppressWarnings("unused")
-        MinecraftServer server = getServer();
+        getServer();
 
         ObjectNode root = mapper.createObjectNode();
 

@@ -27,7 +27,7 @@
 ### 命令格式
 
 ```
-/export <items|nei|missing|blocks|fluids>
+/export <items|nei|missing|blocks|fluids|lang>
 ```
 
 | 子命令 | 说明 |
@@ -37,13 +37,15 @@
 | `missing` | 缺失模式。读取 `dumps/missing-icons.json` 中的物品列表，仅导出缺失的图标，不生成 `items.json` |
 | `blocks` | 导出方块纹理贴图 |
 | `fluids` | 导出流体图标 |
+| `lang` | 导出语言文件 |
 
 ### missing 模式说明
 
 1. 启动游戏**服务端**，运行 WebAPI
 2. 使用 TS SDK 中的检测脚本扫描缺失图标的物品：
-   - `tool.checkicon.ts` — 扫描全物品（含子物品）
-   - `tool.checkaeicon.ts` — 扫描你 AE 网络存储中的物品
+    - `tool.allitems.ts` — 扫描全物品，不检查是否存在图标
+    - `tool.checkicon.ts` — 扫描全物品（含子物品）
+    - `tool.checkaeicon.ts` — 扫描你 AE 网络存储中的物品
 3. 两个脚本的结果会统一写入 `missing-icons.json`，自动去重并排除 `ae2fc:fluid_drop`
 4. 将脚本生成的 `missing-icons.json` 放入**客户端** `.minecraft/dumps/` 目录
 5. 打开**客户端**，执行 `/export missing`，自动读取 JSON 并补导出缺失图标
