@@ -126,7 +126,7 @@ public class GT5ChunkScanHandler implements RouteHandler {
             throw new RouteHandler.Error(404, "Chunk not found: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
         }
 
-        String jobId = dim + ":" + chunkX + "_" + chunkZ;
+        String jobId = dim + "_" + chunkX + "_" + chunkZ;
         ScanJob job = new ScanJob(jobId, 256, chunkX, chunkZ, dim);
         JOBS.put(jobId, job);
 

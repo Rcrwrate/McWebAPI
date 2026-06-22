@@ -5,7 +5,7 @@ import type { ClassInfo, Coordinates } from "./common";
 export type GT5MachineType = "MULTIBLOCK" | "SINGLE" | "HATCH" | "UNKNOWN";
 
 export interface GT5ShutDownReason {
-    id: number;
+    id: string;
     displayString: string;
     wasCritical: boolean;
 }

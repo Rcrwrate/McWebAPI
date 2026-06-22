@@ -263,7 +263,8 @@ export class WebApiClient {
      * 轮询等待批量 setblock 任务完成。
      * @param jobId 任务 ID（由 batchSetBlock 返回）
      * @param intervalMs 轮询间隔 (ms)，默认 100
-     * @returns 最终的 {@link BatchSetBlockJobResult}
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BatchSetBlockHandler.java)
+     * @returns 使用 {@link BatchSetBlockJobResultSchema} 验证
      */
     async waitForBatchSetBlockJob(jobId: string, intervalMs = 100): Promise<BatchSetBlockJobResult> {
         while (true) {
@@ -487,7 +488,8 @@ export class WebApiClient {
      * 轮询等待批量 GT5 机器任务完成。
      * @param jobId 任务 ID（由 submitGT5Batch 返回）
      * @param intervalMs 轮询间隔 (ms)，默认 100
-     * @returns 最终的 {@link GT5BatchJobResult}
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BatchHandler.java)
+     * @returns 使用 {@link GT5BatchJobResultSchema} 验证
      */
     async waitForGT5BatchJob(jobId: string, intervalMs = 100): Promise<GT5BatchJobResult> {
         while (true) {
@@ -523,7 +525,8 @@ export class WebApiClient {
      * 轮询等待区块扫描任务完成。
      * @param jobId 任务 ID（由 submitGT5ChunkScan 返回）
      * @param intervalMs 轮询间隔 (ms)，默认 100
-     * @returns 最终的 {@link GT5ScanJobResult}
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5ChunkScanHandler.java)
+     * @returns 使用 {@link GT5ScanJobResultSchema} 验证
      */
     async waitForGT5ScanJob(jobId: string, intervalMs = 100): Promise<GT5ScanJobResult> {
         while (true) {

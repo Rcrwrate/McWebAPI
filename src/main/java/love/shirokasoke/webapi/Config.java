@@ -27,7 +27,7 @@ public class Config {
     public static String[] bannedPrefixes = new String[] {};
     public static String[] disabledRoutes = new String[] { "/test" };
 
-    public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang" };
+    public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang", "dumps/export.lang" };
 
     public static int MaxPerTick = 10000;
     public static int budgetMs = 50;

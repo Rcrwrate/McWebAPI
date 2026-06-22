@@ -54,7 +54,7 @@ flowchart TD
         DP2a --> DP3{"【判定3】calculator == null ?<br/>是否未注入超频计算器"}
         DP3 -->|是| DP3a["【兜底构建】新建默认 OverclockCalculator<br/>━━━━━━━━━━━━━━━━━<br/>setEUt(availableEUt)<br/>setRecipeEUt(recipe.mEUt)<br/>setDuration(recipe.mDuration)<br/>setEUtDiscount(eutModifier)"]
         DP3 -->|否| DP4
-        DP3a --> DP4["【计算配方功率】应用热超频与EU修正<br/>━━━━━━━━━━━━━━━━━<br/>heatDiscount = calculator.calculateHeatDiscountMultiplier()<br/>  // 每超过配方温度 900K 折扣一次<br/>tRecipeEUt = ceil(recipeEUt × eutModifier × heatDiscount)<br/>  // 单次配方实际需要的 EU/t"]
+        DP3a --> DP4["【计算配方功率】应用热折扣与EU修正<br/>━━━━━━━━━━━━━━━━━<br/>heatDiscount = calculator.calculateHeatDiscountMultiplier()<br/>  // 每超过配方温度 900K 折扣一次，每次乘 heatDiscountExponent（默认 0.95）<br/>  // 即 heatDiscountExponent^((machineHeat - recipeHeat) / 900)<br/>tRecipeEUt = ceil(recipeEUt × eutModifier × heatDiscount)<br/>  // 单次配方实际需要的 EU/t"]
         DP4 --> DP5{"【① 功率检查】<br/>availableEUt &lt; tRecipeEUt ?<br/>机器总功率是否足够单次配方"}
         DP5 -->|是| DP5F(["【失败】→ insufficientPower(tRecipeEUt)<br/>提示需要的功率，return"])
         DP5 -->|否| DP6{"【② 电压检查】<br/>!calculator.getAllowedTierSkip() ?<br/>配方EUt 是否超过 机器电压×4^maxTierSkips"}
@@ -111,7 +111,7 @@ flowchart TD
     end
 
     subgraph OC["OverclockCalculator.calculateOverclock()  — 超频计算  (calculator.calculate() 内部)"]
-        OC0["【基础参数】<br/>━━━━━━━━━━━━━━━━━<br/>duration = supplier != null ? supplier.get() : duration × durationModifier<br/>  // 自定义时长或基础时长×速度修正<br/>recipePower = recipeEUt × parallel × eutModifier × heatDiscount<br/>  // 配方总功率(并行后)<br/>machinePower = voltage × (amperageOC ? amperage : min(amperage, parallel))<br/>  // 机器总功率(考虑安培超频开关)<br/>tiersAbove = log4(machinePower / max(recipePower, 32))<br/>  // 可超频的电压层数"]
+        OC0["【基础参数】<br/>━━━━━━━━━━━━━━━━━<br/>duration = supplier != null ? supplier.get() : duration × durationModifier<br/>  // 自定义时长或基础时长×速度修正<br/>recipePower = recipeEUt × parallel × eutModifier × heatDiscount<br/>  // 配方总功率（并行后，已含热折扣）<br/>machinePower = voltage × (amperageOC ? amperage : min(amperage, parallel))<br/>  // 机器总功率(考虑安培超频开关)<br/>tiersAbove = log4(machinePower / max(recipePower, 32))<br/>  // 可超频的电压层数"]
         OC0 --> OC1{"【判定12】noOverclock ?<br/>机器是否禁用超频"}
         OC1 -->|是| OC1a(["【无超频】<br/>━━━━━━━━━━━━━━━━━<br/>consumption = ceil(recipePower)<br/>duration = ceil(duration)<br/>return"])
         OC1 -->|否| OC2{"【判定13】laserOC ?<br/>是否使用激光超频(特异机器)"}
@@ -122,8 +122,8 @@ flowchart TD
         OC4 -->|是| OC4a["【电压层限制】overclocks = min(overclocks,<br/>voltageTierMachine - voltageTierRecipe)<br/>━━━━━━━━━━━━━━━━━<br/>log4ceil(machineVoltage/8) - log4ceil(recipeEUt/8)<br/>不允许跨安培超频"]
         OC4 -->|否| OC5
         OC4a --> OC5["【下限保护】overclocks = max(overclocks, 0)<br/>━━━━━━━━━━━━━━━━━<br/>避免 >1A 配方因层数差为负导致报错"]
-        OC5 --> OC6["【热/常规拆分】<br/>━━━━━━━━━━━━━━━━━<br/>heatOverclocks = min(heatOC ? (machineHeat-recipeHeat)/1800 : 0, overclocks)<br/>  // 每 1800K 温差提供1次热超频(EBF)<br/>regularOverclocks = overclocks - heatOverclocks"]
-        OC6 --> OC7["【最终功耗与时长】<br/>━━━━━━━━━━━━━━━━━<br/>consumption = ceil(recipePower × eutIncreasePerOC^overclocks)<br/>  // 每 OC 功耗 ×4(默认)<br/>duration /= durationDecreasePerHeatOC^heatOverclocks<br/>  // 热超频每层时长 ÷4<br/>duration /= durationDecreasePerOC^regularOverclocks<br/>  // 常规超频每层时长 ÷2(默认)<br/>duration = max(duration, 1)<br/>  // 不低于1tick"]
+        OC5 --> OC6["【热/常规拆分】<br/>━━━━━━━━━━━━━━━━━<br/>heatOverclocks = min(heatOC ? (machineHeat-recipeHeat)/1800 : 0, overclocks)<br/>  // 每 1800K 温差提供1层热超频(EBF)，优先占用总超频层数<br/>regularOverclocks = overclocks - heatOverclocks"]
+        OC6 --> OC7["【最终功耗与时长】<br/>━━━━━━━━━━━━━━━━━<br/>consumption = ceil(recipePower × eutIncreasePerOC^overclocks)<br/>  // 每 OC 功耗 ×4(默认)<br/>duration /= durationDecreasePerHeatOC^heatOverclocks<br/>  // 热超频每层时长 ÷4（从总超频层数中优先扣除）<br/>duration /= durationDecreasePerOC^regularOverclocks<br/>  // 常规超频每层时长 ÷2(默认)<br/>duration = max(duration, 1)<br/>  // 不低于1tick"]
     end
 
     OC7 --> DP17
@@ -253,8 +253,26 @@ flowchart TD
 | 40 | 判定12 | `noOverclock` | 直接用基础值返回 | [`OverclockCalculator.java#L346`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L346) |
 | 41 | 判定13 | `laserOC` | 两段循环超频 | [`OverclockCalculator.java#L353`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L353) |
 | 42 | 判定14 | `!amperageOC` | 按电压层级限制超频 | [`OverclockCalculator.java#L392`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L392) |
-| 43 | 热折扣 | `(machineHeat - recipeHeat) / 900` | 降低 `tRecipeEUt` | [`OverclockCalculator.java#L327`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L327) |
-| 44 | 热超频 | `(machineHeat - recipeHeat) / 1800` | 时长额外 ÷4 | [`OverclockCalculator.java#L402`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L402) |
+| 43 | 热折扣 | `heatDiscountExponent ^ ((machineHeat - recipeHeat) / 900)`，默认底数 0.95 | 在超频前降低 `tRecipeEUt` 与 `recipePower` | [`OverclockCalculator.java#L327`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L327) |
+| 44 | 热超频 | 取 `(machineHeat - recipeHeat) / 1800` 与 `overclocks` 较小值 | 从总超频层数中扣除，每层时长 ÷4 | [`OverclockCalculator.java#L402`](../../tools/GT5-Unofficial-5.09.51.482/src/main/java/gregtech/api/util/OverclockCalculator.java#L402) |
+
+> **热折扣 vs 热超频的区别**
+> - **热折扣（Heat Discount）**是 **EU 修正**：在并行计算与超频计算前，按 `heatDiscountExponent ^ ((machineHeat - recipeHeat) / 900)` 降低 `tRecipeEUt` 和 `recipePower`。默认底数 `heatDiscountExponent = 0.95`，即每超过配方温度 900K 约省 5% EU，可通过 `setHeatDiscountMultiplier()` 修改。
+> - **热超频（Heat Overclock）**是 **时长超频**：从可用的总超频层数里优先分配 `(machineHeat - recipeHeat) / 1800` 层，每层将时长除以 `durationDecreasePerHeatOC = 4`；剩余层数才作为常规超频（默认每层时长 ÷2）。
+> - 二者由独立开关控制：`setHeatDiscount(boolean)` 启用热折扣，`setHeatOC(boolean)` 启用热超频。EBF 通常同时启用，但部分机器（如 Mega Vacuum Freezer）只启用热超频。
+>
+> **有损超频 vs 无损超频（补充说明）**
+> 超频层数拆分为热超频与常规超频后，二者对“总 EU / 每个配方”的影响不同：
+> - **无损超频 = 热超频**：每层 `EUt × 4` 且 `duration ÷ 4`，总 EU 消耗不变，只换速度。
+> - **有损超频 = 常规超频**：每层 `EUt × 4` 但 `duration ÷ 2`，总 EU 消耗翻倍。
+> - **热折扣不是超频**：它只降低 `recipePower`，不改变时长，总 EU 反而减少。
+>
+> 源码计算式（`OverclockCalculator.java` 第 `401:409` 行）：
+> - `consumption = recipePower × 4^(heatOverclocks + regularOverclocks)`
+> - `duration = baseDuration / 4^heatOverclocks / 2^regularOverclocks`
+> - `总 EU = consumption × duration = recipePower × baseDuration × 2^regularOverclocks`
+>
+> 热超频层数在总 EU 公式中相互抵消，因此属于无损超频；常规超频层数每层使总 EU 翻倍，因此属于有损超频。
 
 ### 五、应用阶段（`ProcessingLogic.applyRecipe`）
 

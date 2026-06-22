@@ -6,8 +6,8 @@ import { ClassInfoSchema, CoordinatesSchema } from "./common";
 export const GT5MachineTypeSchema = Joi.string().valid("MULTIBLOCK", "SINGLE", "HATCH", "UNKNOWN");
 
 export const GT5ShutDownReasonSchema = Joi.object({
-    id: Joi.number().required(),
-    displayString: Joi.string().required(),
+    id: Joi.string().required(),
+    displayString: Joi.string().allow("").required(),
     wasCritical: Joi.boolean().required(),
 });
 
