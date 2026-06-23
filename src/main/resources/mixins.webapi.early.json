@@ -1,0 +1,8 @@
+{
+    "required": true,
+    "minVersion": "0.8.5-GTNH",
+    "package": "love.shirokasoke.webapi.mixins.early",
+    "refmap": "mixins.webapi.refmap.json",
+    "target": "@env(PREINIT)",
+    "compatibilityLevel": "JAVA_8"
+}
