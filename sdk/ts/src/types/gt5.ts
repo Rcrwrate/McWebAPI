@@ -1,8 +1,9 @@
 import type { ClassInfo, Coordinates } from "./common";
+import type { Fluid } from "./fluid";
 
 // ========== GT5 Machine Base ==========
 
-export type GT5MachineType = "MULTIBLOCK" | "SINGLE" | "HATCH" | "UNKNOWN";
+export type GT5MachineType = "MULTIBLOCK" | "SINGLE" | "GENERATOR" | "HATCH" | "UNKNOWN";
 
 export interface GT5ShutDownReason {
     id: string;
@@ -73,9 +74,22 @@ export interface GT5SingleBlockInfo {
     mainFacing: string;
 }
 
+export interface GT5GeneratorInfo {
+    tier: number;
+    storedEU: number;
+    maxEUStore: number;
+    pollution: number;
+    efficiency: number;
+    recipeMap?: string;
+    maxEUOutput: number;
+    capacity: number;
+    fluid?: Fluid;
+}
+
 export type GT5Machine =
     | { machineType: "MULTIBLOCK"; multi: GT5MultiBlockInfo }
     | { machineType: "SINGLE"; single: GT5SingleBlockInfo }
+    | { machineType: "GENERATOR"; generator: GT5GeneratorInfo }
     | { machineType: "HATCH"; hatch: GT5HatchInfo }
     | { machineType: "UNKNOWN" };
 

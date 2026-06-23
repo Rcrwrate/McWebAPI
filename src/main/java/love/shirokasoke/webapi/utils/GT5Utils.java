@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fluids.FluidStack;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -12,9 +13,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.BaseMetaTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
+import gregtech.api.metatileentity.implementations.MTEBasicGenerator;
 import gregtech.api.metatileentity.implementations.MTEBasicMachine;
 import gregtech.api.metatileentity.implementations.MTEHatch;
 import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.util.shutdown.ShutDownReason;
 import love.shirokasoke.webapi.Constant;
 
@@ -28,6 +31,8 @@ public final class GT5Utils {
         /** 多方块机器核心方块 */
         MULTIBLOCK,
         SINGLE,
+        /** 单方块发电机 */
+        GENERATOR,
         /** 多方块机器附属方块 */
         HATCH,
         UNKNOWN
@@ -38,6 +43,8 @@ public final class GT5Utils {
             return MachineType.MULTIBLOCK;
         } else if (mte instanceof MTEHatch) {
             return MachineType.HATCH;
+        } else if (mte instanceof MTEBasicGenerator) {
+            return MachineType.GENERATOR;
         } else if (mte instanceof MTEBasicMachine) {
             return MachineType.SINGLE;
         }
@@ -96,6 +103,9 @@ public final class GT5Utils {
             case SINGLE:
                 writeSingleBlockInfo((MTEBasicMachine) mte, data.putObject("single"));
                 break;
+            case GENERATOR:
+                writeGeneratorInfo((MTEBasicGenerator) mte, data.putObject("generator"));
+                break;
             default:
                 break;
         }
@@ -149,6 +159,24 @@ public final class GT5Utils {
         data.put("inputSlotCount", single.mInputSlotCount);
         data.put("amperage", single.mAmperage);
         data.put("mainFacing", single.mMainFacing.name());
+    }
+
+    public static void writeGeneratorInfo(MTEBasicGenerator gen, ObjectNode data) {
+        data.put("tier", gen.mTier);
+        data.put("storedEU", gen.getEUVar());
+        data.put("maxEUStore", gen.maxEUStore());
+        data.put("pollution", gen.getPollution());
+        data.put("efficiency", gen.getEfficiency());
+        RecipeMap<?> recipeMap = gen.getRecipeMap();
+        if (recipeMap != null) {
+            data.put("recipeMap", recipeMap.unlocalizedName);
+        }
+        data.put("maxEUOutput", gen.maxEUOutput());
+        data.put("capacity", gen.getCapacity());
+        FluidStack fluid = gen.mFluid;
+        if (fluid != null && fluid.getFluid() != null) {
+            Fluids.dump(fluid.getFluid(), data.putObject("fluid"));
+        }
     }
 
     private static List<MTEHatch> validHatches(List<?> hatchList) {

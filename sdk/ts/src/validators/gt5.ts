@@ -1,9 +1,10 @@
 import Joi from "joi";
 import { ClassInfoSchema, CoordinatesSchema } from "./common";
+import { FluidSchema } from "./fluid";
 
 // ========== GT5 Machine Base ==========
 
-export const GT5MachineTypeSchema = Joi.string().valid("MULTIBLOCK", "SINGLE", "HATCH", "UNKNOWN");
+export const GT5MachineTypeSchema = Joi.string().valid("MULTIBLOCK", "SINGLE", "GENERATOR", "HATCH", "UNKNOWN");
 
 export const GT5ShutDownReasonSchema = Joi.object({
     id: Joi.string().required(),
@@ -76,10 +77,23 @@ export const GT5SingleBlockInfoSchema = Joi.object({
     mainFacing: Joi.string().required(),
 });
 
+export const GT5GeneratorInfoSchema = Joi.object({
+    tier: Joi.number().required(),
+    storedEU: Joi.number().required(),
+    maxEUStore: Joi.number().required(),
+    pollution: Joi.number().required(),
+    efficiency: Joi.number().required(),
+    recipeMap: Joi.string().optional(),
+    maxEUOutput: Joi.number().required(),
+    capacity: Joi.number().required(),
+    fluid: FluidSchema.optional(),
+});
+
 const GT5MachineFieldsSchema = Joi.object({
     machineType: GT5MachineTypeSchema.required(),
     multi: GT5MultiBlockInfoSchema.when("machineType", { is: "MULTIBLOCK", then: Joi.required() }),
     single: GT5SingleBlockInfoSchema.when("machineType", { is: "SINGLE", then: Joi.required() }),
+    generator: GT5GeneratorInfoSchema.when("machineType", { is: "GENERATOR", then: Joi.required() }),
     hatch: GT5HatchInfoSchema.when("machineType", { is: "HATCH", then: Joi.required() }),
 });
 

@@ -92,7 +92,7 @@ describe(`GT5 chunk scan over all loaded chunks (CONCURRENCY=${CONCURRENCY})`, a
     const coords: GT5BatchMachineCoord[] = [];
     for (const job of scanJobs) {
         for (const m of (job.result?.machines ?? []) as GT5ScanMachine[]) {
-            if (m.machineType === "MULTIBLOCK" || m.machineType === "SINGLE") {
+            if (["GENERATOR", "MULTIBLOCK", "SINGLE"].includes(m.machineType)) {
                 coords.push({ x: m.x, y: m.y, z: m.z, dim: job.dimension });
             }
         }

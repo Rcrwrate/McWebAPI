@@ -69,8 +69,8 @@ public class GT5BaseHandler extends BlockHandler {
                 .put("dimension", co.dimension));
 
         GT5Utils.writeBasicMachineInfo(igte, mte, data);
-        GT5Utils.writeState(igte, data.putObject("state"));
         GT5Utils.write(mte, data);
+        GT5Utils.writeState(igte, data.putObject("state"));
         return data;
     }
 }
