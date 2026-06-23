@@ -11,11 +11,37 @@ export interface GT5ShutDownReason {
     wasCritical: boolean;
 }
 
+/**
+ * 机器 IO 信息，由 GT5 IGregTechDeviceInformation 接口提供。
+ * 字段 inputVoltage/inputAmperage 仅在机器接入电力输入网络时存在；
+ * outputVoltage/outputAmperage 仅在机器接入电力输出网络时存在。
+ */
+export interface GT5MachineIO {
+    storedEU: number;
+    euCapacity: number;
+    /** getInfoData() 返回的格式化字符串数组（IC2 信息显示屏同源数据） */
+    Info: string[];
+    /** getInfoMap() 返回的结构化键值对 */
+    rawInfo: Record<string, string>;
+    inputVoltage?: number;
+    inputAmperage?: number;
+    outputVoltage?: number;
+    outputAmperage?: number;
+}
+
 export interface GT5MachineState {
     isActive: boolean;
     isAllowedToWork: boolean;
     wasShutdown?: boolean;
     lastShutDownReason?: GT5ShutDownReason;
+    storedEU?: number;
+    euCapacity?: number;
+    Info?: string[];
+    rawInfo?: Record<string, string>;
+    inputVoltage?: number;
+    inputAmperage?: number;
+    outputVoltage?: number;
+    outputAmperage?: number;
 }
 
 export interface GT5HatchCoord {
@@ -43,6 +69,10 @@ export interface GT5MultiBlockInfo {
     inputVoltageTier: number;
     maxInputEu: number;
     maxInputAmps: number;
+    /** 所有能源仓已存储 EU 之和（注意：LSC 等电池类机器 EU 不存于能源仓，此值为 0） */
+    storedEnergy: number;
+    /** 所有能源仓总容量之和（注意：LSC 等电池类机器 EU 不存于能源仓，此值仅为能源仓容量） */
+    maxEnergy: number;
     maxParallelRecipes: number;
     trueParallel: number;
     maintenance: GT5MaintenanceState;

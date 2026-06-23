@@ -12,11 +12,38 @@ export const GT5ShutDownReasonSchema = Joi.object({
     wasCritical: Joi.boolean().required(),
 });
 
+export const GT5MachineIOSchema = Joi.object({
+    storedEU: Joi.number().required(),
+    euCapacity: Joi.number().required(),
+    Info: Joi.array()
+        .items(Joi.string())
+        .required(),
+    rawInfo: Joi.object()
+        .pattern(Joi.string(), Joi.string())
+        .required(),
+    inputVoltage: Joi.number().optional(),
+    inputAmperage: Joi.number().optional(),
+    outputVoltage: Joi.number().optional(),
+    outputAmperage: Joi.number().optional(),
+});
+
 export const GT5MachineStateSchema = Joi.object({
     isActive: Joi.boolean().required(),
     isAllowedToWork: Joi.boolean().required(),
     wasShutdown: Joi.boolean().optional(),
     lastShutDownReason: GT5ShutDownReasonSchema.optional(),
+    storedEU: Joi.number().optional(),
+    euCapacity: Joi.number().optional(),
+    Info: Joi.array()
+        .items(Joi.string())
+        .optional(),
+    rawInfo: Joi.object()
+        .pattern(Joi.string(), Joi.string())
+        .optional(),
+    inputVoltage: Joi.number().optional(),
+    inputAmperage: Joi.number().optional(),
+    outputVoltage: Joi.number().optional(),
+    outputAmperage: Joi.number().optional(),
 });
 
 export const GT5HatchCoordSchema = Joi.object({
@@ -57,6 +84,8 @@ export const GT5MultiBlockInfoSchema = Joi.object({
     inputVoltageTier: Joi.number().required(),
     maxInputEu: Joi.number().required(),
     maxInputAmps: Joi.number().required(),
+    storedEnergy: Joi.number().required(),
+    maxEnergy: Joi.number().required(),
     maxParallelRecipes: Joi.number().required(),
     trueParallel: Joi.number().required(),
     maintenance: GT5MaintenanceStateSchema.required(),

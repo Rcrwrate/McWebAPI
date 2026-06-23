@@ -59,7 +59,7 @@ public class Lang {
     }
 
     /**
-     * 刷新 GregTech {@code Materials.mLocalizedName} 缓存字段，使其读取最新注入的翻译。
+     * 刷新 GregTech {@link Materials#mLocalizedName} 缓存字段，使其读取最新注入的翻译。
      */
     private static void refreshGTMaterialLocalizedNames() {
         try {

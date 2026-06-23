@@ -1,7 +1,10 @@
 package love.shirokasoke.webapi.utils;
 
+import static gregtech.api.util.GTUtility.validMTEList;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fluids.FluidStack;
@@ -16,9 +19,11 @@ import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.implementations.MTEBasicGenerator;
 import gregtech.api.metatileentity.implementations.MTEBasicMachine;
 import gregtech.api.metatileentity.implementations.MTEHatch;
+import gregtech.api.metatileentity.implementations.MTEHatchEnergy;
 import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.util.shutdown.ShutDownReason;
+import kekztech.common.tileentities.MTELapotronicSuperCapacitor;
 import love.shirokasoke.webapi.Constant;
 
 public final class GT5Utils {
@@ -76,6 +81,35 @@ public final class GT5Utils {
         node.put("owner", igte.getOwnerName());
     }
 
+    /**
+     * 大部分机器一般会重写{@link BaseMetaTileEntity#getInfoData}和{@link BaseMetaTileEntity#getInfoMap}
+     * <br>
+     * 直接通过该接口获取数据比较快
+     * 
+     * @apiNote 例外：兰波顿没有重写{@link MTELapotronicSuperCapacitor#getInfoMap}
+     */
+    public static void writeIO(BaseMetaTileEntity bmte, ObjectNode data) {
+        data.put("storedEU", bmte.getStoredEU());
+        data.put("euCapacity", bmte.getEUCapacity());
+        ArrayNode info = data.putArray("Info");
+        for (String i : bmte.getInfoData()) {
+            info.add(i);
+        }
+        ObjectNode rawInfo = data.putObject("rawInfo");
+        for (Entry<String, String> e : bmte.getInfoMap()
+            .entrySet()) {
+            rawInfo.put(e.getKey(), e.getValue());
+        }
+        if (bmte.isEnetInput()) {
+            data.put("inputVoltage", bmte.getInputVoltage());
+            data.put("inputAmperage", bmte.getInputAmperage());
+        }
+        if (bmte.isEnetOutput()) {
+            data.put("outputVoltage", bmte.getOutputVoltage());
+            data.put("outputAmperage", bmte.getOutputAmperage());
+        }
+    }
+
     public static void writeState(IGregTechTileEntity igte, ObjectNode state) {
         state.put("isActive", igte.isActive());
         state.put("isAllowedToWork", igte.isAllowedToWork());
@@ -87,6 +121,7 @@ public final class GT5Utils {
             reasonNode.put("id", reason.getID());
             reasonNode.put("displayString", reason.getDisplayString());
             reasonNode.put("wasCritical", reason.wasCritical());
+            writeIO(bmte, state);
         }
     }
 
@@ -125,6 +160,16 @@ public final class GT5Utils {
         data.put("inputVoltageTier", multi.getAverageInputVoltage());
         data.put("maxInputEu", multi.getMaxInputEu());
         data.put("maxInputAmps", multi.getMaxInputAmps());
+        long storedEnergy = 0;
+        long maxEnergy = 0;
+        for (MTEHatchEnergy tHatch : validMTEList(multi.mEnergyHatches)) {
+            final IGregTechTileEntity baseMetaTileEntity = tHatch.getBaseMetaTileEntity();
+            storedEnergy += baseMetaTileEntity.getStoredEU();
+            maxEnergy += baseMetaTileEntity.getEUCapacity();
+        }
+        data.put("storedEnergy", storedEnergy);
+        data.put("maxEnergy", maxEnergy);
+        // multi.getActualEnergyUsage();
         data.put("maxParallelRecipes", multi.getMaxParallelRecipes());
         data.put("trueParallel", multi.getTrueParallel());
 
