@@ -138,6 +138,7 @@ export const GT5MachineInfoSchema = Joi.object<GT5MachineInfo>({
     owner: Joi.string().required(),
     state: GT5MachineStateSchema.required(),
     class: ClassInfoSchema.optional(),
+    nbt: Joi.object().unknown().required(),
 }).concat(GT5MachineFieldsSchema);
 
 // ========== GT5 Batch ==========

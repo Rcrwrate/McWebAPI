@@ -43,6 +43,12 @@ const columns: GridColDef<AEMESRow>[] = [
         filterable: true,
     },
     {
+        field: "rawName",
+        headerName: "标准名称",
+        width: 200,
+        filterable: true,
+    },
+    {
         field: "active",
         headerName: "活跃",
         width: 100,

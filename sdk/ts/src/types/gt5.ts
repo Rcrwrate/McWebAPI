@@ -135,6 +135,7 @@ export type GT5MachineInfo = {
     owner: string;
     state: GT5MachineState;
     class?: ClassInfo;
+    nbt: Record<string, unknown>;
 } & GT5Machine;
 
 // ========== GT5 Batch ==========
