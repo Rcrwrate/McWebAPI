@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { ChunkForceList, ChunkLoadResult, ChunkMapCell, ChunksByDimension, ChunkWithDimension } from "../types/chunk";
 import { ClassInfoSchema } from "./common";
 import { EntitySchema } from "./entity";
 
@@ -23,11 +24,11 @@ export const ChunkSchema = Joi.object({
     inhabitedTime: Joi.number().required(),
 });
 
-export const ChunkWithDimensionSchema = ChunkSchema.keys({
+export const ChunkWithDimensionSchema = ChunkSchema.append<ChunkWithDimension>({
     dimension: Joi.number().required(),
 });
 
-export const ChunksByDimensionSchema = Joi.object({
+export const ChunksByDimensionSchema = Joi.object<ChunksByDimension>({
     name: Joi.string().required(),
     class: ClassInfoSchema.optional(),
     chunks: Joi.array().items(ChunkSchema).required(),
@@ -49,16 +50,16 @@ export const ChunkLoadInfoSchema = Joi.object({
     isActive: Joi.boolean().required(),
 });
 
-export const ChunkForceListSchema = Joi.object({
+export const ChunkForceListSchema = Joi.object<ChunkForceList>({
     totalLoaded: Joi.number().required(),
     chunks: Joi.array().items(ChunkLoadInfoSchema).required(),
 });
 
-export const ChunkLoadResultSchema = ChunkLoadInfoSchema.keys({
+export const ChunkLoadResultSchema = ChunkLoadInfoSchema.append<ChunkLoadResult>({
     action: Joi.valid("load", "unload").required(),
 });
 
-export const ChunkMapCellSchema = Joi.object({
+export const ChunkMapCellSchema = Joi.object<ChunkMapCell>({
     name: Joi.string().required(),
     meta: Joi.number().required(),
     y: Joi.number().required(),

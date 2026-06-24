@@ -50,7 +50,7 @@ describe("AE", async () => {
     it("me", async () => {
         const r = await api.aeME({ x: -72, y: 118, z: 69 })
         const check = Joi.array().items(
-            v.AE2PatternSchema.keys({
+            v.AE2PatternSchema.append({
                 slot: Joi.number().required(),
                 direction: Joi.string().optional()
             })

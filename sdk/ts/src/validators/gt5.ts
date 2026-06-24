@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { GT5BatchJobResult, GT5BatchMachineCoord, GT5BatchSubmitResult, GT5MachineInfo, GT5ScanJobResult } from "../types/gt5";
 import { ClassInfoSchema, CoordinatesSchema } from "./common";
 import { FluidSchema } from "./fluid";
 
@@ -126,7 +127,7 @@ const GT5MachineFieldsSchema = Joi.object({
     hatch: GT5HatchInfoSchema.when("machineType", { is: "HATCH", then: Joi.required() }),
 });
 
-export const GT5MachineInfoSchema = Joi.object({
+export const GT5MachineInfoSchema = Joi.object<GT5MachineInfo>({
     coordinates: CoordinatesSchema.required(),
     localName: Joi.string().required(),
     internalName: Joi.string().required(),
@@ -138,14 +139,14 @@ export const GT5MachineInfoSchema = Joi.object({
 
 // ========== GT5 Batch ==========
 
-export const GT5BatchMachineCoordSchema = Joi.object({
+export const GT5BatchMachineCoordSchema = Joi.object<GT5BatchMachineCoord>({
     x: Joi.number().required(),
     y: Joi.number().required(),
     z: Joi.number().required(),
     dim: Joi.number().optional(),
 });
 
-export const GT5BatchSubmitResultSchema = Joi.object({
+export const GT5BatchSubmitResultSchema = Joi.object<GT5BatchSubmitResult>({
     id: Joi.string().required(),
     total: Joi.number().required(),
 });
@@ -171,7 +172,7 @@ export const GT5BatchMachineSchema = Joi.object({
 
 export const GT5BatchJobStatusSchema = Joi.string().valid("pending", "running", "completed");
 
-export const GT5BatchJobResultSchema = Joi.object({
+export const GT5BatchJobResultSchema = Joi.object<GT5BatchJobResult>({
     id: Joi.string().required(),
     total: Joi.number().required(),
     completed: Joi.number().required(),
@@ -189,7 +190,7 @@ export const GT5BatchJobResultSchema = Joi.object({
 
 // ========== GT5 Chunk Scan ==========
 
-export const GT5ScanSubmitResultSchema = Joi.object({
+export const GT5ScanSubmitResultSchema = Joi.object<GT5BatchSubmitResult>({
     id: Joi.string().required(),
     total: Joi.number().required(),
 });
@@ -215,7 +216,7 @@ export const GT5ScanResultSchema = Joi.object({
 
 export const GT5ScanJobStatusSchema = Joi.string().valid("pending", "running", "completed");
 
-export const GT5ScanJobResultSchema = Joi.object({
+export const GT5ScanJobResultSchema = Joi.object<GT5ScanJobResult>({
     id: Joi.string().required(),
     total: Joi.number().required(),
     completed: Joi.number().required(),

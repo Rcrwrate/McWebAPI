@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { FMPPart } from "../types/fmp";
 import { ClassInfoSchema } from "./common";
 import { ItemStackSchema } from "./item";
 
@@ -11,7 +12,7 @@ export const Cuboid6BoundsSchema = Joi.object({
     maxZ: Joi.number().required(),
 });
 
-export const FMPPartSchema = Joi.object({
+export const FMPPartSchema = Joi.object<FMPPart>({
     class: ClassInfoSchema.optional(),
     type: Joi.string().required(),
     lightValue: Joi.number().required(),

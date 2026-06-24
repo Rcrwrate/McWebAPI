@@ -76,10 +76,12 @@ public class CommonProxy {
             new love.shirokasoke.webapi.thread.ItemsThread().start();
         }
         Lang.setup(Config.langFiles);
+        love.shirokasoke.webapi.thread.TPSRecorder._start_();
     }
 
     // Called when the server is stopping
     public void serverStopping(FMLServerStoppingEvent event) {
+        love.shirokasoke.webapi.thread.TPSRecorder._stop_();
         WebServer.stop();
     }
 }

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { EntitiesByDimension, Entity } from "../types/entity";
 import { ClassInfoSchema } from "./common";
 import { ItemStackSchema, NBTDataSchema } from "./item";
 
@@ -99,10 +100,10 @@ export const PlayerInfoSchema = Joi.object({
     }).required(),
     heldItem: ItemStackSchema.optional(),
     armor: Joi.array().items(Joi.alternatives(ItemStackSchema, Joi.valid(null))).optional(),
-    items: Joi.array().items(ItemStackSchema.keys({ slot: Joi.number().required() })).optional(),
+    items: Joi.array().items(ItemStackSchema.append({ slot: Joi.number().required() })).optional(),
 });
 
-export const EntitySchema = Joi.object({
+export const EntitySchema = Joi.object<Entity>({
     Entity: EntityBaseSchema.concat(NBTDataSchema).required(),
     EntityLivingBase: EntityLivingBaseInfoSchema.optional(),
     Player: PlayerInfoSchema.optional(),
@@ -121,7 +122,7 @@ export const EntitySummarySchema = Joi.object({
     }).required(),
 });
 
-export const EntitiesByDimensionSchema = Joi.object({
+export const EntitiesByDimensionSchema = Joi.object<EntitiesByDimension>({
     WorldName: Joi.string().required(),
     loadedEntityList: Joi.array().items(EntitySummarySchema).required(),
 });

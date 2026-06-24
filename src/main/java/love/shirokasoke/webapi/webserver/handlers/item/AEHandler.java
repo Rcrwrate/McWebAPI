@@ -104,8 +104,8 @@ public class AEHandler implements RouteHandler {
                     node.put("name", name);
                     array.add(node);
                 } catch (java.lang.NullPointerException ex) {
-                    log.debugFields(stack);
-                    log.debugMethods(stack);
+                    // log.debugFields(stack);
+                    // log.debugMethods(stack);
                     log.e(ex);
                 }
             }

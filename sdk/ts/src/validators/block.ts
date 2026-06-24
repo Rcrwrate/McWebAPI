@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { BatchSetBlockJobResult, Block, BlockDetail } from "../types/block";
 import { ClassInfoSchema, CoordinatesSchema } from "./common";
 import { ItemStackSchema } from "./item";
 
@@ -14,7 +15,7 @@ export const MaterialSchema = Joi.object({
     isAdventureModeExempt: Joi.boolean().required(),
 });
 
-export const BlockSchema = Joi.object({
+export const BlockSchema = Joi.object<Block>({
     class: ClassInfoSchema.optional(),
     id: Joi.number().required(),
     registryName: Joi.string().required(),
@@ -32,8 +33,8 @@ export const BlockSchema = Joi.object({
     blockColor: Joi.number().optional(),
 });
 
-export const BlockDetailSchema = Joi.object({
-    block: BlockSchema.keys({
+export const BlockDetailSchema = Joi.object<BlockDetail>({
+    block: BlockSchema.append({
         hardness: Joi.number().required(),
         isReplaceable: Joi.boolean().required(),
         isPassable: Joi.boolean().required(),
@@ -44,7 +45,7 @@ export const BlockDetailSchema = Joi.object({
     tileEntity: Joi.object({
         class: ClassInfoSchema.optional(),
         inventorySize: Joi.number().optional(),
-        items: Joi.array().items(ItemStackSchema.keys({ slot: Joi.number().required() })).optional(),
+        items: Joi.array().items(ItemStackSchema.append({ slot: Joi.number().required() })).optional(),
     }).unknown().optional(),
 });
 
@@ -80,7 +81,7 @@ export const BatchSetBlockFailureSchema = Joi.object({
     reason: Joi.string().required(),
 });
 
-export const BatchSetBlockJobResultSchema = Joi.object({
+export const BatchSetBlockJobResultSchema = Joi.object<BatchSetBlockJobResult>({
     id: Joi.string().required(),
     total: Joi.number().required(),
     completed: Joi.number().required(),

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { AEItemDefinitions, Item, ItemDetail } from "../types/item";
 import { ClassInfoSchema } from "./common";
 
 export const NBTDataSchema = Joi.object({
@@ -7,7 +8,7 @@ export const NBTDataSchema = Joi.object({
     nbt: Joi.object().unknown().optional(),
 });
 
-export const ItemSchema = Joi.object({
+export const ItemSchema = Joi.object<Item>({
     class: ClassInfoSchema.optional(),
     id: Joi.number().required(),
     registryName: Joi.string().required(),
@@ -16,7 +17,7 @@ export const ItemSchema = Joi.object({
     HasSubtypes: Joi.boolean().required(),
 });
 
-export const ItemStackSchema = ItemSchema.keys({
+export const ItemStackSchema = ItemSchema.append({
     MaxStackSize: Joi.number().required(),
     damageable: Joi.boolean().required(),
     damage: Joi.number().required(),
@@ -25,13 +26,13 @@ export const ItemStackSchema = ItemSchema.keys({
     count: Joi.number().optional(),
 }).concat(NBTDataSchema);
 
-export const ItemDetailSchema = ItemStackSchema.keys({
+export const ItemDetailSchema = ItemStackSchema.append<ItemDetail>({
     subs: Joi.array().items(ItemStackSchema).optional(),
 });
 
-export const AEItemDefinitionsSchema = Joi.object({
-    items: Joi.array().items(ItemStackSchema.keys({ name: Joi.string().required() })).required(),
-    parts: Joi.array().items(ItemStackSchema.keys({ name: Joi.string().required() })).required(),
-    materials: Joi.array().items(ItemStackSchema.keys({ name: Joi.string().required() })).required(),
-    blocks: Joi.array().items(ItemStackSchema.keys({ name: Joi.string().required() })).required(),
+export const AEItemDefinitionsSchema = Joi.object<AEItemDefinitions>({
+    items: Joi.array().items(ItemStackSchema.append({ name: Joi.string().required() })).required(),
+    parts: Joi.array().items(ItemStackSchema.append({ name: Joi.string().required() })).required(),
+    materials: Joi.array().items(ItemStackSchema.append({ name: Joi.string().required() })).required(),
+    blocks: Joi.array().items(ItemStackSchema.append({ name: Joi.string().required() })).required(),
 });

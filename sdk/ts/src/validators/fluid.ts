@@ -1,8 +1,9 @@
 import Joi from "joi";
+import type { Fluid, FluidContainer } from "../types/fluid";
 import { ClassInfoSchema } from "./common";
 import { ItemStackSchema } from "./item";
 
-export const FluidSchema = Joi.object({
+export const FluidSchema = Joi.object<Fluid>({
     class: ClassInfoSchema.optional(),
     name: Joi.string().required(),
     defaultName: Joi.string().required(),
@@ -18,7 +19,7 @@ export const FluidSchema = Joi.object({
     block: Joi.number().optional(),
 });
 
-export const FluidContainerSchema = Joi.object({
+export const FluidContainerSchema = Joi.object<FluidContainer>({
     fluid: FluidSchema.optional(),
     amount: Joi.number().optional(),
     filledContainer: ItemStackSchema.optional(),

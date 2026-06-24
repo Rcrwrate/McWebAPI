@@ -1,8 +1,9 @@
 import Joi from "joi";
+import type { AECPU, AECPUCancelBody, AECPUCancelResult, AECraftingTaskBody, AECraftingTaskResult, AEHitResult, AEItemsResult, AEMEInterface, AENode } from "../types/ae2";
 import { ClassInfoSchema } from "./common";
 import { ItemStackSchema } from "./item";
 
-export const AENodeSchema = Joi.object({
+export const AENodeSchema = Joi.object<AENode>({
     active: Joi.boolean().required(),
     meetsChannel: Joi.boolean().required(),
     playerID: Joi.number().required(),
@@ -19,7 +20,7 @@ export const AENodeSchema = Joi.object({
     flags: Joi.array().items(Joi.string()).required(),
 });
 
-export const AE2PatternSchema = ItemStackSchema.keys({
+export const AE2PatternSchema = ItemStackSchema.append({
     crafting: Joi.boolean().required(),
     substitute: Joi.boolean().required(),
     beSubstitute: Joi.boolean().required(),
@@ -30,12 +31,12 @@ export const AE2PatternSchema = ItemStackSchema.keys({
     priority: Joi.number().optional(),
     canSubstitute: Joi.boolean().optional(),
     canBeSubstitute: Joi.boolean().optional(),
-    condensedInputs: Joi.array().items(ItemStackSchema.keys({ count: Joi.number().required() })).optional(),
-    condensedOutputs: Joi.array().items(ItemStackSchema.keys({ count: Joi.number().required() })).optional(),
+    condensedInputs: Joi.array().items(ItemStackSchema.append({ count: Joi.number().required() })).optional(),
+    condensedOutputs: Joi.array().items(ItemStackSchema.append({ count: Joi.number().required() })).optional(),
     patternParseError: Joi.string().optional(),
 });
 
-export const AECPUSchema = Joi.object({
+export const AECPUSchema = Joi.object<AECPU>({
     name: Joi.string().allow("").required(),
     busy: Joi.boolean().required(),
     availableStorage: Joi.number().unsafe().required(),
@@ -45,14 +46,14 @@ export const AECPUSchema = Joi.object({
     startItemCount: Joi.number().required(),
     elapsedTime: Joi.number().required(),
     craftingAllowMode: Joi.string().required(),
-    finalOutput: ItemStackSchema.keys({ stackSize: Joi.number().required() }).optional(),
+    finalOutput: ItemStackSchema.append({ stackSize: Joi.number().required() }).optional(),
     tasks: Joi.array().items(
         Joi.object({
             remaining: Joi.number().required(),
-            inputs: Joi.array().items(ItemStackSchema.keys({ stackSize: Joi.number().required() })).required(),
+            inputs: Joi.array().items(ItemStackSchema.append({ stackSize: Joi.number().required() })).required(),
             pattern: AE2PatternSchema.required(),
             outputs: Joi.array().items(
-                ItemStackSchema.keys({
+                ItemStackSchema.append({
                     stackSize: Joi.number().required(),
                     providers: Joi.array().items(
                         Joi.object({
@@ -67,7 +68,7 @@ export const AECPUSchema = Joi.object({
         })
     ).optional(),
     tasking: Joi.array().items(
-        ItemStackSchema.keys({
+        ItemStackSchema.append({
             stackSize: Joi.number().required(),
             providers: Joi.array().items(
                 Joi.object({
@@ -82,7 +83,7 @@ export const AECPUSchema = Joi.object({
     tasksError: Joi.string().optional(),
 });
 
-export const AEMEInterfaceSchema = Joi.object({
+export const AEMEInterfaceSchema = Joi.object<AEMEInterface>({
     display: Joi.boolean().required(),
     name: Joi.string().required(),
     rawName: Joi.string().allow(null).required(),
@@ -95,10 +96,10 @@ export const AEMEInterfaceSchema = Joi.object({
         z: Joi.number().required(),
         dimension: Joi.number().required(),
     }).required(),
-    patterns: Joi.array().items(AE2PatternSchema.keys({ slot: Joi.number().required() })).required(),
+    patterns: Joi.array().items(AE2PatternSchema.append({ slot: Joi.number().required() })).required(),
 });
 
-export const AECraftingTaskBodySchema = Joi.object({
+export const AECraftingTaskBodySchema = Joi.object<AECraftingTaskBody>({
     id: Joi.number().required(),
     Count: Joi.number().required(),
     Damage: Joi.number().optional(),
@@ -106,23 +107,23 @@ export const AECraftingTaskBodySchema = Joi.object({
     cpu: Joi.string().optional(),
 });
 
-export const AECraftingTaskResultSchema = Joi.object({
+export const AECraftingTaskResultSchema = Joi.object<AECraftingTaskResult>({
     bytes: Joi.number().required(),
     cpu: Joi.string().required(),
-    output: ItemStackSchema.keys({ stackSize: Joi.number().required() }).required(),
+    output: ItemStackSchema.append({ stackSize: Joi.number().required() }).required(),
 });
 
-export const AECPUCancelBodySchema = Joi.object({
+export const AECPUCancelBodySchema = Joi.object<AECPUCancelBody>({
     name: Joi.string().optional(),
     id: Joi.number().optional(),
 });
 
-export const AECPUCancelResultSchema = Joi.object({
+export const AECPUCancelResultSchema = Joi.object<AECPUCancelResult>({
     cpu: Joi.string().required(),
     wasBusy: Joi.boolean().required(),
 });
 
-export const AEItemStackSchema = ItemStackSchema.keys({
+export const AEItemStackSchema = ItemStackSchema.append({
     stackSize: Joi.number().required(),
     Craftable: Joi.boolean().required(),
 });
@@ -135,7 +136,7 @@ export const AEItemCellStatusSchema = Joi.object({
     red: Joi.number().required(),
 });
 
-export const AEItemsResultSchema = Joi.object({
+export const AEItemsResultSchema = Joi.object<AEItemsResult>({
     items: Joi.array().items(AEItemStackSchema).required(),
     totalBytes: Joi.number().required(),
     usedBytes: Joi.number().required(),
@@ -144,6 +145,6 @@ export const AEItemsResultSchema = Joi.object({
     cellStatus: AEItemCellStatusSchema.required(),
 });
 
-export const AEHitResultSchema = Joi.object({
+export const AEHitResultSchema = Joi.object<AEHitResult>({
     message: Joi.string().required(),
 });

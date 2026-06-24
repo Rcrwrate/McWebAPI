@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -113,21 +114,22 @@ public final class GT5Utils {
     public static void writeState(IGregTechTileEntity igte, ObjectNode state) {
         state.put("isActive", igte.isActive());
         state.put("isAllowedToWork", igte.isAllowedToWork());
-        if (igte instanceof BaseMetaTileEntity) {
-            BaseMetaTileEntity bmte = (BaseMetaTileEntity) igte;
-            state.put("wasShutdown", bmte.mWasShutdown);
-            ShutDownReason reason = bmte.lastShutDownReason;
-            ObjectNode reasonNode = state.putObject("lastShutDownReason");
-            reasonNode.put("id", reason.getID());
-            reasonNode.put("displayString", reason.getDisplayString());
-            reasonNode.put("wasCritical", reason.wasCritical());
-            writeIO(bmte, state);
-        }
+        BaseMetaTileEntity bmte = (BaseMetaTileEntity) igte;
+        state.put("wasShutdown", bmte.mWasShutdown);
+        ShutDownReason reason = bmte.lastShutDownReason;
+        ObjectNode reasonNode = state.putObject("lastShutDownReason");
+        reasonNode.put("id", reason.getID());
+        reasonNode.put("displayString", reason.getDisplayString());
+        reasonNode.put("wasCritical", reason.wasCritical());
+        writeIO(bmte, state);
     }
 
     public static void write(MetaTileEntity mte, ObjectNode data) {
         ClassUtils.getClassInfo(mte, data);
         MachineType type = GT5Utils.getMachineType(mte);
+        NBTTagCompound nbt = new NBTTagCompound();
+        mte.saveNBTData(nbt);
+        NBT.dump(nbt, data, "nbt");
         switch (type) {
             case MULTIBLOCK:
                 writeMultiBlockInfo((MTEMultiBlockBase) mte, data.putObject("multi"));

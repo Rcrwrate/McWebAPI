@@ -1,4 +1,5 @@
 import Joi from "joi";
+import type { RootInfo } from "../types/common";
 
 export const ClassInfoSchema = Joi.object({
     package: Joi.string().optional(),
@@ -29,7 +30,7 @@ export const ApiErrorResponseSchema = Joi.object({
 export const ApiResponseSchema = <T>(dataSchema: Joi.Schema<T>) =>
     Joi.alternatives(ApiSuccessResponseSchema(dataSchema), ApiErrorResponseSchema);
 
-export const RootInfoSchema = Joi.object({
+export const RootInfoSchema = Joi.object<RootInfo>({
     modid: Joi.string().required(),
     version: Joi.string().required(),
     buildTime: Joi.number().optional(),

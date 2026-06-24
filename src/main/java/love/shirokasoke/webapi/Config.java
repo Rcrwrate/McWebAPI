@@ -32,6 +32,11 @@ public class Config {
     public static int MaxPerTick = 10000;
     public static int budgetMs = 50;
 
+    public static boolean tpsRecordEnable = false;
+    public static int[] tpsRecordDimIds = new int[] { 0 };
+    public static int tpsRecordInterval = 5;
+    public static String tpsRecordFile = "dumps/tps_record.csv";
+
     // update checker
     public static boolean enableUpdateCheck = true;
 
@@ -121,6 +126,20 @@ public class Config {
             1,
             50,
             "Max time in ms for background tasks (pausable + slow queue) execution per tick");
+
+        tpsRecordEnable = configuration
+            .getBoolean("enable", "server.tpsRecorder", tpsRecordEnable, "Enable TPS recording to file");
+        tpsRecordDimIds = configuration
+            .get(
+                "server.tpsRecorder",
+                "dimIds",
+                tpsRecordDimIds,
+                "Dimension IDs to record. Empty list = record all loaded worlds")
+            .getIntList();
+        tpsRecordInterval = configuration
+            .getInt("interval", "server.tpsRecorder", tpsRecordInterval, 1, 3600, "Recording interval in seconds");
+        tpsRecordFile = configuration
+            .getString("file", "server.tpsRecorder", tpsRecordFile, "Output file path for TPS records (CSV format)");
 
         // update checker
         enableUpdateCheck = configuration

@@ -24,9 +24,9 @@ import type {
     Coordinates,
     EntitiesByDimension,
     Entity,
-    FMPPart,
     Fluid,
     FluidContainer,
+    FMPPart,
     GT5BatchJobResult,
     GT5BatchMachineCoord,
     GT5BatchRerunResult,
@@ -59,6 +59,7 @@ import type {
     AENodeSchema,
     BatchSetBlockJobResultSchema,
     BatchSetBlockSubmitResultSchema,
+    BatchSetBlockTaskSchema,
     BlockDetailSchema,
     BlockSchema,
     ChunkForceListSchema,
@@ -69,9 +70,9 @@ import type {
     EntitiesByDimensionSchema,
     EntitySchema,
     EntitySummarySchema,
-    FMPPartSchema,
-    FluidSchema,
     FluidContainerSchema,
+    FluidSchema,
+    FMPPartSchema,
     GT5BatchJobResultSchema,
     GT5BatchMachineCoordSchema,
     GT5BatchRerunResultSchema,
@@ -209,7 +210,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BlocksHandler.java)
-     * @returns 使用 {@link BlockSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link BlockSchema}`)` 验证
      */
     getBlocks(): Promise<Block[]> {
         return this.request<Block[]>("/blocks");
@@ -239,7 +240,7 @@ export class WebApiClient {
     /**
      * 提交批量 setblock 任务到慢队列，异步执行。
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BatchSetBlockHandler.java)
-     * @param tasks 使用 {@link BatchSetBlockTaskSchema}[] 验证
+     * @param tasks 使用 `Joi.array().items(`{@link BatchSetBlockTaskSchema} ) 验证
      * @returns 使用 {@link BatchSetBlockSubmitResultSchema} 验证
      */
     batchSetBlock(tasks: BatchSetBlockTask[]): Promise<BatchSetBlockSubmitResult> {
@@ -276,7 +277,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/FMPHandler.java)
-     * @returns 使用 {@link FMPPartSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link FMPPartSchema}`)` 验证
      */
     getBlockFMP(params: Coordinates): Promise<FMPPart[]> {
         return this.request<FMPPart[]>(`/block/fmp${buildQuery(params)}`);
@@ -294,7 +295,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemsHandler.java)
-     * @returns 使用 {@link ItemSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link ItemSchema}`)` 验证
      */
     getItems(): Promise<Item[]> {
         return this.request<Item[]>("/items");
@@ -332,7 +333,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidsHandler.java)
-     * @returns 使用 {@link FluidSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link FluidSchema}`)` 验证
      */
     getFluids(): Promise<Fluid[]> {
         return this.request<Fluid[]>("/fluids");
@@ -340,7 +341,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidContainersHandler.java)
-     * @returns 使用 {@link FluidContainerSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link FluidContainerSchema}`)` 验证
      */
     getFluidContainers(): Promise<FluidContainer[]> {
         return this.request<FluidContainer[]>("/fluidContainers");
@@ -398,7 +399,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunkMapHandler.java)
-     * @returns JSON 模式使用 {@link ChunkMapCellSchema}[][] 验证；raw 模式为 ArrayBuffer
+     * @returns JSON 模式使用 `Joi.array().items(Joi.array().items(`{@link ChunkMapCellSchema}`)` 验证；raw 模式为 ArrayBuffer
      */
     getChunkMap(
         params: { chunkX: number; chunkZ: number; dim?: number } | { x: number; z: number; dim?: number },
@@ -453,7 +454,7 @@ export class WebApiClient {
     /**
      * 提交批量 GT5 机器查询任务。
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BatchHandler.java)
-     * @param machines 使用 {@link GT5BatchMachineCoordSchema}[] 验证
+     * @param machines 使用 `Joi.array().items(`{@link GT5BatchMachineCoordSchema}`)` 验证
      * @returns 使用 {@link GT5BatchSubmitResultSchema} 验证
      */
     submitGT5Batch(machines: GT5BatchMachineCoord[]): Promise<GT5BatchSubmitResult> {
@@ -548,7 +549,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AENodesHandler.java)
-     * @returns 使用 {@link AENodeSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link AENodeSchema}`)` 验证
      */
     aeNodes(params: { x: number, y: number, z: number, dimension?: number }): Promise<AENode[]> {
         return this.request<AENode[]>(`/ae/nodes${buildQuery(params)}`);
@@ -556,7 +557,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUHandler.java)
-     * @returns 使用 {@link AECPUSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link AECPUSchema}`)` 验证
      */
     aeCPUs(params: { x: number, y: number, z: number, dimension?: number }): Promise<AECPU[]> {
         return this.request<AECPU[]>(`/ae/cpu${buildQuery(params)}`);
@@ -564,7 +565,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEMEHandler.java)
-     * @returns 使用 `Joi.array().items(`{@link AE2PatternSchema}`.keys({ slot: Joi.number().required(), direction: Joi.string().optional() }))` 验证
+     * @returns 使用 `Joi.array().items(`{@link AE2PatternSchema}`.append({ slot: Joi.number().required(), direction: Joi.string().optional() }))` 验证
      */
     aeME(params: { x: number, y: number, z: number, dimension?: number }): Promise<Array<AE2Pattern & { slot: number; direction?: string }>> {
         return this.request<Array<AE2Pattern & { slot: number; direction?: string }>>(
@@ -574,7 +575,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEMEsHandler.java)
-     * @returns 使用 {@link AEMEInterfaceSchema}[] 验证
+     * @returns 使用 `Joi.array().items(`{@link AEMEInterfaceSchema}`)` 验证
      */
     aeMEs(params: { x: number, y: number, z: number, dimension?: number, pattern?: boolean, load?: boolean; world?: boolean }): Promise<AEMEInterface[]> {
         if (params.load || params.world) {
