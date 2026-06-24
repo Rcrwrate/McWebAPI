@@ -1,6 +1,6 @@
 import Joi from "joi";
 import type { GT5BatchJobResult, GT5BatchMachineCoord, GT5BatchSubmitResult, GT5MachineInfo, GT5ScanJobResult } from "../types/gt5";
-import { ClassInfoSchema, CoordinatesSchema } from "./common";
+import { ClassInfoSchema } from "./common";
 import { FluidSchema } from "./fluid";
 
 // ========== GT5 Machine Base ==========
@@ -128,7 +128,10 @@ const GT5MachineFieldsSchema = Joi.object({
 });
 
 export const GT5MachineInfoSchema = Joi.object<GT5MachineInfo>({
-    coordinates: CoordinatesSchema.required(),
+    x: Joi.number().required(),
+    y: Joi.number().required(),
+    z: Joi.number().required(),
+    dimension: Joi.number().required(),
     localName: Joi.string().required(),
     internalName: Joi.string().required(),
     metaTileID: Joi.number().required(),

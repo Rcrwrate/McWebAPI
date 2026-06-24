@@ -60,13 +60,10 @@ public class GT5BaseHandler extends BlockHandler {
     protected ObjectNode buildMachineInfo() {
         ObjectNode data = mapper.createObjectNode();
 
-        data.set(
-            "coordinates",
-            mapper.createObjectNode()
-                .put("posX", co.posX)
-                .put("posY", co.posY)
-                .put("posZ", co.posZ)
-                .put("dimension", co.dimension));
+        data.put("x", co.posX)
+            .put("y", co.posY)
+            .put("z", co.posZ)
+            .put("dimension", co.dimension);
 
         GT5Utils.writeBasicMachineInfo(igte, mte, data);
         GT5Utils.write(mte, data);

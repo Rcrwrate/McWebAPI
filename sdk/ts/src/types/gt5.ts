@@ -1,4 +1,4 @@
-import type { ClassInfo, Coordinates } from "./common";
+import type { ClassInfo } from "./common";
 import type { Fluid } from "./fluid";
 
 // ========== GT5 Machine Base ==========
@@ -125,7 +125,10 @@ export type GT5Machine =
 
 /** GET /gt5 返回的完整机器信息 */
 export type GT5MachineInfo = {
-    coordinates: Coordinates;
+    x: number;
+    y: number;
+    z: number;
+    dimension: number;
     localName: string;
     internalName: string;
     metaTileID: number;
@@ -156,20 +159,6 @@ export interface GT5BatchRerunResult {
     runCount: number;
 }
 
-/** Batch 查询中单个机器信息（与 GT5MachineInfo 类似但坐标字段不同） */
-export type GT5BatchMachine = {
-    x: number;
-    y: number;
-    z: number;
-    dimension: number;
-    localName: string;
-    internalName: string;
-    metaTileID: number;
-    owner: string;
-    state: GT5MachineState;
-    class?: ClassInfo;
-} & GT5Machine;
-
 export type GT5BatchJobStatus = "pending" | "running" | "completed";
 
 /** GET /gt5/batch 查询结果 */
@@ -186,7 +175,7 @@ export interface GT5BatchJobResult {
     durationMs?: number;
     errors?: string[];
     errorsTruncated?: number;
-    machines?: GT5BatchMachine[];
+    machines?: GT5MachineInfo[];
 }
 
 // ========== GT5 Chunk Scan ==========

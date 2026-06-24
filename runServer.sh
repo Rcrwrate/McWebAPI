@@ -1,5 +1,8 @@
 set -e
 
+# git pack-refs --all
+# git gc --prune=now
+
 ./gradlew spotlessApply
 
 rm -rf /workspace/build/libs
