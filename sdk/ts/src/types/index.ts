@@ -8,3 +8,4 @@ export * from "./world";
 export * from "./ae2";
 export * from "./fmp";
 export * from "./gt5";
+export * from "./rawInfo";

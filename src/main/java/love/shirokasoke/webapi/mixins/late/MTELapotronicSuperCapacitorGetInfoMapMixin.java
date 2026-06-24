@@ -79,11 +79,9 @@ public class MTELapotronicSuperCapacitorGetInfoMapMixin {
     public Map<String, String> getInfoMap() {
         Map<String, String> infoMap = new HashMap<>();
 
-        // 存储 & 容量（long 截断值 + BigInteger 精确值）
-        infoMap.put("stored", Long.toString(stored.longValue()));
-        infoMap.put("storedExact", stored.toString());
-        infoMap.put("capacity", Long.toString(capacity.longValue()));
-        infoMap.put("capacityExact", capacity.toString());
+        // 存储 & 容量（BigInteger 精确值，可能超出 long 范围，不做截断）
+        infoMap.put("stored", stored.toString());
+        infoMap.put("capacity", capacity.toString());
 
         // 实时 I/O（上一 tick）
         infoMap.put("inputLastTick", Long.toString(inputLastTick));
@@ -99,7 +97,6 @@ public class MTELapotronicSuperCapacitorGetInfoMapMixin {
         infoMap.put("avgInput1h", Long.toString(energyInputValues1h.avgLong()));
         infoMap.put("avgOutput1h", Long.toString(energyOutputValues1h.avgLong()));
 
-        // 最大输入/输出功率
         infoMap.put("maxEUInput", Long.toString(mMaxEUIn));
         infoMap.put("maxEUOutput", Long.toString(mMaxEUOut));
 
@@ -107,8 +104,7 @@ public class MTELapotronicSuperCapacitorGetInfoMapMixin {
         infoMap.put("wirelessMode", Boolean.toString(wireless_mode));
         if (wireless_mode && global_energy_user_uuid != null) {
             BigInteger wirelessEU = WirelessNetworkManager.getUserEU(global_energy_user_uuid);
-            infoMap.put("wirelessEU", Long.toString(wirelessEU.longValue()));
-            infoMap.put("wirelessEUExact", wirelessEU.toString());
+            infoMap.put("wirelessEU", wirelessEU.toString());
         }
 
         // 电容数量（索引与 LSC 内部一致：4=UHV, 7=UEV, 8=UIV, 9=UMV）
