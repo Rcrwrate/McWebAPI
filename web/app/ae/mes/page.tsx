@@ -44,7 +44,7 @@ const columns: GridColDef<AEMESRow>[] = [
     },
     {
         field: "rawName",
-        headerName: "标准名称",
+        headerName: "本地化名称",
         width: 200,
         filterable: true,
     },
@@ -137,7 +137,7 @@ export default function AEMESPage() {
     useEffect(() => {
         if (!api || !x) return
         setError(null)
-        api.aeMEs({ x, y, z, dimension })
+        api.aeMEs({ x, y, z, dimension, pattern: true })
             .then((data) => {
                 const rows = data.map((n, i): AEMESRow => ({ ...n, id: String(i) }))
                 setInterfaces(rows)

@@ -39,6 +39,7 @@ import ItemIcon from "../ItemIcon"
 type PatternRow = AE2Pattern & { slot: number } & {
     uid: string
     interfaceName: string
+    iRawName: string | null
     interfaceLocation: AEMEInterface["location"]
 }
 
@@ -53,6 +54,12 @@ const columns: GridColDef<PatternRow>[] = [
     {
         field: "interfaceName",
         headerName: "接口名称",
+        width: 160,
+        filterable: true,
+    },
+    {
+        field: "iRawName",
+        headerName: "本地化名称",
         width: 160,
         filterable: true,
     },
@@ -164,6 +171,7 @@ export default function AEPatternsPage() {
                             ...pat,
                             uid: `${i}-${pat.slot}`,
                             interfaceName: iface.name,
+                            iRawName: iface.rawName,
                             interfaceLocation: iface.location,
                         })
                     })
@@ -314,7 +322,7 @@ export default function AEPatternsPage() {
                             }}
                         >查看区块地图</Button>
                         <Typography variant="body2" color="secondary">
-                            已选择: {selectedRow.interfaceName} - 槽位 {selectedRow.slot}
+                            已选择: {selectedRow.iRawName ?? selectedRow.interfaceName} - 槽位 {selectedRow.slot}
                         </Typography>
                         <Button variant="outlined" color="error" onClick={() => {
                             setRowSelectionModel({ type: "include", ids: new Set() })

@@ -32,7 +32,7 @@ public class Config {
     public static int MaxPerTick = 10000;
     public static int budgetMs = 50;
 
-    public static boolean tpsRecordEnable = false;
+    public static boolean tpsRecordEnable = true;
     public static int[] tpsRecordDimIds = new int[] { 0 };
     public static int tpsRecordInterval = 5;
     public static String tpsRecordFile = "dumps/tps_record.csv";
