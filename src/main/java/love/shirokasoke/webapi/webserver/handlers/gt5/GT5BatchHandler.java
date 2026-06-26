@@ -37,6 +37,7 @@ public class GT5BatchHandler implements RouteHandler {
         final List<coordinates> coords;
         final int total;
         final long createTime;
+        volatile long startTime;
         final AtomicInteger completedCount = new AtomicInteger(0);
         final AtomicInteger successCount = new AtomicInteger(0);
         final AtomicInteger failCount = new AtomicInteger(0);
@@ -67,6 +68,7 @@ public class GT5BatchHandler implements RouteHandler {
             successCount.set(0);
             failCount.set(0);
             finishTime = 0;
+            startTime = 0;
             runCount++;
             synchronized (errors) {
                 errors.clear();
@@ -181,7 +183,7 @@ public class GT5BatchHandler implements RouteHandler {
         data.put("createTime", job.createTime);
         if (job.finishTime > 0) {
             data.put("finishTime", job.finishTime);
-            data.put("durationMs", job.finishTime - job.createTime);
+            data.put("durationMs", job.finishTime - job.startTime);
         }
 
         // 错误详情（最多 100 条）
@@ -207,6 +209,7 @@ public class GT5BatchHandler implements RouteHandler {
 
     private void submitTasks(BatchJob job) throws Error {
         MinecraftServer server = getServer();
+        job.startTime = System.currentTimeMillis();
 
         for (coordinates coord : job.coords) {
             final int x = coord.posX;

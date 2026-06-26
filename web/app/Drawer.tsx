@@ -1,6 +1,7 @@
 "use client"
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import FactoryIcon from '@mui/icons-material/Factory';
 import HomeIcon from '@mui/icons-material/Home';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import LoginIcon from '@mui/icons-material/Login';
@@ -24,6 +25,7 @@ const LINKS = [
     { text: 'Items', href: '/items', icon: Inventory2Icon },
     { text: 'Map', href: '/map', icon: MapIcon },
     { text: 'AE', href: '/ae', icon: StorageIcon },
+    { text: 'GT5', href: '/gt5', icon: FactoryIcon },
 ];
 
 const PLACEHOLDER_LINKS = [

@@ -243,17 +243,19 @@ export default function GT5ScanPage() {
         <RContainer>
             <H2>GT5 区块扫描</H2>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            <Stack direction="row" spacing={2} sx={{ p: 3, justifyContent: "center" }}>
+            <Stack spacing={2} direction="row" useFlexGap sx={{ p: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
                 <Button variant="contained" size="large" color="primary" disabled={scanning} onClick={handleScan}
                     startIcon={scanning ? <CircularProgress size={20} color="inherit" /> : <RadarIcon />}>
                     {scanning ? "扫描中..." : "扫描已加载区域的所有GT设备"}
                 </Button>
                 <Button variant="contained" size="large" color="success" disabled={machines.length == 0} onClick={() => {
                     const r = saveMachines(machines)
-                    enqueueSnackbar(`已保存 ${r.saved} 台设备数据，跳过 ${r.skipped} 台`,{variant:"success"})
+                    enqueueSnackbar(`已保存 ${r.saved} 台设备数据，跳过 ${r.skipped} 台`, { variant: "success" })
                 }} startIcon={<SaveIcon />}>
                     保存设备数据
                 </Button>
+                <Button size="large" variant="contained" color="warning" startIcon={<KeyboardBackspaceIcon />}
+                    LinkComponent={LinkC} href={`/gt5`}>返回</Button>
             </Stack>
             <Card elevation={6} sx={{ mb: 3 }}>
                 <CardContent>
@@ -334,11 +336,6 @@ export default function GT5ScanPage() {
                     </Stepper>
                 </CardContent>
             </Card>
-
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <Button size="large" variant="contained" color="warning" startIcon={<KeyboardBackspaceIcon />}
-                    LinkComponent={LinkC} href={`/gt5`}>返回</Button>
-            </Box>
         </RContainer>
     )
 }

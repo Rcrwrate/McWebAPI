@@ -46,7 +46,7 @@ public interface RouteHandler extends HttpHandler {
 
     @Override
     public default void handle(HttpExchange exchange) throws IOException {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         String method = exchange.getRequestMethod();
         String uri = exchange.getRequestURI()
             .toString();
@@ -68,18 +68,23 @@ public interface RouteHandler extends HttpHandler {
         }
         try {
             run(exchange);
-            long duration = System.currentTimeMillis() - startTime;
-            MyMod.LOG.info("[{}]\t{} - {}ms", method, uri, duration); // 缺一个来源IP地址
+            double duration = (System.nanoTime() - startTime) / 1_000_000.0;
+            MyMod.LOG.info("[{}]\t{} - {}ms", method, uri, String.format("%.3f", duration)); // 缺一个来源IP地址
         } catch (Throwable e) {
-            long duration = System.currentTimeMillis() - startTime;
+            double duration = (System.nanoTime() - startTime) / 1_000_000.0;
             if (e instanceof Error) {
                 Error e2 = (Error) e;
                 sendErrorResponse(exchange, e2.code, e2.getMessage(), null);
-                MyMod.LOG.error("[{}]\t{} - Error after {}ms\t{}", method, uri, duration, e2.getMessage());
+                MyMod.LOG.error(
+                    "[{}]\t{} - Error after {}ms\t{}",
+                    method,
+                    uri,
+                    String.format("%.3f", duration),
+                    e2.getMessage());
                 return;
             }
 
-            MyMod.LOG.error("[{}]\t{} - Error after {}ms", method, uri, duration);
+            MyMod.LOG.error("[{}]\t{} - Error after {}ms", method, uri, String.format("%.3f", duration));
             sendErrorResponse(
                 exchange,
                 500,

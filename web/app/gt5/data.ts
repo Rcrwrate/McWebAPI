@@ -11,6 +11,7 @@ export interface SavedGT5Machine extends GT5ScanMachine {
 const STORAGE_KEY = "gt5_machines"
 
 export const SavedGT5MachineSchema = GT5ScanMachineSchema.append<SavedGT5Machine>({
+    dimension: Joi.number().integer(),
     owner: Joi.string().allow("").required(),
     savedAt: Joi.number().integer().min(0).required(),
 }).strict()

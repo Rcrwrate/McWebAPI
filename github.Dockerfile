@@ -14,7 +14,7 @@ RUN sudo apt install -y gnupg ca-certificates curl && \
 
 RUN GIT_LFS_SKIP_SMUDGE=1 git clone --depth=1 https://github.com/Rcrwrate/McWebAPI /tmp/repo &&\
     cd /tmp/repo &&\
-    ./gradlew setupDecompWorkspace injectTags spotlessApply
+    ./gradlew setupDecompWorkspace
 
 RUN cd /tmp/repo &&\
-    ./gradlew build && rm -rf /tmp/repo/build/libs || true
+    ./gradlew injectTags spotlessApply build && rm -rf /tmp/repo/build/libs || true
