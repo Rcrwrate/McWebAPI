@@ -50,12 +50,11 @@ export function MultiProgressBar({
             {segments.map((seg, i) => {
                 const width = seg.value <= 0 ? 0 : (seg.value / total) * 100
                 if (width === 0) return null
-                return (
-                    <Box
-                        key={i}
-                        sx={{ width: `${width}%`, bgcolor: seg.color }}
-                    />
-                )
+                return <Box key={i} sx={{
+                    width: `${width}%`,
+                    bgcolor: seg.color,
+                    transition: "width 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                }} />
             })}
         </Box>
     )
@@ -74,12 +73,10 @@ export function MultiProgressLegend({
     return (
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, ...sx }}>
             {segments.map((seg, i) => (
-                seg.label && (
-                    <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 0.5, ...itemSx }}>
-                        <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: seg.color }} />
-                        <Typography variant={variant} color="textPrimary">{seg.label}</Typography>
-                    </Box>
-                )
+                seg.label && (<Box key={i} sx={{ display: "flex", alignItems: "center", gap: 0.5, ...itemSx }}>
+                    <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: seg.color }} />
+                    <Typography variant={variant} color="textPrimary">{seg.label}</Typography>
+                </Box>)
             ))}
         </Box>
     )

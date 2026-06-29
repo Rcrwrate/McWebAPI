@@ -33,19 +33,7 @@ export const GT5MachineStateSchema = Joi.object({
     isAllowedToWork: Joi.boolean().required(),
     wasShutdown: Joi.boolean().optional(),
     lastShutDownReason: GT5ShutDownReasonSchema.optional(),
-    storedEU: Joi.number().optional(),
-    euCapacity: Joi.number().optional(),
-    Info: Joi.array()
-        .items(Joi.string())
-        .optional(),
-    rawInfo: Joi.object()
-        .pattern(Joi.string(), Joi.string())
-        .optional(),
-    inputVoltage: Joi.number().optional(),
-    inputAmperage: Joi.number().optional(),
-    outputVoltage: Joi.number().optional(),
-    outputAmperage: Joi.number().optional(),
-});
+}).concat(GT5MachineIOSchema);
 
 export const GT5HatchCoordSchema = Joi.object({
     x: Joi.number().required(),
@@ -141,8 +129,6 @@ export const GT5MachineInfoSchema = Joi.object<GT5MachineInfo>({
     nbt: Joi.object().unknown().required(),
 }).concat(GT5MachineFieldsSchema);
 
-// ========== GT5 Batch ==========
-
 export const GT5BatchMachineCoordSchema = Joi.object<GT5BatchMachineCoord>({
     x: Joi.number().required(),
     y: Joi.number().required(),
@@ -161,19 +147,6 @@ export const GT5BatchRerunResultSchema = Joi.object({
     runCount: Joi.number().required(),
 });
 
-export const GT5BatchMachineSchema = Joi.object({
-    x: Joi.number().required(),
-    y: Joi.number().required(),
-    z: Joi.number().required(),
-    dimension: Joi.number().required(),
-    localName: Joi.string().required(),
-    internalName: Joi.string().required(),
-    metaTileID: Joi.number().required(),
-    owner: Joi.string().required(),
-    state: GT5MachineStateSchema.required(),
-    class: ClassInfoSchema.optional(),
-}).concat(GT5MachineFieldsSchema);
-
 export const GT5BatchJobStatusSchema = Joi.string().valid("pending", "running", "completed");
 
 export const GT5BatchJobResultSchema = Joi.object<GT5BatchJobResult>({
@@ -189,7 +162,7 @@ export const GT5BatchJobResultSchema = Joi.object<GT5BatchJobResult>({
     durationMs: Joi.number().optional(),
     errors: Joi.array().items(Joi.string()).optional(),
     errorsTruncated: Joi.number().optional(),
-    machines: Joi.array().items(GT5BatchMachineSchema).optional(),
+    machines: Joi.array().items(GT5MachineInfoSchema).optional(),
 });
 
 // ========== GT5 Chunk Scan ==========

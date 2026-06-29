@@ -43,6 +43,7 @@ import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
+import TinyProcess from "@/components/TinyProcess"
 
 type AECPURow = AECPU & { id: number; storage: number }
 
@@ -61,11 +62,7 @@ const columns: GridColDef<AECPURow>[] = [
         type: "boolean",
         filterable: true,
         renderCell: (params) => (
-            <Chip
-                label={params.row.busy ? "是" : "否"}
-                color={params.row.busy ? "warning" : "success"}
-                size="small"
-            />
+            <Chip label={params.row.busy ? "是" : "否"} color={params.row.busy ? "warning" : "success"} size="small" />
         ),
     },
     {
@@ -73,23 +70,9 @@ const columns: GridColDef<AECPURow>[] = [
         headerName: "存储使用",
         width: 180,
         filterable: true,
-        valueGetter: (_value, row) => row.storage,
-        sortComparator: (v1: number, v2: number) => v1 - v2,
         renderCell: (params) => {
             const pct = params.row.storage * 100
-            return (
-                <div style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, paddingRight: 8 }}>
-                    <LinearProgress
-                        variant="determinate"
-                        value={pct}
-                        color={pct > 90 ? "error" : pct > 70 ? "warning" : "primary"}
-                        sx={{ flexGrow: 1, height: 6, borderRadius: 1 }}
-                    />
-                    <Typography variant="caption" sx={{ whiteSpace: "nowrap" }}>
-                        {pct.toFixed(0)}%
-                    </Typography>
-                </div>
-            )
+            return <TinyProcess value={pct} color={pct > 90 ? "error" : pct > 70 ? "warning" : "primary"} />
         },
     },
     {

@@ -18,22 +18,27 @@ import {
     Button,
     Card,
     CardContent,
+    Chip,
     CircularProgress,
     FormControl,
     Grid,
     IconButton,
     InputLabel,
+    LinearProgress,
     MenuItem,
+    Paper,
     Select,
     Stack,
     Typography
 } from "@mui/material"
+import { DataGrid, type GridColDef, type GridRowSelectionModel } from "@mui/x-data-grid"
 import type { GT5MachineInfo, GT5MachineType } from "@shirokasoke/webapi-sdk"
 import { default as LinkC } from "next/link"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import type { SavedGT5Machine } from "./data"
 import { clearSavedMachines, getSavedMachines } from "./data"
+import TinyProcess from "@/components/TinyProcess"
 
 interface TypeMeta {
     label: string
@@ -63,6 +68,105 @@ const STATUS_LABELS: Record<MachineStatus, string> = {
     error: "错误",
     idle: "空闲",
 }
+const STATUS_CHIP_COLOR: Record<MachineStatus, "success" | "warning" | "error" | "default"> = {
+    running: "success",
+    maintenance: "warning",
+    error: "error",
+    idle: "default",
+}
+
+type GT5Row = GT5MachineInfo & { id: string; status: MachineStatus; }
+
+const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
+    {
+        field: "id",
+        headerName: "坐标",
+        width: 180,
+        filterable: true,
+    },
+    {
+        field: "localName",
+        headerName: "机器名称",
+        flex: 1,
+        minWidth: 160,
+        filterable: true,
+        valueGetter: (_v, row) => row.localName || "-",
+    },
+    {
+        field: "machineType",
+        headerName: "类型",
+        width: 120,
+        filterable: true,
+        type: "singleSelect",
+        valueOptions: Object.keys(TYPE_META),
+        renderCell: (params) => TYPE_META[params.row.machineType]?.label ?? params.row.machineType,
+    },
+    {
+        field: "status",
+        headerName: "状态",
+        width: 120,
+        filterable: true,
+        type: "singleSelect",
+        valueOptions: ["running", "maintenance", "error", "idle"] as MachineStatus[],
+        renderCell: (params) => (
+            <Chip size="small" variant={params.row.status === "idle" ? "outlined" : "filled"}
+                color={STATUS_CHIP_COLOR[params.row.status]}
+                label={STATUS_LABELS[params.row.status]}
+            />
+        ),
+    },
+    {
+        field: "euPct",
+        headerName: "储能",
+        width: 160,
+        type: "number",
+        filterable: true,
+        valueGetter: (_v, row) => {
+            if (row.state.storedEU != 0 && row.state.euCapacity != 0) { return (row.state.storedEU / row.state.euCapacity) * 100 }
+            switch (row.machineType) {
+                case "MULTIBLOCK":
+                    return (row.multi.storedEnergy / row.multi.maxEnergy) * 100
+                case "GENERATOR":
+                    return (row.generator.storedEU / row.generator.maxEUStore) * 100
+                default:
+                    return null
+            }
+        },
+        renderCell: (params) => {
+            if (params.value == null || isNaN(params.value)) return <Typography variant="caption" color="textSecondary">无</Typography>
+            return <TinyProcess value={params.value} color={params.value < 10 ? "error" : params.value < 30 ? "warning" : "primary"} />
+        }
+    },
+    {
+        field: "progress",
+        headerName: "进度",
+        width: 150,
+        type: "number",
+        filterable: true,
+        valueGetter: (_v, row) => {
+            switch (row.machineType) {
+                case "MULTIBLOCK":
+                    return row.multi.maxProgressTime > 0 ? (row.multi.progressTime / row.multi.maxProgressTime) * 100 : null
+                case "SINGLE":
+                    return row.single.maxProgressTime > 0 ? (row.single.progressTime / row.single.maxProgressTime) * 100 : null
+                default:
+                    return null
+            }
+        },
+        renderCell: (params) => {
+            if (params.value == null) return <Typography variant="caption" color="textSecondary">空闲</Typography>
+            return <TinyProcess value={params.value} color="success" />
+        },
+    },
+    {
+        field: "shutDownReason",
+        headerName: "停机原因",
+        width: 200,
+        filterable: true,
+        valueGetter: (_v, row) =>
+            row.state.wasShutdown ? (row.state.lastShutDownReason?.displayString || "未知") : "-",
+    },
+]
 
 function machineStatus(m: GT5MachineInfo): MachineStatus {
     if (m.state.isActive) return "running"
@@ -76,6 +180,7 @@ function machineStatus(m: GT5MachineInfo): MachineStatus {
             return "maintenance"
         }
     }
+    // isAllowedToWork=false 但无停机原因 = 用户用软锤手动关闭，非故障，按空闲处理
     return "idle"
 }
 
@@ -87,17 +192,18 @@ function statusSegments(counts: Record<MachineStatus, number>): MultiSegment[] {
     }))
 }
 
-function countByStatus(machines: GT5MachineInfo[]): Record<MachineStatus, number> {
+function countByStatus(machines: GT5Row[]): Record<MachineStatus, number> {
     const counts: Record<MachineStatus, number> = { running: 0, maintenance: 0, error: 0, idle: 0 }
-    for (const m of machines) counts[machineStatus(m)]++
+    for (const m of machines) counts[m.status]++
     return counts
 }
 
 export default function GT5Page() {
     const api = useAPI()
     const [machines, setMachines] = useState<SavedGT5Machine[]>([])
-    const [liveMachines, setLiveMachines] = useState<GT5MachineInfo[]>([])
+    const [liveMachines, setLiveMachines] = useState<GT5Row[]>([])
     const [loaded, setLoaded] = useState(false)
+    const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
     useEffect(() => {
         setMachines(getSavedMachines())
         setLoaded(true)
@@ -121,7 +227,11 @@ export default function GT5Page() {
                 batchID.current = t.id
                 job = await api.waitForGT5BatchJob(t.id)
             }
-            setLiveMachines(job.machines ?? [])
+            setLiveMachines(job.machines?.map((i): GT5Row => ({
+                ...i,
+                id: `(${i.x}, ${i.y}, ${i.z}) [${i.dimension}]`,
+                status: machineStatus(i)
+            })) ?? [])
         }
     }
 
@@ -147,7 +257,7 @@ export default function GT5Page() {
             <Stack spacing={2} direction="row" useFlexGap sx={{ p: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
                 <Button variant="contained" color="primary" startIcon={<RadarIcon />}
                     LinkComponent={LinkC} href={`/gt5/scan`}>扫描GT设备</Button>
-                <IconButton onClick={undefined} title="手动刷新">
+                <IconButton onClick={fetchMachine} title="手动刷新">
                     <RefreshIcon />
                 </IconButton>
                 <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -182,7 +292,12 @@ export default function GT5Page() {
                 ) : <>
                     {liveMachines.length > 0 && (
                         <MultiProgressLegend
-                            segments={statusSegments(countByStatus(liveMachines))}
+                            segments={[
+                                { value: 1, color: STATUS_COLORS.running, label: STATUS_LABELS.running },
+                                { value: 0, color: STATUS_COLORS.maintenance, label: STATUS_LABELS.maintenance },
+                                { value: 0, color: STATUS_COLORS.error, label: STATUS_LABELS.error },
+                                { value: 0, color: STATUS_COLORS.idle, label: STATUS_LABELS.idle },
+                            ]}
                             sx={{ justifyContent: "center", mb: 2 }}
                         />
                     )}
@@ -194,10 +309,24 @@ export default function GT5Page() {
                             const sc = countByStatus(live)
                             return (
                                 <Grid key={type} size={{ xs: 6, sm: 4, md: 4 }}>
-                                    <Card sx={{ textAlign: "center" }}>
+                                    <Card sx={{
+                                        textAlign: "center",
+                                        transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease",
+                                        "&:hover": {
+                                            transform: "translateY(-4px)",
+                                            boxShadow: 6,
+                                        },
+                                        ...(sc.error > 0 && {
+                                            borderColor: (e) => e.palette.error.main,
+                                        }),
+                                    }}>
                                         <MultiProgressBar segments={statusSegments(sc)} />
                                         <CardContent>
-                                            <Icon color={meta.color} sx={{ fontSize: 40 }} />
+                                            <Icon color={meta.color} sx={{
+                                                fontSize: 40,
+                                                transition: "transform 0.3s ease",
+                                                "&:hover": { transform: "scale(1.15)" },
+                                            }} />
                                             <Typography variant="h4">
                                                 {count}
                                             </Typography>
@@ -215,6 +344,25 @@ export default function GT5Page() {
                             )
                         })}
                     </Grid>
+                    <Paper sx={{ mt: 3, height: "60vh", width: 1 }}>
+                        <DataGrid
+                            rows={liveMachines}
+                            columns={MACHINE_COLUMNS.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                            getRowId={(row) => row.id}
+                            loading={liveMachines.length == 0}
+                            checkboxSelection
+                            rowSelectionModel={rowSelection}
+                            onRowSelectionModelChange={setRowSelection}
+                            pageSizeOptions={[10, 25, 50, 100]}
+                            density="compact"
+                            initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+                            slotProps={{
+                                loadingOverlay: {
+                                    variant: "skeleton",
+                                    noRowsVariant: "skeleton",
+                                },
+                            }} />
+                    </Paper>
                 </>}
             </Box>
         </RContainer>

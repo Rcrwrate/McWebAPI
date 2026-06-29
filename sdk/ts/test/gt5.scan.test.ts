@@ -43,11 +43,7 @@ interface ChunkTarget {
 describe(`GT5 chunk scan over all loaded chunks (CONCURRENCY=${CONCURRENCY})`, async () => {
     // ===== 阶段 1: 读取所有已加载区块列表 =====
     const chunksData = await api.getChunks();
-    assert.ok(
-        Joi.object().pattern(Joi.string(), v.ChunksByDimensionSchema).validate(chunksData).error == undefined,
-        "getChunks response should match ChunksByDimension schema"
-    );
-
+    await it("getChunks", () => assert.ok(Joi.object().pattern(Joi.string(), v.ChunksByDimensionSchema).validate(chunksData).error == undefined))
     const targets: ChunkTarget[] = [];
     for (const [dimStr, dimData] of Object.entries(chunksData)) {
         const dim = parseInt(dimStr, 10);
@@ -74,7 +70,7 @@ describe(`GT5 chunk scan over all loaded chunks (CONCURRENCY=${CONCURRENCY})`, a
         CONCURRENCY
     );
 
-    it("every scan job validates against GT5ScanJobResultSchema", () => {
+    await it("every scan job validates", () => {
         for (const job of scanJobs) {
             assert.ok(v.GT5ScanJobResultSchema.validate(job).error == undefined);
             assert.strictEqual(job.status, "completed");
@@ -101,8 +97,7 @@ describe(`GT5 chunk scan over all loaded chunks (CONCURRENCY=${CONCURRENCY})`, a
 
     async function runBatchPass(label: string) {
         const submit = await api.submitGT5Batch(coords);
-        assert.ok(v.GT5BatchSubmitResultSchema.validate(submit).error == undefined,
-            `${label}: GT5BatchSubmitResult should match schema`);
+        assert.ok(v.GT5BatchSubmitResultSchema.validate(submit).error == undefined);
         assert.strictEqual(submit.total, coords.length, `${label}: submit total mismatch`);
 
         const job = await api.waitForGT5BatchJob(submit.id, POLL_INTERVAL);
@@ -111,7 +106,7 @@ describe(`GT5 chunk scan over all loaded chunks (CONCURRENCY=${CONCURRENCY})`, a
         assert.strictEqual(job.status, "completed", `${label}: job should be completed`);
 
         for (const m of job.machines ?? []) {
-            assert.ok(v.GT5BatchMachineSchema.validate(m).error == undefined,
+            assert.ok(v.GT5MachineInfoSchema.validate(m).error == undefined,
                 `${label}: GT5BatchMachine should match schema`);
         }
         console.log(`[runtime] ${label}: total=${job.total}, success=${job.success}, failed=${job.failed}`);

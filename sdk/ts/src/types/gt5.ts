@@ -34,8 +34,8 @@ export interface GT5MachineState {
     isAllowedToWork: boolean;
     wasShutdown?: boolean;
     lastShutDownReason?: GT5ShutDownReason;
-    storedEU?: number;
-    euCapacity?: number;
+    storedEU: number;
+    euCapacity: number;
     Info?: string[];
     rawInfo?: Record<string, string>;
     inputVoltage?: number;
