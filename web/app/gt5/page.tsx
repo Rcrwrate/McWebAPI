@@ -31,6 +31,7 @@ import {
     Stack,
     Typography
 } from "@mui/material"
+import { keyframes } from "@mui/system"
 import { DataGridPro as DataGrid, type GridColDef, type GridRowSelectionModel } from "@mui/x-data-grid-pro"
 import type { GT5MachineInfo, GT5MachineType } from "@shirokasoke/webapi-sdk"
 import { default as LinkC } from "next/link"
@@ -73,6 +74,18 @@ const STATUS_CHIP_COLOR: Record<MachineStatus, "success" | "warning" | "error" |
     error: "error",
     idle: "default",
 }
+
+// CRT 扫描线故障效果：静态扫描线 + 快速闪烁 + 下移的高亮扫描束
+const crtFlicker = keyframes`
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+`
+// 束高 50%：-100% 时束底恰在卡片顶边(消失)，200% 时束顶恰在卡片底边(消失)
+// 两端均在可视区外，循环重置不可见 → 无缝
+const crtBeam = keyframes`
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+`
 
 type GT5Row = GT5MachineInfo & { id: string; status: MachineStatus; }
 
@@ -124,9 +137,6 @@ const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
             if (row.state.storedEU != 0 && row.state.euCapacity != 0) { return (row.state.storedEU / row.state.euCapacity) * 100 }
             switch (row.machineType) {
                 case "MULTIBLOCK":
-                    // maxEnergy 可能为 0（如 LSC 等电池类机器 EU 不存于能源仓，或无能源仓的机器），
-                    // 除零会得到 NaN，破坏 gridNumberComparator 的排序（NaN 不被 nill 比较器识别），
-                    // 因此返回 null 让其按空值稳定排序。
                     return row.multi.maxEnergy > 0 ? (row.multi.storedEnergy / row.multi.maxEnergy) * 100 : null
                 case "GENERATOR":
                     return row.generator.maxEUStore > 0 ? (row.generator.storedEU / row.generator.maxEUStore) * 100 : null
@@ -316,7 +326,45 @@ export default function GT5Page() {
                                             boxShadow: 6,
                                         },
                                         ...(sc.error > 0 && {
+                                            position: "relative",
+                                            overflow: "hidden",
                                             borderColor: (e) => e.palette.error.main,
+                                            // 静态扫描线 + 闪烁
+                                            "&::before": {
+                                                content: '""',
+                                                position: "absolute",
+                                                inset: 0,
+                                                pointerEvents: "none",
+                                                zIndex: 1,
+                                                backgroundImage: `repeating-linear-gradient(
+                                                    0deg,
+                                                    rgba(211,47,47,0.20) 0px,
+                                                    rgba(211,47,47,0.20) 1px,
+                                                    transparent 1px,
+                                                    transparent 3px
+                                                )`,
+                                                animation: `${crtFlicker} 2s infinite`,
+                                            },
+                                            // 向下扫掠的高亮扫描束
+                                            "&::after": {
+                                                content: '""',
+                                                position: "absolute",
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                height: "50%",
+                                                pointerEvents: "none",
+                                                zIndex: 2,
+                                                background: `linear-gradient(
+                                                    to bottom,
+                                                    transparent 0%,
+                                                    transparent 35%,
+                                                    rgba(211,47,47,0.4) 50%,
+                                                    transparent 65%,
+                                                    transparent 100%
+                                                )`,
+                                                animation: `${crtBeam} 2.6s linear infinite`,
+                                            },
                                         }),
                                     }}>
                                         <MultiProgressBar segments={statusSegments(sc)} />
@@ -333,7 +381,7 @@ export default function GT5Page() {
                                                 {meta.label}
                                             </Typography>
                                             {live.length > 0 && (
-                                                <Typography variant="caption" color="textSecondary" component="div" sx={{ mt: 0.5 }}>
+                                                <Typography variant="caption" color={sc.error ? "error" : "textSecondary"} component="div" sx={{ mt: 0.5 }}>
                                                     运行 {sc.running} · 维护 {sc.maintenance} · 错误 {sc.error} · 空闲 {sc.idle}
                                                 </Typography>
                                             )}
