@@ -1,11 +1,11 @@
-import type { Metadata } from 'next'
-import { Heads } from './Head'
-import { Suspense } from "react";
-import Loading from './loading';
-import Snackbar from './Snackbar';
-import { Root } from './Drawer';
 import BackDropProvider from '@/components/BackDrop';
+import MUI from '@/components/MUI';
 import { APIProvider } from '@/data/api';
+import type { Metadata } from 'next';
+import { Root } from './Drawer';
+import { Heads } from './Head';
+import Snackbar from './Snackbar';
+
 
 export const metadata: Metadata = {
     title: 'GTNH WebAPI',
@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Heads />
         </head>
         <body style={{ margin: "auto" }}>
+            <MUI />
             <Root>
                 <BackDropProvider>
                     <APIProvider>

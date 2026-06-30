@@ -4,6 +4,7 @@ import { H2 } from "@/components/H2"
 import type { MultiSegment } from "@/components/MultiProgressBar"
 import { MultiProgressBar, MultiProgressLegend } from "@/components/MultiProgressBar"
 import { RContainer } from "@/components/RContainer"
+import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
 import BoltIcon from "@mui/icons-material/Bolt"
 import DeleteIcon from "@mui/icons-material/Delete"
@@ -24,21 +25,19 @@ import {
     Grid,
     IconButton,
     InputLabel,
-    LinearProgress,
     MenuItem,
     Paper,
     Select,
     Stack,
     Typography
 } from "@mui/material"
-import { DataGrid, type GridColDef, type GridRowSelectionModel } from "@mui/x-data-grid"
+import { DataGridPro as DataGrid, type GridColDef, type GridRowSelectionModel } from "@mui/x-data-grid-pro"
 import type { GT5MachineInfo, GT5MachineType } from "@shirokasoke/webapi-sdk"
 import { default as LinkC } from "next/link"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import type { SavedGT5Machine } from "./data"
 import { clearSavedMachines, getSavedMachines } from "./data"
-import TinyProcess from "@/components/TinyProcess"
 
 interface TypeMeta {
     label: string
@@ -125,15 +124,18 @@ const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
             if (row.state.storedEU != 0 && row.state.euCapacity != 0) { return (row.state.storedEU / row.state.euCapacity) * 100 }
             switch (row.machineType) {
                 case "MULTIBLOCK":
-                    return (row.multi.storedEnergy / row.multi.maxEnergy) * 100
+                    // maxEnergy 可能为 0（如 LSC 等电池类机器 EU 不存于能源仓，或无能源仓的机器），
+                    // 除零会得到 NaN，破坏 gridNumberComparator 的排序（NaN 不被 nill 比较器识别），
+                    // 因此返回 null 让其按空值稳定排序。
+                    return row.multi.maxEnergy > 0 ? (row.multi.storedEnergy / row.multi.maxEnergy) * 100 : null
                 case "GENERATOR":
-                    return (row.generator.storedEU / row.generator.maxEUStore) * 100
+                    return row.generator.maxEUStore > 0 ? (row.generator.storedEU / row.generator.maxEUStore) * 100 : null
                 default:
                     return null
             }
         },
         renderCell: (params) => {
-            if (params.value == null || isNaN(params.value)) return <Typography variant="caption" color="textSecondary">无</Typography>
+            if (params.value == null) return <Typography variant="caption" color="textSecondary">无</Typography>
             return <TinyProcess value={params.value} color={params.value < 10 ? "error" : params.value < 30 ? "warning" : "primary"} />
         }
     },
@@ -272,7 +274,6 @@ export default function GT5Page() {
                         <MenuItem value={300}>5 分钟</MenuItem>
                     </Select>
                 </FormControl>
-
                 <Button variant="outlined" color="error" disabled={machines.length === 0}
                     startIcon={<DeleteIcon />} onClick={() => {
                         clearSavedMachines()
@@ -290,17 +291,15 @@ export default function GT5Page() {
                         暂无设备数据
                     </Typography>
                 ) : <>
-                    {liveMachines.length > 0 && (
-                        <MultiProgressLegend
-                            segments={[
-                                { value: 1, color: STATUS_COLORS.running, label: STATUS_LABELS.running },
-                                { value: 0, color: STATUS_COLORS.maintenance, label: STATUS_LABELS.maintenance },
-                                { value: 0, color: STATUS_COLORS.error, label: STATUS_LABELS.error },
-                                { value: 0, color: STATUS_COLORS.idle, label: STATUS_LABELS.idle },
-                            ]}
-                            sx={{ justifyContent: "center", mb: 2 }}
-                        />
-                    )}
+                    <MultiProgressLegend
+                        segments={[
+                            { value: 1, color: STATUS_COLORS.running, label: STATUS_LABELS.running },
+                            { value: 0, color: STATUS_COLORS.maintenance, label: STATUS_LABELS.maintenance },
+                            { value: 0, color: STATUS_COLORS.error, label: STATUS_LABELS.error },
+                            { value: 0, color: STATUS_COLORS.idle, label: STATUS_LABELS.idle },
+                        ]}
+                        sx={{ justifyContent: "center", mb: 2 }}
+                    />
                     <Grid container spacing={2}>
                         {counts.map(({ type, count }) => {
                             const meta = TYPE_META[type]
@@ -344,18 +343,22 @@ export default function GT5Page() {
                             )
                         })}
                     </Grid>
-                    <Paper sx={{ mt: 3, height: "60vh", width: 1 }}>
+                    <Paper sx={{ mt: 3, height: "100vh", width: 1 }}>
                         <DataGrid
                             rows={liveMachines}
                             columns={MACHINE_COLUMNS.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                             getRowId={(row) => row.id}
                             loading={liveMachines.length == 0}
                             checkboxSelection
+                            pagination
                             rowSelectionModel={rowSelection}
                             onRowSelectionModelChange={setRowSelection}
                             pageSizeOptions={[10, 25, 50, 100]}
                             density="compact"
-                            initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+                            showToolbar
+                            initialState={{
+                                pagination: { paginationModel: { pageSize: 25 } },
+                            }}
                             slotProps={{
                                 loadingOverlay: {
                                     variant: "skeleton",
