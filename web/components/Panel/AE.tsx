@@ -1,7 +1,15 @@
 import { formatBytes, formatCount } from "@/data/format";
-import type { Panel } from "@/data/Panel";
+import { Panel } from "@/data/Panel";
 import type { AECPU, AEItemsResult } from "@shirokasoke/webapi-sdk";
 import Percent from "../PerCent";
+import { AEItemContent } from "./AEItem";
+
+interface coord {
+    x: number;
+    y: number;
+    z: number;
+    dimension?: number;
+}
 
 const item = {
     'totalBytes': 0, "usedBytes": 0, "totalTypes": 0, "usedTypes": 0,
@@ -9,10 +17,12 @@ const item = {
     cellStatus: { all: 0, green: 0, blue: 0, orange: 0, red: 0 }
 }
 
-export const AEItemStorge: Panel<AEItemsResult> = {
+export const AEItemStorge: Panel<AEItemsResult, coord> = {
     title: "AE 存储占用",
     method: "aeItems",
-    dataKey: "aeItems",
+    dataKey: (requestData?: coord) => {
+        return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
+    },
     dafaultData: item,
     size: { w: 6, h: 2 },
     Render: function (data: AEItemsResult): React.ReactElement {
@@ -21,10 +31,12 @@ export const AEItemStorge: Panel<AEItemsResult> = {
     }
 }
 
-export const AEItemType: Panel<AEItemsResult> = {
+export const AEItemType: Panel<AEItemsResult, coord> = {
     title: "AE 类型占用",
     method: "aeItems",
-    dataKey: "aeItems",
+    dataKey: (requestData?: coord) => {
+        return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
+    },
     dafaultData: item,
     size: { w: 6, h: 2 },
     Render: function (data: AEItemsResult): React.ReactElement {
@@ -33,10 +45,25 @@ export const AEItemType: Panel<AEItemsResult> = {
     }
 }
 
-export const AECPUStatus: Panel<AECPU[]> = {
+export const AEItem: Panel<AEItemsResult, coord & { id: number, damage: number, nbtWrite?: string }> = {
+    title: "AE 物品监视",
+    method: "aeItems",
+    dataKey: (requestData?: coord) => {
+        return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
+    },
+    dafaultData: item,
+    size: { w: 2, h: 2 },
+    Render: function (data: AEItemsResult, req): React.ReactElement {
+        return <AEItemContent data={data} req={req} />
+    }
+}
+
+export const AECPUStatus: Panel<AECPU[], coord> = {
     title: "AE 合成 CPU",
     method: "aeCPUs",
-    dataKey: "aeCPUs",
+    dataKey: (requestData?: coord) => {
+        return requestData ? `aeCPUs-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeCPUs"
+    },
     dafaultData: [],
     size: { w: 6, h: 3 },
     Render: function (data: AECPU[]): React.ReactElement {

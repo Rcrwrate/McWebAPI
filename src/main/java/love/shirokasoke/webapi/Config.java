@@ -27,6 +27,9 @@ public class Config {
     public static String[] bannedPrefixes = new String[] {};
     public static String[] disabledRoutes = new String[] { "/test" };
 
+    public static int AEITEM_INTERVAL = 5;
+    public static int AEITEM_IDLE_TIMEOUT = 30;
+
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang", "dumps/export.lang" };
 
     public static int MaxPerTick = 10000;
@@ -117,6 +120,22 @@ public class Config {
             "localization",
             langFiles,
             "List of .lang files to inject into server localization (relative to classpath root, e.g. 'assets/minecraft/lang/zh_CN.lang', 'assets/forge/lang/zh_CN.lang')");
+
+        AEITEM_INTERVAL = configuration.getInt(
+            "Interval",
+            "server.ae2.item",
+            AEITEM_INTERVAL,
+            1,
+            3600,
+            "AE2 item cache refresh interval in seconds");
+        AEITEM_IDLE_TIMEOUT = configuration.getInt(
+            "IdleTimeout",
+            "server.ae2.item",
+            AEITEM_IDLE_TIMEOUT,
+            1,
+            1440,
+            "AE2 item cache idle timeout in minutes (cache is dropped if no access within this period)");
+
         MaxPerTick = configuration
             .getInt("MaxPerTick", "server.tick", MaxPerTick, 1, 10000, "Max Count of Slow Tasks can be run per Tick");
         budgetMs = configuration.getInt(

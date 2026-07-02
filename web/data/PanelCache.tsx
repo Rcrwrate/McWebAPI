@@ -33,13 +33,6 @@ interface PanelDataContextValue {
 
 const PanelDataContext = createContext<PanelDataContextValue | null>(null)
 
-/** 复合缓存键：相同 dataKey + 相同 requestData 共享一条缓存 */
-function cacheKey(panel: Panel<any>, requestData?: any): string {
-    return requestData != null
-        ? `${panel.dataKey}::${JSON.stringify(requestData)}`
-        : panel.dataKey
-}
-
 export function PanelDataProvider({ children }: { children: React.ReactNode }) {
     const api = useAPI()
     const [cache, setCache] = useState<Record<string, CacheEntry>>({})
@@ -50,7 +43,7 @@ export function PanelDataProvider({ children }: { children: React.ReactNode }) {
     const fetchPanel = useCallback(
         (panel: Panel<any>, requestData: any, force = false, bumpRef = false) => {
             if (!api) return
-            const key = cacheKey(panel, requestData)
+            const key = panel.dataKey(requestData)
             const existing = cacheRef.current[key]
             // 缓存命中（已加载或加载中且无错误）则不刷新
             if (
@@ -131,7 +124,7 @@ export function PanelDataProvider({ children }: { children: React.ReactNode }) {
 
     /** 面板卸载时递减引用计数，归零则从缓存移除（仅当不在 loading） */
     const release = useCallback((panel: Panel<any>, requestData?: any) => {
-        const key = cacheKey(panel, requestData)
+        const key = panel.dataKey(requestData)
         const existing = cacheRef.current[key]
         if (!existing) return
         const nextRefs = existing.refs - 1
@@ -155,7 +148,7 @@ export function PanelDataProvider({ children }: { children: React.ReactNode }) {
 
     const getData = useCallback(
         <T,>(panel: Panel<T>, requestData?: any): PanelDataState => {
-            const key = cacheKey(panel, requestData)
+            const key = panel.dataKey(requestData)
             const entry = cache[key]
             return {
                 data: entry?.data ?? panel.dafaultData,
@@ -192,7 +185,7 @@ export function usePanelData<T>(panel: Panel<T>, requestData?: any): PanelDataSt
     const ctx = useContext(PanelDataContext)
     const request = ctx?.request
     const release = ctx?.release
-    const key = cacheKey(panel, requestData)
+    const key = panel.dataKey(requestData)
 
     useEffect(() => {
         request?.(panel, requestData)

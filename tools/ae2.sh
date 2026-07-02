@@ -2,3 +2,6 @@ wget https://github.com/GTNewHorizons/Applied-Energistics-2-Unofficial/archive/r
 
 unzip rv3-beta-702-GTNH.zip
 rm rv3-beta-702-GTNH.zip
+
+cd Applied-Energistics-2-Unofficial-rv3-beta-702-GTNH
+git init

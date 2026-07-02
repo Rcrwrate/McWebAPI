@@ -13,6 +13,7 @@ import CloseIcon from "@mui/icons-material/Close"
 import SendIcon from '@mui/icons-material/Send'
 import ViewListIcon from "@mui/icons-material/ViewList"
 import ViewModuleIcon from "@mui/icons-material/ViewModule"
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
     Alert,
     Box,
@@ -44,6 +45,7 @@ import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
+import CP from "@/data/Clipboard"
 type AEItemRow = AEItemStack & { uid: string }
 type AEItemStorageStats = Pick<AEItemsResult, "totalBytes" | "usedBytes" | "totalTypes" | "usedTypes">
 
@@ -372,6 +374,13 @@ export default function AEItemPage() {
                             enqueueSnackbar(e instanceof Error ? e.message : "提交合成任务失败", { variant: "error" });
                         }
                     }}>提交合成任务</Button>
+                <Button size="small" variant="outlined" startIcon={<ContentCopyIcon />} color="secondary"
+                    onClick={() => {
+                        const uid = Array.from(rowSelectionModel.ids)[0] as string;
+                        const item = items.find((it) => it.uid === uid);
+                        if (!item || !x) return;
+                        CP(JSON.stringify({ type: "ae-item", requestData: { x: x, y: y, z: z, dimension: dimension, id: item.id, damage: item.damage, ...item.nbtWrite ? { nbtWrite: item.nbtWrite } : {} } }))
+                    }}>复制监控面板代码</Button>
                 <Button size="small" color="inherit" startIcon={<CloseIcon />} onClick={() => {
                     setRowSelectionModel({ type: "include", ids: new Set() })
                     setMousePos(null)

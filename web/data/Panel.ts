@@ -3,26 +3,16 @@ import Joi from "joi"
 
 type allowed_method = keyof WebApiClient
 
-export interface Panel<T> {
+export interface Panel<T, req = any> {
     title: string
     method: allowed_method
-    dataKey: string
-    requestData?: any
+    dataKey: (requestData?: req) => string
+    requestData?: req
     dafaultData: T
     joi?: Joi.AnySchema<T>
-    func?: (api: WebApiClient, requestData: any) => Promise<T>
-    size: { w: number, h: number }
-    Render: (data: T) => React.ReactElement
-}
-
-abstract class panel<T> {
-    abstract title: string
-    abstract method: allowed_method
-    abstract dataKey: () => string
-    abstract requestData?: any
-    abstract dafaultData: T
-    abstract joi?: Joi.AnySchema<T>
-    abstract func?: (api: WebApiClient, requestData: any) => Promise<T>
-    abstract size: { w: number, h: number }
-    abstract Render: (data: T) => React.ReactElement
+    func?: (api: WebApiClient, requestData?: req) => Promise<T>
+    size: {
+        w: number, h: number, minW?: number, minH?: number, maxW?: number, maxH?: number
+    }
+    Render: (data: T, requestData?: req) => React.ReactElement
 }

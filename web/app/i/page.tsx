@@ -23,9 +23,8 @@ import {
     MenuItem,
     Select,
     Stack,
-    Toolbar,
     Tooltip,
-    Typography,
+    Typography
 } from "@mui/material"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useMemo, useState } from "react"
@@ -90,8 +89,7 @@ function PanelCardInner({ def, item, editMode, onRemove, }: {
 }) {
     const { data, loading, error } = usePanelData(def.panel, item.requestData)
 
-    if (!editMode) return error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data)
-
+    if (!editMode) return error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data, item.requestData)
     return <Card sx={{
         height: "100%",
         display: "flex",
@@ -127,7 +125,7 @@ function PanelCardInner({ def, item, editMode, onRemove, }: {
             {loading ? <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
                 <CircularProgress size={28} />
             </Box>
-                : error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data)}
+                : error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data, item.requestData)}
         </CardContent>
     </Card>
 }
@@ -188,10 +186,9 @@ function Dashboard() {
                 requestData: spec.requestData,
                 x: 0,
                 y: bottomY,
-                w: def.panel.size.w,
-                h: def.panel.size.h,
                 minW: 2,
                 minH: 2,
+                ...def.panel.size,
             }])
             enqueueSnackbar(`已添加面板: ${def.title}`, { variant: "success" })
         } catch (e) {
@@ -250,7 +247,7 @@ function Dashboard() {
                 width={width}
                 gridConfig={{ cols: 12, rowHeight: 30, margin: [8, 8] }}
                 dragConfig={{ enabled: editMode, handle: `.${DRAG_HANDLE}` }}
-                resizeConfig={{ enabled: editMode }}
+                resizeConfig={{ enabled: editMode, handles: ["w", "s", "e", "n", "sw", "nw", "se", "ne"] }}
                 onLayoutChange={onLayoutChange}>
                 {config.map(item => {
                     const def = getPanelDef(item.panelId)
