@@ -2,6 +2,7 @@ package love.shirokasoke.webapi.webserver;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -108,57 +109,89 @@ public interface RouteHandler extends HttpHandler {
             .set("X-Powered-By", "love.shirokasoke.webapi");
     }
 
-    default void sendResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
-        exchange.getResponseHeaders()
-            .set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(statusCode, message.getBytes().length);
-
+    /**
+     * 对体积超过 {@link Compressor#THRESHOLD} 的响应，
+     * 按客户端 {@code Accept-Encoding} 自适应选择压缩
+     * 
+     * @apiNote 必须在此之前设置 <b>Content-Type</b>
+     */
+    default void sendResponse(HttpExchange exchange, int statusCode, byte[] bytes) throws IOException {
+        byte[] body = bytes;
+        String encoding = Compressor.selectEncoding(exchange, bytes.length);
+        if (encoding != null) {
+            try {
+                byte[] compressed = Compressor.compress(encoding, bytes);
+                MyMod.LOG.info("encoding:\t{} {}/{}", encoding, compressed.length, bytes.length);
+                if (compressed.length < bytes.length) {
+                    body = compressed;
+                    exchange.getResponseHeaders()
+                        .set("Content-Encoding", encoding);
+                    exchange.getResponseHeaders()
+                        .add("Vary", "Accept-Encoding");
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+        exchange.sendResponseHeaders(statusCode, body.length);
         try (OutputStream os = exchange.getResponseBody()) {
-            os.write(message.getBytes());
+            os.write(body);
         }
         exchange.close();
     }
 
+    default void sendResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
+        exchange.getResponseHeaders()
+            .set("Content-Type", "application/json");
+        sendResponse(exchange, statusCode, message.getBytes(StandardCharsets.UTF_8));
+    }
+
     default void sendResponse(HttpExchange exchange, int statusCode, Object json, boolean direct) throws IOException {
-        sendResponse(exchange, statusCode, mapper.writeValueAsString(json));
+        exchange.getResponseHeaders()
+            .set("Content-Type", "application/json");
+        sendResponse(exchange, statusCode, mapper.writeValueAsBytes(json));
     }
 
     default void sendResponse(HttpExchange exchange, ObjectNode json) throws IOException {
+        exchange.getResponseHeaders()
+            .set("Content-Type", "application/json");
         sendResponse(
             exchange,
             200,
-            mapper.writeValueAsString(
+            mapper.writeValueAsBytes(
                 mapper.createObjectNode()
                     .put("success", true)
                     .set("data", json)));
     }
 
     default void sendResponse(HttpExchange exchange, ArrayNode json) throws IOException {
+        exchange.getResponseHeaders()
+            .set("Content-Type", "application/json");
         sendResponse(
             exchange,
             200,
-            mapper.writeValueAsString(
+            mapper.writeValueAsBytes(
                 mapper.createObjectNode()
                     .put("success", true)
                     .set("data", json)));
     }
 
     default void sendResponse(HttpExchange exchange, byte[] data) throws IOException {
-        exchange.sendResponseHeaders(200, data.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(data);
-        }
-        exchange.close();
+        sendResponse(exchange, 200, data);
     }
 
     default void sendErrorResponse(HttpExchange exchange, int statusCode, String message, String stack)
         throws IOException {
-        String response = mapper.writeValueAsString(
-            mapper.createObjectNode()
-                .put("success", false)
-                .put("message", message)
-                .put("stack", stack));
-        sendResponse(exchange, statusCode, response);
+        exchange.getResponseHeaders()
+            .set("Content-Type", "application/json");
+        sendResponse(
+            exchange,
+            statusCode,
+            mapper.writeValueAsBytes(
+                (mapper.createObjectNode()
+                    .put("success", false)
+                    .put("message", message)
+                    .put("stack", stack))));
     }
 
     public class coordinates extends ChunkCoordinates {

@@ -69,7 +69,7 @@ public class AENodesHandler extends AEBaseHandler {
             }
         }
 
-        setCache(exchange, 5);
+        setCache(exchange, 60);
         sendResponse(exchange, nodes);
     }
 }

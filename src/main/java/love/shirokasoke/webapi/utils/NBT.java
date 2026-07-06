@@ -36,7 +36,7 @@ public class NBT {
 
     /** 缓存 {@link NBTTagCompound#write } 的私有 write 方法 */
     private static Method write = null;
-    /** 缓存 {@link NBTTagCompound#func_152446_a } 的私有 write 方法 */
+    /** 缓存 {@link NBTTagCompound#func_152446_a } 的私有 read 方法 */
     private static Method read = null;
     /** 缓存 {@link NBTTagList#tagList } 混淆之后是field_74747_a */
     private static Field field_74747_a = null;

@@ -83,7 +83,7 @@ public class AEMEsHandler extends AEBaseHandler {
                 }
             }
         }
-
+        setCache(exchange, 60);
         sendResponse(exchange, interfaces);
     }
 }

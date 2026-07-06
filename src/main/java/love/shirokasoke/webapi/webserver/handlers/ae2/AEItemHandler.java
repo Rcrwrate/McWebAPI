@@ -60,15 +60,17 @@ public class AEItemHandler extends AEBaseHandler {
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
         UUID gridId = grid.getId();
-        String json = getOrCreateCache(gridId, grid);
-        sendResponse(exchange, 200, json);
+        CacheEntry entry = getOrCreateCacheEntry(gridId, grid);
+        exchange.getResponseHeaders()
+            .set("Content-Type", "application/json");
+        sendResponse(exchange, 200, entry.jsonBytes);
     }
 
     /**
-     * 获取指定网格的缓存 JSON。若缓存不存在（首次请求），则立即同步构建一次，
+     * 获取指定网格的缓存条目。若缓存不存在（首次请求），则立即同步构建一次，
      * 并激活每 {@link #REFRESH_INTERVAL_SECONDS} 秒刷新的定时任务。
      */
-    private static String getOrCreateCache(UUID gridId, IGrid grid) {
+    private static CacheEntry getOrCreateCacheEntry(UUID gridId, IGrid grid) {
         CacheEntry entry = CACHE.get(gridId);
         if (entry == null) {
             synchronized (CACHE) {
@@ -76,8 +78,8 @@ public class AEItemHandler extends AEBaseHandler {
                 if (entry == null) {
                     // 首次请求在 HTTP 线程内同步完成：主线程采集快照 + 当前线程构建 JSON
                     RawSnapshot snap = collectSnapshot(grid);
-                    String json = buildJsonFromSnapshot(snap);
-                    entry = new CacheEntry(json, grid);
+                    byte[] bytes = buildJsonBytesFromSnapshot(snap);
+                    entry = new CacheEntry(bytes, grid);
                     // 激活定时缓存刷新任务
                     ScheduledFuture<?> future = SCHEDULER.scheduleAtFixedRate(
                         new RefreshTask(gridId),
@@ -90,7 +92,7 @@ public class AEItemHandler extends AEBaseHandler {
             }
         }
         entry.lastAccessMs = System.currentTimeMillis();
-        return entry.json;
+        return entry;
     }
 
     /**
@@ -149,11 +151,11 @@ public class AEItemHandler extends AEBaseHandler {
     }
 
     /**
-     * 根据原始数据快照构建完整的 JSON 响应字符串（已包含 success/data 包装）。
+     * 根据原始数据快照构建完整的 JSON 响应字节（已包含 success/data 包装）。
      * <p>
      * 该方法为纯计算，不依赖主线程，可在工作线程执行。这也是占用耗时的大头。
      */
-    private static String buildJsonFromSnapshot(RawSnapshot snap) {
+    private static byte[] buildJsonBytesFromSnapshot(RawSnapshot snap) {
         ArrayNode items = mapper.createArrayNode();
         for (int i = 0; i < snap.stacks.length; i++) {
             if (snap.stacks[i] == null) continue;
@@ -183,7 +185,7 @@ public class AEItemHandler extends AEBaseHandler {
             .put("success", true)
             .set("data", response);
         try {
-            return mapper.writeValueAsString(wrapped);
+            return mapper.writeValueAsBytes(wrapped);
         } catch (Exception e) {
             // 序列化失败理论上不会发生，抛出以让上层捕获
             throw new RuntimeException(e);
@@ -230,14 +232,14 @@ public class AEItemHandler extends AEBaseHandler {
 
     private static final class CacheEntry {
 
-        volatile String json;
+        volatile byte[] jsonBytes;
         final IGrid grid;
         /** 后台刷新任务句柄，用于超时终止 */
         volatile ScheduledFuture<?> future;
         volatile long lastAccessMs;
 
-        CacheEntry(String json, IGrid grid) {
-            this.json = json;
+        CacheEntry(byte[] jsonBytes, IGrid grid) {
+            this.jsonBytes = jsonBytes;
             this.grid = grid;
             this.lastAccessMs = System.currentTimeMillis();
         }
@@ -291,7 +293,8 @@ public class AEItemHandler extends AEBaseHandler {
                 JSON_WORKER.submit(() -> {
                     final long buildStart = System.currentTimeMillis();
                     try {
-                        entry.json = buildJsonFromSnapshot(snap);
+                        byte[] bytes = buildJsonBytesFromSnapshot(snap);
+                        entry.jsonBytes = bytes;
                     } catch (Throwable e) {
                         log.e(e);
                         return;
