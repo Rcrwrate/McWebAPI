@@ -51,6 +51,10 @@ dependencies {
 
     // Jackson for JSON processing
     shadowImplementation rfg.deobf("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    api("com.github.luben:zstd-jni:1.5.7-11")
+    runtimeOnly("com.github.luben:zstd-jni:1.5.7-11")
+    api("com.aayushatharva.brotli4j:brotli4j:1.23.0")
+    runtimeOnly("com.aayushatharva.brotli4j:brotli4j:1.23.0")
     
     // Applied Energistics 2 Unofficial (GTNewHorizons)
     // devOnlyNonPublishable(rfg.deobf("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-535-GTNH:dev"))

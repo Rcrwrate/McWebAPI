@@ -117,11 +117,11 @@ public interface RouteHandler extends HttpHandler {
      */
     default void sendResponse(HttpExchange exchange, int statusCode, byte[] bytes) throws IOException {
         byte[] body = bytes;
-        String encoding = Compressor.selectEncoding(exchange, bytes.length);
+        String encoding = Compressor.fastCheck(exchange, bytes.length);
         if (encoding != null) {
             try {
                 byte[] compressed = Compressor.compress(encoding, bytes);
-                MyMod.LOG.info("encoding:\t{} {}/{}", encoding, compressed.length, bytes.length);
+                MyMod.LOG.debug("encoding:\t{} {}/{}", encoding, compressed.length, bytes.length);
                 if (compressed.length < bytes.length) {
                     body = compressed;
                     exchange.getResponseHeaders()

@@ -40,6 +40,9 @@ public class Config {
     public static int tpsRecordInterval = 5;
     public static String tpsRecordFile = "dumps/tps_record.csv";
 
+    public static boolean Compressor = true;
+    public static int Compressor_THRESHOLD = 102400;
+
     // update checker
     public static boolean enableUpdateCheck = true;
 
@@ -159,6 +162,16 @@ public class Config {
             .getInt("interval", "server.tpsRecorder", tpsRecordInterval, 1, 3600, "Recording interval in seconds");
         tpsRecordFile = configuration
             .getString("file", "server.tpsRecorder", tpsRecordFile, "Output file path for TPS records (CSV format)");
+
+        Compressor = configuration
+            .getBoolean("enable", "server.compressor", Compressor, "Enable web server adaptive compression");
+        Compressor_THRESHOLD = configuration.getInt(
+            "enable",
+            "server.compressor",
+            Compressor_THRESHOLD,
+            0,
+            Integer.MAX_VALUE,
+            "Byte threshold for web server adaptive compression");
 
         // update checker
         enableUpdateCheck = configuration

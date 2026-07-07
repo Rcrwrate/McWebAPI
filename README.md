@@ -6,10 +6,36 @@
 
 [![最新发布](https://img.shields.io/github/v/release/Rcrwrate/MCWebAPI)](https://github.com/Rcrwrate/McWebAPI/releases/latest)
 
+## Lib下载(可选)
+
+这是一些压缩算法的jar包，下载后放置在**mods**文件夹下，用于对http响应体进行压缩**提升少量延迟以大幅节省带宽**
+
+默认会启用内置的**GZIP**，如果你不需要压缩，请在配置文件中禁用
+
+### zstd
+
+[zstd-jni-1.5.7-11.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-11/zstd-jni-1.5.7-11.jar)
+
+### brotli4j
+
+> [!IMPORTANT]
+> brotli4j 自 v1.10+ 拆分为多个模块，使用 Brotli 压缩需要同时下载以下三个 jar，否则会因 `com.aayushatharva.brotli4j.service.BrotliNativeProvider` 缺失而抛出 `NoClassDefFoundError`
+
+> [!CAUTION]
+> br压缩率较高，但是延迟**极大**，不推荐使用
+
+- [brotli4j-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/brotli4j/1.23.0/brotli4j-1.23.0.jar) — 主入口，包含 `Brotli4jLoader`
+- [service-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/service/1.23.0/service-1.23.0.jar) — ServiceLoader 接口 `BrotliNativeProvider`
+- 平台原生库（按服务器架构选择）：
+    - Linux x86_64: [native-linux-x86_64-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-linux-x86_64/1.23.0/native-linux-x86_64-1.23.0.jar)
+    - Windows x86_64: [native-windows-x86_64-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-windows-x86_64/1.23.0/native-windows-x86_64-1.23.0.jar)
+    - 其他架构见 [brotli4j 仓库索引](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/)
+
 ## 使用说明
 
 如果希望使用图标相关的功能的话，请在下载预导出的文件并解压到服务端的根目录，或者自行在客户端安装mod使用`/export`指令进行导出再移动到服务端的dumps目录下
 
+> [!TIP]
 > 默认目录为dumps，可在配置文件中修改
 
 [2.8.4.dumps.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.7z)

@@ -55,6 +55,7 @@ public class WebServer {
             MyMod.LOG.error("[WebServer] ✗ Failed to start HTTP Server on port {}: {}", port, e.getMessage());
             MyMod.LOG.trace(e);
         }
+        Compressor.checkLoader();
     }
 
     /**
