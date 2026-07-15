@@ -43,6 +43,10 @@ public class LateMixinsLoader implements ILateMixinLoader {
             mixins.add("MTELapotronicSuperCapacitorGetInfoMapMixin");
         }
 
+        if (MixinConfig.enableNBT) {
+            mixins.add("NBTUtilsMixin");
+        }
+
         if (!mixins.isEmpty()) {
             LOG.info("Enabled late mixins: {}", mixins);
         }

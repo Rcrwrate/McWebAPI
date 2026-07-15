@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "echo": "echo \"${CNB_VSCODE_PROXY_URI/\\{\\{port\\}\\}/3000}\"",
-    "dev": "next dev",
+    "dev": "npm run echo && next dev",
     "build": "next build",
-    "start": "npx serve@latest out",
+    "start": "npm run echo && npx serve@latest out",
     "lint": "eslint"
   },
   "dependencies": {

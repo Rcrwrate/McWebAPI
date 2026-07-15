@@ -5,6 +5,7 @@ sudo wget https://raw.githubusercontent.com/Prism-Launcher-for-Debian/repo/refs/
 
 cd ~
 wget https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/GT_New_Horizons_2.8.4_Java_17-25.zip
+wget https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.9.0/GT_New_Horizons_2.9.0-beta-2_Java_17-25.zip
 
 # 压缩dump
 # 7z a -t7z -m0=lzma2 -mx=9 -mfb=273 -md=512m -ms=on -mmt=on -mtc=off -mta=off /workspace/dumps.7z /root/.local/share/PrismLauncher/instances/GT_New_Horizons_2.8.4_Java_17-25/.minecraft/dumps/

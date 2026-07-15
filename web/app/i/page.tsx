@@ -203,7 +203,7 @@ function Dashboard() {
     const layout = useMemo(() => config.map(({ panelId: _p, requestData: _r, ...rest }) => rest), [config])
 
     return <Box>
-        <Stack direction="row" useFlexGap sx={{ mb: 2, alignItems: "center", justifyContent: "center" }} spacing={2}>
+        <Stack direction="row" useFlexGap sx={{ mb: 2, alignItems: "center", justifyContent: "center", flexWrap: 'wrap' }} spacing={2}>
             <Tooltip title="刷新全部面板">
                 <IconButton size="small" onClick={() => actions?.refreshAll()}>
                     <RefreshIcon fontSize="small" />
@@ -262,6 +262,9 @@ function Dashboard() {
         </div>
         {config.length === 0 && <Box sx={{ textAlign: "center", py: 8, color: "text.secondary" }}>
             <Typography>暂无面板，点击「编辑」→「粘贴添加」从剪贴板导入面板</Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+                在相关面板页面可以长按获取代码
+            </Typography>
             <Typography variant="body2" sx={{ mt: 1 }}>
                 剪贴板格式: {'{"type":"ae-item-storage","requestData":{"x":0,"y":64,"z":0,"dimension":0}}'}
             </Typography>

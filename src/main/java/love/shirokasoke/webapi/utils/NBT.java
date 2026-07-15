@@ -50,6 +50,9 @@ public class NBT {
         }
     }
 
+    /**
+     * @apiNote 修改时需同步修改Mixin版本 {@link love.shirokasoke.webapi.mixins.late.NBTUtilsMixin#writeToBase64}
+     */
     public static String writeToBase64(NBTTagCompound nbt) {
         if (nbt == null) {
             return null;
@@ -81,6 +84,9 @@ public class NBT {
         }
     }
 
+    /**
+     * @apiNote 修改时需同步修改Mixin版本 {@link love.shirokasoke.webapi.mixins.late.NBTUtilsMixin#writeToBase64}
+     */
     public static NBTTagCompound readFromBase64(String base64) {
         if (base64 == null || base64.isEmpty()) {
             return null;

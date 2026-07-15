@@ -35,6 +35,8 @@ public final class MixinConfig {
     /** MTELapotronicSuperCapacitor.getInfoMap: 修复 GT5 LapotronicSuperCapacitor 的 getInfoMap 方法 */
     public static boolean enableMTELapotronicSuperCapacitorGetInfoMap = true;
 
+    public static boolean enableNBT = true;
+
     private MixinConfig() {}
 
     /**
@@ -61,6 +63,7 @@ public final class MixinConfig {
             props,
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             enableMTELapotronicSuperCapacitorGetInfoMap);
+        enableNBT = parseBoolean(props, "mixin.nbt", enableNBT);
 
         logCurrentState();
         loaded = true;
@@ -117,6 +120,7 @@ public final class MixinConfig {
         defaultProps.setProperty(
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             String.valueOf(enableMTELapotronicSuperCapacitorGetInfoMap));
+        defaultProps.setProperty("mixin.nbt", String.valueOf(enableNBT));
 
         try (OutputStream os = new FileOutputStream(target)) {
             defaultProps.store(
@@ -142,5 +146,6 @@ public final class MixinConfig {
         LOG.info(
             "  mixin.late.MTELapotronicSuperCapacitor.getInfoMap = {}",
             enableMTELapotronicSuperCapacitorGetInfoMap);
+        LOG.info("  mixin.nbt = {}", enableNBT);
     }
 }

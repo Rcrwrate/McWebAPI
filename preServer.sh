@@ -9,4 +9,5 @@ wget https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.8.4-0.2-pre/2.8
 
 rm -rf /tmp/GTNH
 
+echo '/usr/lib/jvm/zulu25-ca-amd64/bin/java -Xms6G -Xmx32G -Dmixin.debug.export=true -Dfml.readTimeout=180 @java9args.txt -jar lwjgl3ify-forgePatches.jar nogui' > /workspace/GTNH-server/startserver-java9.sh
 # cat ./GTNH-server/logs/fml-junk-earlystartup.log | grep -oE '[0-9]+ms' | sort | uniq -c | sort -rn
