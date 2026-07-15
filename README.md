@@ -1,10 +1,38 @@
 # MC WebAPI
 
+本项目旨在为[GTNH](https://www.gtnewhorizons.com/)/[GTNH CN WIKI](https://gtnh.huijiwiki.com/wiki/%E9%A6%96%E9%A1%B5)添加一个简单的HTTP API接口
+
+这样你就能在不启动游戏的前提进行快乐的下单了和一些别的操作
+
+> [!TIP]
+> 仅推荐服务端使用本mod，你不应该在客户端安装它！
+
+## 使用说明
+
+1. 在服务端下安装mod本体（如有需要，请同时安装Lib）
+2. 如果希望使用图片相关的功能的话，预下载本项目准备的[图片素材](#图片素材)或者请查阅[自行导出图片](#自行导出图片)
+3. 部署Web服务或者访问[在线服务](https://gtnh.elysia.rip)
+
+> [!IMPORTANT]
+> web服务会随着mod构建一同构建，纯静态，如果没有相关经验请直接选择使用在线服务
+> 
+> 在线服务会随着版本自动更新，如果遇到问题，请确保mod为最新版
+>
+> 更新只会随GTNH最新版进行兼容和修复，不会支持落后一个大版本以上的情况(比如2.9.0与2.8.4，版本差异过大)
+
 ## 下载
 
 [![最新构建(测试)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
 
 [![最新发布](https://img.shields.io/github/v/release/Rcrwrate/MCWebAPI)](https://github.com/Rcrwrate/McWebAPI/releases/latest)
+
+目前状态：
+
+| GTNH版本      | 兼容性  | 最后版本          |
+|-------------|------|---------------|
+| 2.8.4       | 兼容   | 2.8.4-0.4-pre |
+| 2.9.0-beta2 | 部分兼容 | -             |
+
 
 ## Lib下载(可选)
 
@@ -13,6 +41,9 @@
 默认会启用内置的**GZIP**，如果你不需要压缩，请在配置文件中禁用
 
 ### zstd
+
+> [!TIP]
+> 推荐安装，速度和性能比Gzip优秀
 
 [zstd-jni-1.5.7-11.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-11/zstd-jni-1.5.7-11.jar)
 
@@ -31,24 +62,28 @@
     - Windows x86_64: [native-windows-x86_64-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-windows-x86_64/1.23.0/native-windows-x86_64-1.23.0.jar)
     - 其他架构见 [brotli4j 仓库索引](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/)
 
-## 使用说明
 
-如果希望使用图标相关的功能的话，请在下载预导出的文件并解压到服务端的根目录，或者自行在客户端安装mod使用`/export`指令进行导出再移动到服务端的dumps目录下
+## 图片素材
+
+在下方下载预导出的文件并解压到服务端的**dumps**目录
 
 > [!TIP]
 > 默认目录为dumps，可在配置文件中修改
 
-[2.8.4.dumps.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.7z)
+[2.8.4.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.6.18.7z)
 
-请在下方两个仓库中寻找预导出的压缩包
+README更新不一定即时，可以在下方两个仓库中寻找预导出的压缩包
 
-> https://cnb.cool/Cool_Sapphire/file
+> https://cnb.cool/Cool_Sapphire/file/-/releases
 > 
 > https://cnb.cool/shirokasoke/McWebAPI/-/releases
 
 ## 自行导出图片
 
-在客户端（需要安装mod）中使用 `/export` 命令导出游戏内资源为图片文件，所有图片输出到 `.minecraft/dumps/item_icons/` 目录。
+1. 客户端安装本mod
+2. 启动游戏，修改语言，创建新世界或者进入你的存档
+3. 按下E，**等待NEI物品列表加载完成**
+4. 在聊天区输入 `/export` 命令导出游戏内资源，所有内容输出到 `.minecraft/dumps/` 目录。
 
 ### 命令格式
 
