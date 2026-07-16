@@ -3,6 +3,7 @@
 import { H2 } from "@/components/H2"
 import type { MultiSegment } from "@/components/MultiProgressBar"
 import { MultiProgressBar, MultiProgressLegend } from "@/components/MultiProgressBar"
+import GTInfoCard from "@/components/Panel/GTinfo"
 import { RContainer } from "@/components/RContainer"
 import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
@@ -181,7 +182,6 @@ const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
 ]
 
 function machineStatus(m: GT5MachineInfo): MachineStatus {
-    if (m.state.isActive) return "running"
     if (m.state.wasShutdown) {
         if (m.state.lastShutDownReason?.wasCritical) return "error"
         return "maintenance"
@@ -192,6 +192,7 @@ function machineStatus(m: GT5MachineInfo): MachineStatus {
             return "maintenance"
         }
     }
+    if (m.state.isActive) return "running"
     // isAllowedToWork=false 但无停机原因 = 用户用软锤手动关闭，非故障，按空闲处理
     return "idle"
 }
@@ -414,6 +415,13 @@ export default function GT5Page() {
                                 },
                             }} />
                     </Paper>
+                    {Array.from(rowSelection.ids).map((id) => {
+                        const machine = liveMachines.find(m => m.id === id);
+                        return machine ?
+                            <Box key={id} sx={{ mt: 2 }}>
+                                <GTInfoCard machine={machine} />
+                            </Box> : null
+                    })}
                 </>}
             </Box>
         </RContainer>

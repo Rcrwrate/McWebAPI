@@ -9,7 +9,9 @@ import java.util.Arrays;
 
 import love.shirokasoke.webapi.MyMod;
 
-public class log {
+public final class log {
+
+    private log() {}
 
     public static String e(Throwable e) {
         StringWriter sw = new StringWriter();

@@ -31,9 +31,11 @@ import love.shirokasoke.webapi.Constant;
  * 如线缆颜色、各面附着的部件和伪装板（Facade）。
  * </p>
  */
-public class FMP {
+public final class FMP {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private FMP() {}
 
     public static ObjectNode dump(TMultiPart part, ObjectNode data) {
         if (part == null) {

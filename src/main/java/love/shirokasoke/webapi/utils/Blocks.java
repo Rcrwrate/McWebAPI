@@ -8,9 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import love.shirokasoke.webapi.Constant;
 
-public class Blocks {
+public final class Blocks {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private Blocks() {}
 
     public static ObjectNode dump(Block block, ObjectNode data) {
         ClassUtils.getClassInfo(block, data);

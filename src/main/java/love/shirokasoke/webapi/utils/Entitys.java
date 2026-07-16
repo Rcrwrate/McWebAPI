@@ -16,9 +16,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import love.shirokasoke.webapi.Constant;
 
-public class Entitys {
+public final class Entitys {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private Entitys() {}
 
     public static ObjectNode dump(Object object, ObjectNode dataNode, boolean all) {
         if (object instanceof Entity) {

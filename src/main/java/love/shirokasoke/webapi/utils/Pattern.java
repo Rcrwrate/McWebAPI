@@ -20,9 +20,11 @@ import love.shirokasoke.webapi.Constant;
  * 用于将 AE2 编码样板（ItemEncodedPattern）的 NBT 数据解析为 JSON，
  * 包括输入/输出物品列表、替代设置、作者信息以及通过 PatternHelper 解析的浓缩输入/输出。
  */
-public class Pattern {
+public final class Pattern {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private Pattern() {}
 
     /**
      * 仅通过 NBT 解析样板信息，不依赖 World。

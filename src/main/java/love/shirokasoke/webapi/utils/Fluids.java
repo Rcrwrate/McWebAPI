@@ -8,9 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import love.shirokasoke.webapi.Constant;
 
-public class Fluids {
+public final class Fluids {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private Fluids() {}
 
     public static ObjectNode dump(Fluid fluid) {
         return dump(fluid, mapper.createObjectNode());

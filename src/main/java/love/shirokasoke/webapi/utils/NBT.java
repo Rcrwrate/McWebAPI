@@ -30,7 +30,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import love.shirokasoke.webapi.Constant;
 
-public class NBT {
+/**
+ * @apiNote 涉及Mixin {@link love.shirokasoke.webapi.mixins.late.NBTUtilsMixin}
+ */
+public final class NBT {
 
     private static final ObjectMapper mapper = Constant.mapper;
 

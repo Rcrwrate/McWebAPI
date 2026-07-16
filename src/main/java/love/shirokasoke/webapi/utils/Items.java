@@ -15,9 +15,12 @@ import com.google.common.collect.ArrayListMultimap;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 
-public class Items {
+public final class Items {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private Items() {}
+
     public static final ArrayListMultimap<Item, ItemStack> itemOverrides = ArrayListMultimap.create();
 
     public static ObjectNode dump(Item item, ObjectNode data) {

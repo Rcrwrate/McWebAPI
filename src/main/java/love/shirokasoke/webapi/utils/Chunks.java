@@ -11,9 +11,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import love.shirokasoke.webapi.Constant;
 
-public class Chunks {
+public final class Chunks {
 
     private static final ObjectMapper mapper = Constant.mapper;
+
+    private Chunks() {}
 
     public static ObjectNode dump(Chunk chunk, ObjectNode data, int dumpEntity) {
         ClassUtils.getClassInfo(chunk, data);
