@@ -168,7 +168,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
             "output",
             Items.dump(
                 job.getOutput()
-                    .getItemStack())
+                    .getItemStackForNEI())
                 .put(
                     "stackSize",
                     job.getOutput()

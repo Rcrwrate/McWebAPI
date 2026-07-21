@@ -6,8 +6,8 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import appeng.api.AEApi;
 import appeng.api.util.IInterfaceViewable;
-import appeng.core.features.registries.InterfaceTerminalRegistry;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class AEMEsupportHandler implements RouteHandler {
@@ -24,7 +24,9 @@ public class AEMEsupportHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        Set<Class<? extends IInterfaceViewable>> supportedClasses = InterfaceTerminalRegistry.instance()
+        Set<Class<? extends IInterfaceViewable>> supportedClasses = AEApi.instance()
+            .registries()
+            .interfaceTerminal()
             .getSupportedClasses();
 
         ArrayNode classesArray = mapper.createArrayNode();

@@ -12,10 +12,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import appeng.api.AEApi;
 import appeng.api.networking.IGridNode;
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IInterfaceViewable;
-import appeng.core.features.registries.InterfaceTerminalRegistry;
 import love.shirokasoke.webapi.utils.Pattern;
 
 public class AEMEsHandler extends AEBaseHandler {
@@ -31,7 +31,9 @@ public class AEMEsHandler extends AEBaseHandler {
         Map<String, String> params = parseQueryParams(exchange);
 
         // 获取可被ME接口终端查看的机器类型列表
-        Set<Class<? extends IInterfaceViewable>> supportedClasses = InterfaceTerminalRegistry.instance()
+        Set<Class<? extends IInterfaceViewable>> supportedClasses = AEApi.instance()
+            .registries()
+            .interfaceTerminal()
             .getSupportedClasses();
         ArrayNode interfaces = mapper.createArrayNode();
         for (Class<? extends IInterfaceViewable> clazz : supportedClasses) {

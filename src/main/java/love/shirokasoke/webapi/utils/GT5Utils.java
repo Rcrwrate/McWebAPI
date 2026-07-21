@@ -195,7 +195,7 @@ public final class GT5Utils {
         hatches.set("maintenanceHatch", writeHatchCoords(multi.mMaintenanceHatches));
         hatches.set("mufflerHatch", writeHatchCoords(multi.mMufflerHatches));
         hatches.set("dualInputHatch", writeHatchCoords(multi.mDualInputHatches));
-        hatches.set("smartInputHatch", writeHatchCoords(multi.mSmartInputHatches));
+        hatches.set("smartInputHatch", writeHatchCoords(Accessor.MTEMultiBlockBase_mSmartInputHatches(multi)));
     }
 
     public static void writeSingleBlockInfo(MTEBasicMachine single, ObjectNode data) {

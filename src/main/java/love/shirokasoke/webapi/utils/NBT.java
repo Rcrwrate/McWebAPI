@@ -37,6 +37,8 @@ public final class NBT {
 
     private static final ObjectMapper mapper = Constant.mapper;
 
+    private NBT() {}
+
     /** 缓存 {@link NBTTagCompound#write } 的私有 write 方法 */
     private static Method write = null;
     /** 缓存 {@link NBTTagCompound#func_152446_a } 的私有 read 方法 */
