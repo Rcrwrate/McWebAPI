@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,12 +19,15 @@ import com.sun.net.httpserver.HttpExchange;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.storage.IStorageGrid;
 import appeng.api.storage.IMEMonitor;
+import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.GridStorageCache;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.log;
 
@@ -117,10 +121,31 @@ public class AEItemHandler extends AEBaseHandler {
             i++;
         }
 
+        // 流体库存快照
+        IMEMonitor<IAEFluidStack> fluidInventory = storageGrid.getFluidInventory();
+        IItemList<IAEFluidStack> fluidList = fluidInventory.getStorageList();
+        int fluidCount = fluidList.size();
+        FluidStack[] fluidStacks = new FluidStack[fluidCount];
+        long[] fluidStackSizes = new long[fluidCount];
+        boolean[] fluidCraftables = new boolean[fluidCount];
+        int j = 0;
+        for (IAEFluidStack stack : fluidList) {
+            if (stack == null) continue;
+            FluidStack minecraftStack = stack.getFluidStack();
+            if (minecraftStack == null) continue;
+            fluidStacks[j] = minecraftStack.copy();
+            fluidStackSizes[j] = stack.getStackSize();
+            fluidCraftables[j] = stack.isCraftable();
+            j++;
+        }
+
         boolean hasCache = storageGrid instanceof GridStorageCache;
         double totalBytes = 0, usedBytes = 0;
         long totalTypes = 0, usedTypes = 0;
         long cellAll = 0, cellG = 0, cellB = 0, cellO = 0, cellR = 0;
+        double fluidTotalBytes = 0, fluidUsedBytes = 0;
+        long fluidTotalTypes = 0, fluidUsedTypes = 0;
+        long fluidCellAll = 0, fluidCellG = 0, fluidCellB = 0, fluidCellO = 0, fluidCellR = 0;
         if (hasCache) {
             GridStorageCache cache = (GridStorageCache) storageGrid;
             totalBytes = cache.getItemBytesTotal();
@@ -132,12 +157,24 @@ public class AEItemHandler extends AEBaseHandler {
             cellB = cache.getItemCellB();
             cellO = cache.getItemCellO();
             cellR = cache.getItemCellR();
+            fluidTotalBytes = cache.getFluidBytesTotal();
+            fluidUsedBytes = cache.getFluidBytesUsed();
+            fluidTotalTypes = cache.getFluidTypesTotal();
+            fluidUsedTypes = cache.getFluidTypesUsed();
+            fluidCellAll = cache.getFluidCellCount();
+            fluidCellG = cache.getFluidCellG();
+            fluidCellB = cache.getFluidCellB();
+            fluidCellO = cache.getFluidCellO();
+            fluidCellR = cache.getFluidCellR();
         }
 
         return new RawSnapshot(
             stacks,
             stackSizes,
             craftables,
+            fluidStacks,
+            fluidStackSizes,
+            fluidCraftables,
             hasCache,
             totalBytes,
             usedBytes,
@@ -147,7 +184,16 @@ public class AEItemHandler extends AEBaseHandler {
             cellG,
             cellB,
             cellO,
-            cellR);
+            cellR,
+            fluidTotalBytes,
+            fluidUsedBytes,
+            fluidTotalTypes,
+            fluidUsedTypes,
+            fluidCellAll,
+            fluidCellG,
+            fluidCellB,
+            fluidCellO,
+            fluidCellR);
     }
 
     /**
@@ -161,8 +207,17 @@ public class AEItemHandler extends AEBaseHandler {
             if (snap.stacks[i] == null) continue;
             items.add(
                 Items.dump(snap.stacks[i])
+                    .put("type", IAEStack.ST_ITEM)
                     .put("stackSize", snap.stackSizes[i])
                     .put("Craftable", snap.craftables[i]));
+        }
+        for (int i = 0; i < snap.fluidStacks.length; i++) {
+            if (snap.fluidStacks[i] == null || snap.fluidStacks[i].getFluid() == null) continue;
+            items.add(
+                Fluids.dump(snap.fluidStacks[i].getFluid())
+                    .put("type", IAEStack.ST_FLUID)
+                    .put("stackSize", snap.fluidStackSizes[i])
+                    .put("Craftable", snap.fluidCraftables[i]));
         }
 
         ObjectNode response = mapper.createObjectNode();
@@ -179,6 +234,18 @@ public class AEItemHandler extends AEBaseHandler {
             cellStatus.put("blue", snap.cellB);
             cellStatus.put("orange", snap.cellO);
             cellStatus.put("red", snap.cellR);
+
+            response.put("fluidTotalBytes", snap.fluidTotalBytes);
+            response.put("fluidUsedBytes", snap.fluidUsedBytes);
+            response.put("fluidTotalTypes", snap.fluidTotalTypes);
+            response.put("fluidUsedTypes", snap.fluidUsedTypes);
+
+            ObjectNode fluidCellStatus = response.putObject("fluidCellStatus");
+            fluidCellStatus.put("all", snap.fluidCellAll);
+            fluidCellStatus.put("green", snap.fluidCellG);
+            fluidCellStatus.put("blue", snap.fluidCellB);
+            fluidCellStatus.put("orange", snap.fluidCellO);
+            fluidCellStatus.put("red", snap.fluidCellR);
         }
 
         ObjectNode wrapped = mapper.createObjectNode()
@@ -200,6 +267,9 @@ public class AEItemHandler extends AEBaseHandler {
         final ItemStack[] stacks;
         final long[] stackSizes;
         final boolean[] craftables;
+        final FluidStack[] fluidStacks;
+        final long[] fluidStackSizes;
+        final boolean[] fluidCraftables;
         final boolean hasCache;
         final double totalBytes;
         final double usedBytes;
@@ -210,13 +280,27 @@ public class AEItemHandler extends AEBaseHandler {
         final long cellB;
         final long cellO;
         final long cellR;
+        final double fluidTotalBytes;
+        final double fluidUsedBytes;
+        final long fluidTotalTypes;
+        final long fluidUsedTypes;
+        final long fluidCellAll;
+        final long fluidCellG;
+        final long fluidCellB;
+        final long fluidCellO;
+        final long fluidCellR;
 
-        RawSnapshot(ItemStack[] stacks, long[] stackSizes, boolean[] craftables, boolean hasCache, double totalBytes,
-            double usedBytes, long totalTypes, long usedTypes, long cellAll, long cellG, long cellB, long cellO,
-            long cellR) {
+        RawSnapshot(ItemStack[] stacks, long[] stackSizes, boolean[] craftables, FluidStack[] fluidStacks,
+            long[] fluidStackSizes, boolean[] fluidCraftables, boolean hasCache, double totalBytes, double usedBytes,
+            long totalTypes, long usedTypes, long cellAll, long cellG, long cellB, long cellO, long cellR,
+            double fluidTotalBytes, double fluidUsedBytes, long fluidTotalTypes, long fluidUsedTypes, long fluidCellAll,
+            long fluidCellG, long fluidCellB, long fluidCellO, long fluidCellR) {
             this.stacks = stacks;
             this.stackSizes = stackSizes;
             this.craftables = craftables;
+            this.fluidStacks = fluidStacks;
+            this.fluidStackSizes = fluidStackSizes;
+            this.fluidCraftables = fluidCraftables;
             this.hasCache = hasCache;
             this.totalBytes = totalBytes;
             this.usedBytes = usedBytes;
@@ -227,6 +311,15 @@ public class AEItemHandler extends AEBaseHandler {
             this.cellB = cellB;
             this.cellO = cellO;
             this.cellR = cellR;
+            this.fluidTotalBytes = fluidTotalBytes;
+            this.fluidUsedBytes = fluidUsedBytes;
+            this.fluidTotalTypes = fluidTotalTypes;
+            this.fluidUsedTypes = fluidUsedTypes;
+            this.fluidCellAll = fluidCellAll;
+            this.fluidCellG = fluidCellG;
+            this.fluidCellB = fluidCellB;
+            this.fluidCellO = fluidCellO;
+            this.fluidCellR = fluidCellR;
         }
     }
 

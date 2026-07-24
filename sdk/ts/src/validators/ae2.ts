@@ -105,6 +105,7 @@ export const AEMEInterfaceSchema = Joi.object<AEMEInterface>({
 export const AECraftingTaskBodySchema = Joi.object<AECraftingTaskBody>({
     id: Joi.number().required(),
     Count: Joi.number().required(),
+    Type: Joi.string().valid("item", "fluid").optional(),
     Damage: Joi.number().optional(),
     tag: Joi.string().optional(),
     cpu: Joi.string().optional(),
@@ -126,10 +127,18 @@ export const AECPUCancelResultSchema = Joi.object<AECPUCancelResult>({
     wasBusy: Joi.boolean().required(),
 });
 
-export const AEItemStackSchema = ItemStackSchema.append({
-    stackSize: Joi.number().required(),
-    Craftable: Joi.boolean().required(),
-});
+export const AEItemStackSchema = Joi.alternatives(
+    ItemStackSchema.append({
+        type: Joi.string().valid("item").required(),
+        stackSize: Joi.number().required(),
+        Craftable: Joi.boolean().required(),
+    }),
+    FluidSchema.append({
+        type: Joi.string().valid("fluid").required(),
+        stackSize: Joi.number().required(),
+        Craftable: Joi.boolean().required(),
+    })
+);
 
 export const AEItemCellStatusSchema = Joi.object({
     all: Joi.number().required(),
@@ -146,6 +155,11 @@ export const AEItemsResultSchema = Joi.object<AEItemsResult>({
     totalTypes: Joi.number().required(),
     usedTypes: Joi.number().required(),
     cellStatus: AEItemCellStatusSchema.required(),
+    fluidTotalBytes: Joi.number().required(),
+    fluidUsedBytes: Joi.number().required(),
+    fluidTotalTypes: Joi.number().required(),
+    fluidUsedTypes: Joi.number().required(),
+    fluidCellStatus: AEItemCellStatusSchema.required(),
 });
 
 export const AEHitResultSchema = Joi.object<AEHitResult>({

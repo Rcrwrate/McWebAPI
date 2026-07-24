@@ -72,4 +72,15 @@ describe("AE", async () => {
         console.log(v.AECraftingTaskResultSchema.validate(r))
         assert.ok(v.AECraftingTaskResultSchema.validate(r).error == undefined)
     })
+
+    it("send fluid", async () => {
+        const r = await api.aeCraft({
+            "x": 163,
+            "y": 138,
+            "z": -184,
+            "dimension": 0
+        }, { "id": 1272, "Count": 1000, "Type": "fluid" })
+        console.log(v.AECraftingTaskResultSchema.validate(r))
+        assert.ok(v.AECraftingTaskResultSchema.validate(r).error == undefined)
+    })
 })

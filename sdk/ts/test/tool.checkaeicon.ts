@@ -13,6 +13,7 @@ const AE_COORDS = { x: -25, y: 116, z: 63 };
     let checked = 0;
 
     for (const item of result.items) {
+        if (item.type !== "item") continue;
         checked++;
         try {
             await api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite });

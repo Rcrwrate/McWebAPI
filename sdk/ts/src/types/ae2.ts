@@ -80,8 +80,12 @@ export interface AEMEInterface {
 }
 
 export interface AECraftingTaskBody {
+    /** 物品 ID；当 Type 为 "fluid" 时表示流体 ID */
     id: number;
+    /** 合成数量（流体时为 mB） */
     Count: number;
+    /** 堆类型，缺省或非 "fluid" 时按物品处理 */
+    Type?: "item" | "fluid";
     Damage?: number;
     tag?: string;
     cpu?: string;
@@ -103,7 +107,10 @@ export interface AECPUCancelResult {
     wasBusy: boolean;
 }
 
-export type AEItemStack = ItemStack & { stackSize: number, Craftable: boolean };
+/** AE 网络库存堆：物品（type 为 "item"）或流体（type 为 "fluid"），可通过 type 判别收窄 */
+export type AEItemStack =
+    | (ItemStack & { type: "item"; stackSize: number; Craftable: boolean })
+    | (Fluid & { type: "fluid"; stackSize: number; Craftable: boolean });
 
 export interface AEItemCellStatus {
     all: number;
@@ -120,6 +127,11 @@ export interface AEItemsResult {
     totalTypes: number;
     usedTypes: number;
     cellStatus: AEItemCellStatus;
+    fluidTotalBytes: number;
+    fluidUsedBytes: number;
+    fluidTotalTypes: number;
+    fluidUsedTypes: number;
+    fluidCellStatus: AEItemCellStatus;
 }
 
 export interface AEHitResult {

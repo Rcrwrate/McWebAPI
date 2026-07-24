@@ -6,6 +6,9 @@ import java.util.concurrent.TimeUnit;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,6 +23,7 @@ import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.security.IActionHost;
 import appeng.api.networking.security.MachineSource;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
 import appeng.crafting.v2.CraftingJobV2;
 import appeng.util.Platform;
 import love.shirokasoke.webapi.utils.Items;
@@ -81,14 +85,19 @@ public class AECPUTaskHandler extends AEBaseHandler {
         } else {
             throw new Error(400, "missing field 'id'");
         }
+        boolean isItem = true;
+        if (json.has("Type")) {
+            isItem = !"fluid".equals(
+                json.get("Type")
+                    .asText());
+        }
         if (json.has("Count")) {
-            nbt.setInteger(
-                "Count",
-                json.get("Count")
-                    .asInt());
+            nbt.setInteger("Count", 1);
         } else {
             throw new Error(400, "missing field 'Count'");
         }
+        long count = json.get("Count")
+            .asLong();
         if (json.has("Damage")) {
             nbt.setShort(
                 "Damage",
@@ -105,15 +114,27 @@ public class AECPUTaskHandler extends AEBaseHandler {
                 nbt.setTag("tag", tagNbt);
             }
         }
+        IAEStack<?> craftWhat;
+        if (isItem) {
+            ItemStack stack = Platform.loadItemStackFromNBT(nbt);
+            craftWhat = AEApi.instance()
+                .storage()
+                .createItemStack(stack)
+                .setStackSize(count);
+        } else {
+            Fluid f = FluidRegistry.getFluid(
+                json.get("id")
+                    .asInt());
+            FluidStack fs = new FluidStack(f, 1);
+            craftWhat = AEApi.instance()
+                .storage()
+                .createFluidStack(fs)
+                .setStackSize(count);
+        }
 
-        ItemStack stack = Platform.loadItemStackFromNBT(nbt);
-        IAEItemStack craftWhat = AEApi.instance()
-            .storage()
-            .createItemStack(stack);
         if (craftWhat == null) {
             throw new Error(500, "Failed to create AEItemStack");
         }
-        craftWhat.setStackSize(stack.stackSize);
 
         // 获取合成网格
         ICraftingGrid craftingGrid = grid.getCache(ICraftingGrid.class);
@@ -134,7 +155,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
 
         // 开始异步计算合成计划
         Future<ICraftingJob> future = craftingGrid.beginCraftingJob(world, grid, src, craftWhat, null);
-        ICraftingJob job = waitForJob(future);
+        ICraftingJob<?> job = waitForJob(future);
 
         // 若计算结果为 simulation，说明材料不足或该物品无法合成
         if (job.isSimulation()) {
