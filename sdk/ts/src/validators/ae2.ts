@@ -1,7 +1,34 @@
 import Joi from "joi";
 import type { AECPU, AECPUCancelBody, AECPUCancelResult, AECraftingTaskBody, AECraftingTaskResult, AEHitResult, AEItemsResult, AEMEInterface, AENode } from "../types/ae2";
 import { ClassInfoSchema } from "./common";
+import { FluidSchema } from "./fluid";
 import { ItemStackSchema } from "./item";
+
+export const AEStackProvidersSchema = Joi.array().items(
+    Joi.object({
+        x: Joi.number().required(),
+        y: Joi.number().required(),
+        z: Joi.number().required(),
+        dimension: Joi.number().required(),
+    })
+).required();
+
+/** 对应服务端 Pattern.dumpAEStack 的输出：物品或流体堆，附加 count 字段 */
+export const AEStackSchema = Joi.alternatives(
+    ItemStackSchema.append({ count: Joi.number().required() }),
+    FluidSchema.append({ count: Joi.number().required() })
+);
+
+export const AEStackWithProvidersSchema = Joi.alternatives(
+    ItemStackSchema.append({
+        count: Joi.number().required(),
+        providers: AEStackProvidersSchema,
+    }),
+    FluidSchema.append({
+        count: Joi.number().required(),
+        providers: AEStackProvidersSchema,
+    })
+);
 
 export const AENodeSchema = Joi.object<AENode>({
     active: Joi.boolean().required(),
@@ -31,8 +58,8 @@ export const AE2PatternSchema = ItemStackSchema.append({
     priority: Joi.number().optional(),
     canSubstitute: Joi.boolean().optional(),
     canBeSubstitute: Joi.boolean().optional(),
-    condensedInputs: Joi.array().items(ItemStackSchema.append({ count: Joi.number().required() })).optional(),
-    condensedOutputs: Joi.array().items(ItemStackSchema.append({ count: Joi.number().required() })).optional(),
+    condensedInputs: Joi.array().items(AEStackSchema).optional(),
+    condensedOutputs: Joi.array().items(AEStackSchema).optional(),
     patternParseError: Joi.string().optional(),
 });
 
@@ -46,40 +73,16 @@ export const AECPUSchema = Joi.object<AECPU>({
     startItemCount: Joi.number().required(),
     elapsedTime: Joi.number().required(),
     craftingAllowMode: Joi.string().required(),
-    finalOutput: ItemStackSchema.append({ stackSize: Joi.number().required() }).optional(),
+    finalOutput: AEStackSchema.optional(),
     tasks: Joi.array().items(
         Joi.object({
             remaining: Joi.number().required(),
-            inputs: Joi.array().items(ItemStackSchema.append({ stackSize: Joi.number().required() })).required(),
+            inputs: Joi.array().items(AEStackSchema).required(),
             pattern: AE2PatternSchema.required(),
-            outputs: Joi.array().items(
-                ItemStackSchema.append({
-                    stackSize: Joi.number().required(),
-                    providers: Joi.array().items(
-                        Joi.object({
-                            x: Joi.number().required(),
-                            y: Joi.number().required(),
-                            z: Joi.number().required(),
-                            dimension: Joi.number().required(),
-                        })
-                    ).required(),
-                })
-            ).required(),
+            outputs: Joi.array().items(AEStackWithProvidersSchema).required(),
         })
     ).optional(),
-    tasking: Joi.array().items(
-        ItemStackSchema.append({
-            stackSize: Joi.number().required(),
-            providers: Joi.array().items(
-                Joi.object({
-                    x: Joi.number().required(),
-                    y: Joi.number().required(),
-                    z: Joi.number().required(),
-                    dimension: Joi.number().required(),
-                })
-            ).required(),
-        })
-    ).optional(),
+    tasking: Joi.array().items(AEStackWithProvidersSchema).optional(),
     tasksError: Joi.string().optional(),
 });
 

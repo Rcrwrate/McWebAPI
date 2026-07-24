@@ -1,5 +1,13 @@
 import type { ClassInfo, Coordinates } from "./common";
+import type { Fluid } from "./fluid";
 import type { ItemStack } from "./item";
+
+/** AE 堆（物品或流体），由服务端 Pattern.dumpAEStack 导出，count 表示该物品/流体的总数量 */
+export type AEStack = (ItemStack | Fluid) & { count: number };
+
+export interface AEStackProviders {
+    providers: Array<{ x: number; y: number; z: number; dimension: number }>;
+}
 
 export interface AENode {
     active: boolean;
@@ -29,8 +37,8 @@ export interface AE2Pattern extends ItemStack {
     priority?: number;
     canSubstitute?: boolean;
     canBeSubstitute?: boolean;
-    condensedInputs?: Array<ItemStack & { count: number }>;
-    condensedOutputs?: Array<ItemStack & { count: number }>;
+    condensedInputs?: AEStack[];
+    condensedOutputs?: AEStack[];
     patternParseError?: string;
 }
 
@@ -44,20 +52,14 @@ export interface AECPU {
     startItemCount: number;
     elapsedTime: number;
     craftingAllowMode: string;
-    finalOutput?: ItemStack & { stackSize: number };
+    finalOutput?: AEStack;
     tasks?: Array<{
         remaining: number;
-        inputs: Array<ItemStack & { stackSize: number }>;
+        inputs: AEStack[];
         pattern: AE2Pattern;
-        outputs: Array<ItemStack & {
-            stackSize: number;
-            providers: Array<{ x: number; y: number; z: number; dimension: number }>;
-        }>;
+        outputs: Array<AEStack & AEStackProviders>;
     }>;
-    tasking?: Array<ItemStack & {
-        stackSize: number;
-        providers: Array<{ x: number; y: number; z: number; dimension: number }>;
-    }>;
+    tasking?: Array<AEStack & AEStackProviders>;
     tasksError?: string;
 }
 

@@ -3,11 +3,11 @@ import type { ItemStack } from "./item";
 
 export interface Fluid {
     class?: ClassInfo;
+    id: number;
     name: string;
-    defaultName: string;
+    registryName: string;
     unlocalizedName: string;
     localizedName?: string;
-    fluidID: number;
     color: number;
     luminosity: number;
     density: number;

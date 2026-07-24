@@ -22,12 +22,16 @@ public class AEMEsupportHandler implements RouteHandler {
         return "ME supportedClasses";
     }
 
+    private Set<Class<? extends IInterfaceViewable>> supportedClasses = null;
+
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        Set<Class<? extends IInterfaceViewable>> supportedClasses = AEApi.instance()
-            .registries()
-            .interfaceTerminal()
-            .getSupportedClasses();
+        if (supportedClasses == null) {
+            supportedClasses = AEApi.instance()
+                .registries()
+                .interfaceTerminal()
+                .getSupportedClasses();
+        }
 
         ArrayNode classesArray = mapper.createArrayNode();
         for (Class<? extends IInterfaceViewable> clazz : supportedClasses) {

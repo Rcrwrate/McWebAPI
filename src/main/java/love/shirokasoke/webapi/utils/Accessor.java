@@ -13,6 +13,9 @@ public final class Accessor {
     /** 缓存 {@link MTEMultiBlockBase#mSmartInputHatches } */
     private static Field mSmartInputHatches = null;
 
+    /**
+     * 访问 {@link MTEMultiBlockBase#mSmartInputHatches}
+     */
     @SuppressWarnings("unchecked")
     public static ArrayList<ISmartInputHatch> MTEMultiBlockBase_mSmartInputHatches(MTEMultiBlockBase multi) {
         try {

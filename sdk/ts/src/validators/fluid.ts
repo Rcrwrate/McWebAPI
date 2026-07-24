@@ -5,11 +5,11 @@ import { ItemStackSchema } from "./item";
 
 export const FluidSchema = Joi.object<Fluid>({
     class: ClassInfoSchema.optional(),
+    id: Joi.number().required(),
     name: Joi.string().required(),
-    defaultName: Joi.string().required(),
+    registryName: Joi.string().required(),
     unlocalizedName: Joi.string().required(),
     localizedName: Joi.string().optional(),
-    fluidID: Joi.number().required(),
     color: Joi.number().required(),
     luminosity: Joi.number().required(),
     density: Joi.number().required(),

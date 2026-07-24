@@ -25,16 +25,20 @@ public class AEMEsHandler extends AEBaseHandler {
         return "/ae/mes";
     }
 
+    private Set<Class<? extends IInterfaceViewable>> supportedClasses = null;
+
     @Override
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
         Map<String, String> params = parseQueryParams(exchange);
 
         // 获取可被ME接口终端查看的机器类型列表
-        Set<Class<? extends IInterfaceViewable>> supportedClasses = AEApi.instance()
-            .registries()
-            .interfaceTerminal()
-            .getSupportedClasses();
+        if (supportedClasses == null) {
+            supportedClasses = AEApi.instance()
+                .registries()
+                .interfaceTerminal()
+                .getSupportedClasses();
+        }
         ArrayNode interfaces = mapper.createArrayNode();
         for (Class<? extends IInterfaceViewable> clazz : supportedClasses) {
             for (IGridNode node : grid.getMachines(clazz)) {

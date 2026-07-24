@@ -20,13 +20,13 @@ public final class Fluids {
 
     public static ObjectNode dump(Fluid fluid, ObjectNode data) {
         ClassUtils.getClassInfo(fluid, data);
+        data.put("id", fluid.getID());
         data.put("name", fluid.getName());
-        data.put("defaultName", FluidRegistry.getDefaultFluidName(fluid));
+        data.put("registryName", FluidRegistry.getDefaultFluidName(fluid));
         data.put("unlocalizedName", fluid.getUnlocalizedName());
         try {
             data.put("localizedName", fluid.getLocalizedName());
         } catch (Throwable ignored) {}
-        data.put("fluidID", fluid.getID());
         data.put("color", fluid.getColor());
         data.put("luminosity", fluid.getLuminosity());
         data.put("density", fluid.getDensity());

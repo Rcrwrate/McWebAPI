@@ -12,12 +12,11 @@ import com.sun.net.httpserver.HttpExchange;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
-import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.api.util.NamedDimensionalCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import love.shirokasoke.webapi.utils.ClassUtils;
-import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Pattern;
 import love.shirokasoke.webapi.utils.log;
 
@@ -88,12 +87,12 @@ public class AECPUHandler extends AEBaseHandler {
         ClassUtils.getClassInfo(cpu, cpuNode);
 
         // 若 CPU 正在合成，导出最终产物信息
-        IAEItemStack finalOutput = cpu.getFinalOutput();
+        IAEStack<?> finalOutput = cpu.getFinalMultiOutput();
         if (finalOutput != null) {
-            cpuNode.set(
-                "finalOutput",
-                Items.dump(finalOutput.getItemStack())
-                    .put("stackSize", finalOutput.getStackSize()));
+            ObjectNode outputNode = Pattern.dumpAEStack(finalOutput);
+            if (outputNode != null) {
+                cpuNode.set("finalOutput", outputNode);
+            }
         }
 
         return cpuNode;
@@ -139,22 +138,23 @@ public class AECPUHandler extends AEBaseHandler {
                     taskNode.put("remaining", remaining);
 
                     ArrayNode inputsArray = taskNode.putArray("inputs");
-                    for (IAEItemStack input : details.getCondensedInputs()) {
+                    for (IAEStack<?> input : details.getCondensedAEInputs()) {
                         if (input == null) continue;
-                        inputsArray.add(
-                            Items.dump(input.getItemStack())
-                                .put("stackSize", input.getStackSize()));
+                        ObjectNode inputNode = Pattern.dumpAEStack(input);
+                        if (inputNode != null) {
+                            inputsArray.add(inputNode);
+                        }
                     }
 
                     taskNode.set("pattern", Pattern.dump(details.getPattern(), true, null));
 
                     // 收集该任务的所有输出物品
                     ArrayNode outputsArray = taskNode.putArray("outputs");
-                    for (IAEItemStack output : details.getCondensedOutputs()) {
+                    for (IAEStack<?> output : details.getCondensedAEOutputs()) {
                         if (output == null) continue;
 
-                        ObjectNode outputNode = Items.dump(output.getItemStack());
-                        outputNode.put("stackSize", output.getStackSize());
+                        ObjectNode outputNode = Pattern.dumpAEStack(output);
+                        if (outputNode == null) continue;
 
                         // 通过 getProviders 获取执行该输出的机器坐标（支持并行合成）
                         ArrayNode providersArray = outputNode.putArray("providers");
@@ -182,17 +182,17 @@ public class AECPUHandler extends AEBaseHandler {
                 WAITING_FOR_FIELD.setAccessible(true);
             }
             @SuppressWarnings("unchecked")
-            IItemList<IAEItemStack> waitingFor = (IItemList<IAEItemStack>) WAITING_FOR_FIELD.get(cluster);
+            IItemList<IAEStack<?>> waitingFor = (IItemList<IAEStack<?>>) WAITING_FOR_FIELD.get(cluster);
             if (waitingFor != null && !waitingFor.isEmpty()) {
                 ArrayNode taskingArray = cpuNode.putArray("tasking");
-                for (IAEItemStack item : waitingFor) {
-                    if (item == null) continue;
-                    ObjectNode itemNode = Items.dump(item.getItemStack());
-                    itemNode.put("stackSize", item.getStackSize());
+                for (IAEStack<?> stack : waitingFor) {
+                    if (stack == null) continue;
+                    ObjectNode itemNode = Pattern.dumpAEStack(stack);
+                    if (itemNode == null) continue;
 
                     ArrayNode providersArray = itemNode.putArray("providers");
                     try {
-                        List<NamedDimensionalCoord> providers = cluster.getProviders(item);
+                        List<NamedDimensionalCoord> providers = cluster.getProviders(stack);
                         for (NamedDimensionalCoord coord : providers) {
                             ObjectNode coordNode = mapper.createObjectNode();
                             coordNode.put("x", coord.x);

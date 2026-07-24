@@ -55,12 +55,14 @@ public class Lang {
         // GT5 在 preInit 阶段把每个 Material 的本地化名冻结进 mLocalizedName 缓存字段，
         // 此后所有 %material 占位符都走该缓存，而非动态查询翻译表。
         // 这里在 inject 完成后强制刷新该缓存。
-        refreshGTMaterialLocalizedNames();
+        // refreshGTMaterialLocalizedNames();
+        // 2.9.0似乎移除了lang缓存，等待验证
     }
 
     /**
      * 刷新 GregTech {@link Materials#mLocalizedName} 缓存字段，使其读取最新注入的翻译。
      */
+    @SuppressWarnings("unused")
     private static void refreshGTMaterialLocalizedNames() {
         try {
             Method getMaterialsMap = Materials.class.getMethod("getMaterialsMap");

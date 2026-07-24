@@ -37,6 +37,9 @@ public final class MixinConfig {
 
     public static boolean enableNBT = true;
 
+    /** ServerThreadLongHashMap.logOffThread: 本 mod 线程的 off-thread 读取仅打印简短信息 (Hodgepodge) */
+    public static boolean ServerThreadLongHashMapBypass = true;
+
     private MixinConfig() {}
 
     /**
@@ -64,6 +67,10 @@ public final class MixinConfig {
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             enableMTELapotronicSuperCapacitorGetInfoMap);
         enableNBT = parseBoolean(props, "mixin.nbt", enableNBT);
+        ServerThreadLongHashMapBypass = parseBoolean(
+            props,
+            "mixin.late.ServerThreadLongHashMapBypass",
+            ServerThreadLongHashMapBypass);
 
         logCurrentState();
         loaded = true;
@@ -121,6 +128,8 @@ public final class MixinConfig {
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             String.valueOf(enableMTELapotronicSuperCapacitorGetInfoMap));
         defaultProps.setProperty("mixin.nbt", String.valueOf(enableNBT));
+        defaultProps
+            .setProperty("mixin.late.ServerThreadLongHashMapBypass", String.valueOf(ServerThreadLongHashMapBypass));
 
         try (OutputStream os = new FileOutputStream(target)) {
             defaultProps.store(
@@ -147,5 +156,6 @@ public final class MixinConfig {
             "  mixin.late.MTELapotronicSuperCapacitor.getInfoMap = {}",
             enableMTELapotronicSuperCapacitorGetInfoMap);
         LOG.info("  mixin.nbt = {}", enableNBT);
+        LOG.info("  mixin.late.ServerThreadLongHashMapBypass = {}", ServerThreadLongHashMapBypass);
     }
 }

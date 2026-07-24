@@ -349,7 +349,7 @@ export class WebApiClient {
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidIconHandler.java)
-     * @param params.id 流体 ID（对应 Fluid 的 fluidID）
+     * @param params.id 流体 ID（对应 Fluid 的 id）
      * @param params.name 流体名称（对应 Fluid 的 name）
      * @returns 二进制 PNG 图片数据 (ArrayBuffer)
      */

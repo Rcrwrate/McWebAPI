@@ -47,6 +47,10 @@ public class LateMixinsLoader implements ILateMixinLoader {
             mixins.add("NBTUtilsMixin");
         }
 
+        if (MixinConfig.ServerThreadLongHashMapBypass) {
+            mixins.add("ServerThreadLongHashMapBypass");
+        }
+
         if (!mixins.isEmpty()) {
             LOG.info("Enabled late mixins: {}", mixins);
         }

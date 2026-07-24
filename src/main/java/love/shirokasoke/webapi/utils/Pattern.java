@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
+import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
 import appeng.util.Platform;
 import love.shirokasoke.webapi.Constant;
 
@@ -125,13 +127,11 @@ public final class Pattern {
                     node.put("canBeSubstitute", details.canBeSubstitute());
 
                     // === 浓缩输入列表（合并了相同物品并统计数量） ===
-                    // getCondensedInputs 会把 3×3 格子中相同的输入合并，适合查看实际需要多少材料
+                    // getCondensedAEInputs 会把 3×3 格子中相同的输入合并，适合查看实际需要多少材料
                     ArrayNode condensedInputs = mapper.createArrayNode();
-                    for (IAEItemStack iae : details.getCondensedInputs()) {
-                        if (iae != null) {
-                            ObjectNode itemNode = Items.dump(iae.getItemStack());
-                            // IAEItemStack.getStackSize() 返回该物品在该配方中的总需求量
-                            itemNode.put("count", iae.getStackSize());
+                    for (IAEStack<?> iae : details.getCondensedAEInputs()) {
+                        ObjectNode itemNode = dumpAEStack(iae);
+                        if (itemNode != null) {
                             condensedInputs.add(itemNode);
                         }
                     }
@@ -139,10 +139,9 @@ public final class Pattern {
 
                     // === 浓缩输出列表 ===
                     ArrayNode condensedOutputs = mapper.createArrayNode();
-                    for (IAEItemStack iae : details.getCondensedOutputs()) {
-                        if (iae != null) {
-                            ObjectNode itemNode = Items.dump(iae.getItemStack());
-                            itemNode.put("count", iae.getStackSize());
+                    for (IAEStack<?> iae : details.getCondensedAEOutputs()) {
+                        ObjectNode itemNode = dumpAEStack(iae);
+                        if (itemNode != null) {
                             condensedOutputs.add(itemNode);
                         }
                     }
@@ -155,6 +154,27 @@ public final class Pattern {
             }
         }
 
+        return node;
+    }
+
+    /**
+     * 导出单个 AE 堆（物品或流体），并写入 count 字段；无法识别时返回 null。
+     */
+    public static ObjectNode dumpAEStack(IAEStack<?> stack) {
+        if (stack == null) {
+            return null;
+        }
+        ObjectNode node;
+        if (stack instanceof IAEItemStack item) {
+            node = Items.dump(item.getItemStack());
+        } else if (stack instanceof IAEFluidStack fluid && fluid.getFluid() != null) {
+            node = Fluids.dump(fluid.getFluid());
+        } else {
+            log.e(new Exception(stack.toString()));
+            return null;
+        }
+        // IAEStack.getStackSize() 返回该物品/流体在该配方中的总需求量
+        node.put("count", stack.getStackSize());
         return node;
     }
 }
