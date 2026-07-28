@@ -272,8 +272,10 @@ public interface RouteHandler extends HttpHandler {
      * @return 包含所有参数的 Map
      */
     default java.util.Map<String, String> parseQueryParams(HttpExchange exchange) {
+        // 必须使用 getRawQuery(): getQuery() 已做过一次 percent-decode,
+        // 再经 URLDecoder 二次解码会把 base64 中的 '+' 变成空格 (0x20)
         String query = exchange.getRequestURI()
-            .getQuery();
+            .getRawQuery();
         return parseQueryParams(query);
     }
 

@@ -44,7 +44,7 @@ public class LateMixinsLoader implements ILateMixinLoader {
         }
 
         if (MixinConfig.enableNBT) {
-            mixins.add("NBTUtilsMixin");
+            mixins.add("NBTMixin");
         }
 
         if (MixinConfig.ServerThreadLongHashMapBypass) {

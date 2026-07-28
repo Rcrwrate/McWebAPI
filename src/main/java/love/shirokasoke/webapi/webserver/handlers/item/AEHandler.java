@@ -12,6 +12,7 @@ import com.google.common.base.Optional;
 import com.sun.net.httpserver.HttpExchange;
 
 import appeng.api.AEApi;
+import appeng.api.definitions.IDefinitions;
 import appeng.api.definitions.IItemDefinition;
 import appeng.api.util.AEColor;
 import appeng.api.util.AEColoredItemDefinition;
@@ -29,30 +30,12 @@ public class AEHandler implements RouteHandler {
     @Override
     public void run(HttpExchange exchange) throws Exception {
         ObjectNode root = mapper.createObjectNode();
-        root.set(
-            "items",
-            collect(
-                AEApi.instance()
-                    .definitions()
-                    .items()));
-        root.set(
-            "parts",
-            collect(
-                AEApi.instance()
-                    .definitions()
-                    .parts()));
-        root.set(
-            "materials",
-            collect(
-                AEApi.instance()
-                    .definitions()
-                    .materials()));
-        root.set(
-            "blocks",
-            collect(
-                AEApi.instance()
-                    .definitions()
-                    .blocks()));
+        IDefinitions def = AEApi.instance()
+            .definitions();
+        root.set("items", collect(def.items()));
+        root.set("parts", collect(def.parts()));
+        root.set("materials", collect(def.materials()));
+        root.set("blocks", collect(def.blocks()));
         setCache(exchange, 86400);
         sendResponse(exchange, root);
     }
