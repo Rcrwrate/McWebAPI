@@ -446,7 +446,7 @@ export default function ItemsPage() {
                                 const isParent = row._rowType === "parent"
                                 const isSelected = selectionModel.includes(row._rowId)
                                 return (
-                                    <MCToolitip k={row._rowId} item={row as unknown as ItemStack}>
+                                    <MCToolitip k={row._rowId} item={row as unknown as ItemStack & { stackSize: number }}>
                                         {isParent ? (
                                             <ParentIconPaper
                                                 onClick={() => {

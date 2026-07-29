@@ -133,7 +133,7 @@ export default function AEItemPage() {
             .then((data) => {
                 const rows = data.items.map((it): AEItemRow => ({
                     ...it,
-                    uid: `${it.id}-${it.damage}-${it.nbtstr ?? ""}`,
+                    uid: it.type == "item" ? `${it.id}-${it.damage}-${it.nbtstr ?? ""}` : `f-${it.id}`,
                 }))
                 setItems(rows)
                 setDisplayRows(rows)
@@ -363,8 +363,9 @@ export default function AEItemPage() {
                                 {
                                     id: item.id,
                                     Count: craftCount,
-                                    Damage: item.damage,
-                                    tag: item.nbtWrite,
+                                    Type: item.type,
+                                    Damage: item.type == "item" ? item.damage : undefined,
+                                    tag: item.type == "item" ? item.nbtWrite : undefined,
                                 }
                             );
                             enqueueSnackbar(`已提交合成任务，输出: ${result.output.localizedName} x${result.output.stackSize}，CPU: ${result.cpu}`, { variant: "success" });
@@ -379,7 +380,7 @@ export default function AEItemPage() {
                         const uid = Array.from(rowSelectionModel.ids)[0] as string;
                         const item = items.find((it) => it.uid === uid);
                         if (!item || !x) return;
-                        CP(JSON.stringify({ type: "ae-item", requestData: { x: x, y: y, z: z, dimension: dimension, id: item.id, damage: item.damage, ...item.nbtWrite ? { nbtWrite: item.nbtWrite } : {} } }))
+                        CP(JSON.stringify({ type: "ae-item", requestData: { x: x, y: y, z: z, dimension: dimension, ...item } }))
                     }}>复制监控面板代码</Button>
                 <Button size="small" color="inherit" startIcon={<CloseIcon />} onClick={() => {
                     setRowSelectionModel({ type: "include", ids: new Set() })

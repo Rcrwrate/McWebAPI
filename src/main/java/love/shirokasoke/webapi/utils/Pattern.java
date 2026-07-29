@@ -173,8 +173,7 @@ public final class Pattern {
             log.e(new Exception(stack.toString()));
             return null;
         }
-        // IAEStack.getStackSize() 返回该物品/流体在该配方中的总需求量
-        node.put("count", stack.getStackSize());
+        node.put("stackSize", stack.getStackSize());
         return node;
     }
 }

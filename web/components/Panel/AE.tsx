@@ -2,7 +2,7 @@ import { formatBytes, formatCount } from "@/data/format";
 import { Panel } from "@/data/Panel";
 import type { AECPU, AEItemsResult } from "@shirokasoke/webapi-sdk";
 import Percent from "../PerCent";
-import { AEItemContent } from "./AEItem";
+import { AEItemContent, AEItemReq } from "./AEItem";
 
 interface coord {
     x: number;
@@ -13,8 +13,10 @@ interface coord {
 
 const item = {
     'totalBytes': 0, "usedBytes": 0, "totalTypes": 0, "usedTypes": 0,
+    fluidTotalBytes: 0, fluidUsedBytes: 0, fluidTotalTypes: 0, fluidUsedTypes: 0,
     items: [],
-    cellStatus: { all: 0, green: 0, blue: 0, orange: 0, red: 0 }
+    cellStatus: { all: 0, green: 0, blue: 0, orange: 0, red: 0 },
+    fluidCellStatus: { all: 0, green: 0, blue: 0, orange: 0, red: 0 },
 }
 
 export const AEItemStorge: Panel<AEItemsResult, coord> = {
@@ -45,10 +47,10 @@ export const AEItemType: Panel<AEItemsResult, coord> = {
     }
 }
 
-export const AEItem: Panel<AEItemsResult, coord & { id: number, damage: number, nbtWrite?: string }> = {
+export const AEItem: Panel<AEItemsResult, AEItemReq> = {
     title: "AE 物品监视",
     method: "aeItems",
-    dataKey: (requestData?: coord) => {
+    dataKey: (requestData?: AEItemReq) => {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,

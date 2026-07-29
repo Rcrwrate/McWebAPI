@@ -1,15 +1,15 @@
 import Box from "@mui/material/Box"
 import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
-import type { ItemStack } from "@shirokasoke/webapi-sdk"
+import type { AEStack } from "@shirokasoke/webapi-sdk"
 import type { JSX } from "react/jsx-runtime"
 
-export default function MCToolitip({ item, k, children }: { item: ItemStack, k: string, children: JSX.Element }) {
+export default function MCToolitip({ item, k, children }: { item: AEStack, k: string, children: JSX.Element }) {
     return <Tooltip key={k} arrow placement="top"
         title={<Box>
             <Typography variant="body2">{item.localizedName}</Typography>
             <Typography variant="caption" sx={{ color: "#aaa" }} component="div">
-                #{item.id}{item.damage ? `:${item.damage}` : ""}
+                #{item.id}{"name" in item ? "" : item.damage ? `:${item.damage}` : ""}
             </Typography>
             <Typography variant="caption" sx={{ color: "#55aaff" }} component="div">
                 {item.registryName}

@@ -13,19 +13,19 @@ export const AEStackProvidersSchema = Joi.array().items(
     })
 ).required();
 
-/** 对应服务端 Pattern.dumpAEStack 的输出：物品或流体堆，附加 count 字段 */
+/** 对应服务端 Pattern.dumpAEStack 的输出：物品或流体堆，附加 stackSize 字段 */
 export const AEStackSchema = Joi.alternatives(
-    ItemStackSchema.append({ count: Joi.number().required() }),
-    FluidSchema.append({ count: Joi.number().required() })
+    ItemStackSchema.append({ stackSize: Joi.number().required() }),
+    FluidSchema.append({ stackSize: Joi.number().required() })
 );
 
 export const AEStackWithProvidersSchema = Joi.alternatives(
     ItemStackSchema.append({
-        count: Joi.number().required(),
+        stackSize: Joi.number().required(),
         providers: AEStackProvidersSchema,
     }),
     FluidSchema.append({
-        count: Joi.number().required(),
+        stackSize: Joi.number().required(),
         providers: AEStackProvidersSchema,
     })
 );

@@ -23,7 +23,6 @@ export const ItemStackSchema = ItemSchema.append({
     damage: Joi.number().required(),
     AttributeModifiers: Joi.object().unknown().optional(),
     stackSize: Joi.number().optional(),
-    count: Joi.number().optional(),
 }).concat(NBTDataSchema);
 
 export const ItemDetailSchema = ItemStackSchema.append<ItemDetail>({

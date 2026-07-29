@@ -2,8 +2,7 @@ import type { ClassInfo, Coordinates } from "./common";
 import type { Fluid } from "./fluid";
 import type { ItemStack } from "./item";
 
-/** AE 堆（物品或流体），由服务端 Pattern.dumpAEStack 导出，count 表示该物品/流体的总数量 */
-export type AEStack = (ItemStack | Fluid) & { count: number };
+export type AEStack = (ItemStack | Fluid) & { stackSize: number };
 
 export interface AEStackProviders {
     providers: Array<{ x: number; y: number; z: number; dimension: number }>;

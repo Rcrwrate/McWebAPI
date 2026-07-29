@@ -325,7 +325,7 @@ export class WebApiClient {
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/AEHandler.java)
      * @returns 使用 {@link AEItemDefinitionsSchema} 验证
      */
-    getAEItems(): Promise<AEItemDefinitions> {
+    getAEItemsDef(): Promise<AEItemDefinitions> {
         return this.request<AEItemDefinitions>("/items/ae");
     }
 

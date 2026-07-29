@@ -2,7 +2,7 @@ import ItemIcon from "@/app/ae/ItemIcon"
 import { useAPI } from "@/data/api"
 import { formatCount } from "@/data/format"
 import { Box, Card, CardContent, Typography } from "@mui/material"
-import { AEItemsResult } from "@shirokasoke/webapi-sdk"
+import { AEItemsResult, AEStack } from "@shirokasoke/webapi-sdk"
 import { useEffect, useState } from "react"
 
 interface coord {
@@ -12,14 +12,20 @@ interface coord {
     dimension?: number;
 }
 
-type AEItemReq = coord & { id: number, damage: number, nbtWrite?: string }
+export type AEItemReq = coord & ({ type: "fluid", id: number } | { type: "item", id: number, damage: number, nbtWrite?: string })
 
 export function AEItemContent({ data, req }: { data: AEItemsResult, req?: AEItemReq }) {
     const api = useAPI()
     if (!req) return <></>
-    const matched = data.items.find(
-        i => i.id === req.id && i.damage === req.damage && (i.nbtWrite ?? "") === (req.nbtWrite ?? "")
-    )
+    let matched: AEStack | undefined
+    if (req.type == "fluid") {
+        matched = data.items.find(i => i.id === req.id && i.type == "fluid")
+    } else {
+        matched = data.items.find(
+            i => i.id === req.id && i.type == "item" && i.damage === req.damage && (i.nbtWrite ?? "") === (req.nbtWrite ?? "")
+        )
+    }
+
     const count = matched?.stackSize ?? 0
     const [history, setH] = useState<number[]>([0, 0])
     useEffect(() => {
@@ -41,7 +47,7 @@ export function AEItemContent({ data, req }: { data: AEItemsResult, req?: AEItem
                     {formatCount(count)}    <small>{change < 0 ? "-" : "+"}{formatCount(change < 0 ? -change : change)}</small>
                 </Typography>
                 <Typography variant="body1" noWrap title={matched?.localizedName}>
-                    {matched ? matched.localizedName : `物品 #${req.id}:${req.damage}`}
+                    {matched ? matched.localizedName : `物品 #${req.id}`}
                 </Typography>
             </Box>
         </CardContent>

@@ -37,7 +37,7 @@ describe("normal", () => {
         assert.ok(v.ItemDetailSchema.validate(r).error == undefined)
     })
     it("AEitems", async () => {
-        const r = await api.getAEItems()
+        const r = await api.getAEItemsDef()
         assert.ok(v.AEItemDefinitionsSchema.validate(r).error == undefined)
         assert.ok(r.blocks.length > 60)
         assert.ok(r.items.length > 60)

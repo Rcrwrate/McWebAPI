@@ -21,7 +21,6 @@ export interface ItemStack extends Item, NBTData {
     damage: number;
     AttributeModifiers?: Record<string, unknown>;
     stackSize?: number;
-    count?: number;
 }
 
 export interface ItemDetail extends Item {

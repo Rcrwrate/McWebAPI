@@ -1,6 +1,6 @@
 {
     "name": "@shirokasoke/webapi-sdk",
-    "version": "2.9.0-bete2-0.6-pre",
+    "version": "2.9.0-bete2-0.6-test1",
     "private": false,
     "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod",
     "main": "./dist/index.js",

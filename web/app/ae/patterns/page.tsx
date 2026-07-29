@@ -30,7 +30,7 @@ import {
     gridExpandedSortedRowEntriesSelector,
 } from "@mui/x-data-grid"
 import { GridApiCommunity } from "@mui/x-data-grid/internals"
-import type { AE2Pattern, AEMEInterface, ItemStack } from "@shirokasoke/webapi-sdk"
+import type { AE2Pattern, AEMEInterface, AEStack, ItemStack } from "@shirokasoke/webapi-sdk"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
@@ -43,10 +43,10 @@ type PatternRow = AE2Pattern & { slot: number } & {
     interfaceLocation: AEMEInterface["location"]
 }
 
-function formatCondensedList(items: Array<ItemStack & { count: number }> | undefined): string {
+function formatCondensedList(items: Array<AEStack> | undefined): string {
     if (!items || items.length === 0) return "-"
     return items
-        .map((i) => `${i.localizedName}${i.count > 1 ? ` x${i.count}` : ""}`)
+        .map((i) => `${i.localizedName}${i?.stackSize > 1 ? ` x${i.stackSize}` : ""}`)
         .join(", ") || "(空)"
 }
 
@@ -332,7 +332,6 @@ export default function AEPatternsPage() {
                         <Grid container spacing={2} sx={{ alignItems: "center", justifyContent: "center" }}>
                             <Chip label={selectedRow.crafting ? "合成" : "处理"} color={selectedRow.crafting ? "primary" : "secondary"} size="small" />
                             {selectedRow.condensedInputs?.map((input, idx) => {
-                                input.stackSize = input.count
                                 return <MCToolitip key={`i${idx}`} k={`i${idx}`} item={input}>
                                     <Box sx={{ width: 48, height: 48, position: "relative" }}>
                                         <ItemIcon api={api} item={input} badge />
@@ -343,7 +342,6 @@ export default function AEPatternsPage() {
                                 <Typography variant="body2">→</Typography>
                             </Grid>
                             {selectedRow.condensedOutputs?.map((output, idx) => {
-                                output.stackSize = output.count
                                 return <MCToolitip key={`o${idx}`} k={`o${idx}`} item={output}>
                                     <Box sx={{ width: 48, height: 48, position: "relative" }}>
                                         <ItemIcon api={api} item={output} badge />
