@@ -51,18 +51,6 @@ type AEItemStorageStats = Pick<AEItemsResult, "totalBytes" | "usedBytes" | "tota
 
 const columns: GridColDef<AEItemRow>[] = [
     {
-        field: "localizedName",
-        headerName: "名称",
-        width: 240,
-        filterable: true,
-    },
-    {
-        field: "registryName",
-        headerName: "注册名",
-        width: 320,
-        filterable: true,
-    },
-    {
         field: "id",
         headerName: "ID",
         width: 80,
@@ -77,12 +65,38 @@ const columns: GridColDef<AEItemRow>[] = [
         filterable: true,
     },
     {
+        field: "localizedName",
+        headerName: "名称",
+        width: 240,
+        filterable: true,
+    },
+    {
+        field: "registryName",
+        headerName: "注册名",
+        width: 320,
+        filterable: true,
+    },
+    {
         field: "stackSize",
         headerName: "数量",
         width: 120,
         type: "number",
         filterable: true,
         valueFormatter: (value: number) => formatCount(value),
+    },
+    {
+        field: "type",
+        headerName: "类型",
+        type: "boolean",
+        filterable: true,
+        valueGetter: (_value, row) => row.type == "item",
+        renderCell: (params) => (
+            <Chip
+                label={params.value ? "物品" : "流体"}
+                color={params.value ? "primary" : "secondary"}
+                size="small"
+            />
+        ),
     },
     {
         field: "Craftable",
@@ -110,7 +124,7 @@ export default function AEItemPage() {
     const searchParams = useSearchParams()
     const [x, y, z, dimension] = useCoords(searchParams)
     const [items, setItems] = useState<AEItemRow[]>([])
-    const [storageStats, setStorageStats] = useState<AEItemStorageStats | null>(null)
+    const [storageStats, setStorageStats] = useState<[AEItemStorageStats, AEItemStorageStats] | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     const [viewMode, setViewMode] = useState<"list" | "icon">("icon")
@@ -137,12 +151,11 @@ export default function AEItemPage() {
                 }))
                 setItems(rows)
                 setDisplayRows(rows)
-                setStorageStats({
-                    totalBytes: data.totalBytes,
-                    usedBytes: data.usedBytes,
-                    totalTypes: data.totalTypes,
-                    usedTypes: data.usedTypes,
-                })
+                setStorageStats([{
+                    totalBytes: data.totalBytes, usedBytes: data.usedBytes, totalTypes: data.totalTypes, usedTypes: data.usedTypes,
+                }, {
+                    totalBytes: data.fluidTotalBytes, usedBytes: data.fluidUsedBytes, totalTypes: data.fluidTotalTypes, usedTypes: data.fluidUsedTypes,
+                }])
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载物品失败"))
     }, [api != undefined, x, y, z, dimension])
@@ -176,13 +189,6 @@ export default function AEItemPage() {
     }
 
     const totalCount = items.reduce((s, it) => s + (it.stackSize || 0), 0)
-    const storagePercent = storageStats && storageStats.totalBytes > 0
-        ? Math.min((storageStats.usedBytes / storageStats.totalBytes) * 100, 100)
-        : 0
-    const typePercent = storageStats && storageStats.totalTypes > 0
-        ? Math.min((storageStats.usedTypes / storageStats.totalTypes) * 100, 100)
-        : 0
-
     return (
         <RContainer>
             <H2>AE 存储物品</H2>
@@ -208,10 +214,16 @@ export default function AEItemPage() {
                         </Card>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                        <Percent percent={storagePercent} title="存储占用" subtitle={storageStats ? `${formatBytes(storageStats.usedBytes)} / ${formatBytes(storageStats.totalBytes)}` : "-"} />
+                        <Percent percent={storageStats ? Math.min((storageStats[0].usedBytes / storageStats[0].totalBytes) * 100, 100) : 0} title="物品存储占用" subtitle={storageStats ? `${formatBytes(storageStats[0].usedBytes)} / ${formatBytes(storageStats[0].totalBytes)}` : "-"} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                        <Percent percent={typePercent} title="类型占用" subtitle={storageStats ? `${formatCount(storageStats.usedTypes)} / ${formatCount(storageStats.totalTypes)}` : "-"} />
+                        <Percent percent={storageStats ? Math.min((storageStats[0].usedTypes / storageStats[0].totalTypes) * 100, 100) : 0} title="物品类型占用" subtitle={storageStats ? `${formatCount(storageStats[0].usedTypes)} / ${formatCount(storageStats[0].totalTypes)}` : "-"} />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Percent percent={storageStats ? Math.min((storageStats[1].usedBytes / storageStats[1].totalBytes) * 100, 100) : 0} title="流体存储占用" subtitle={storageStats ? `${formatBytes(storageStats[1].usedBytes)} / ${formatBytes(storageStats[1].totalBytes)}` : "-"} />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Percent percent={storageStats ? Math.min((storageStats[1].usedTypes / storageStats[1].totalTypes) * 100, 100) : 0} title="流体类型占用" subtitle={storageStats ? `${formatCount(storageStats[1].usedTypes)} / ${formatCount(storageStats[1].totalTypes)}` : "-"} />
                     </Grid>
                 </Grid>
             )}

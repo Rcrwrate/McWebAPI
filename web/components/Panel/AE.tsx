@@ -20,7 +20,7 @@ const item = {
 }
 
 export const AEItemStorge: Panel<AEItemsResult, coord> = {
-    title: "AE 存储占用",
+    title: "AE 物品存储占用",
     method: "aeItems",
     dataKey: (requestData?: coord) => {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
@@ -29,12 +29,12 @@ export const AEItemStorge: Panel<AEItemsResult, coord> = {
     size: { w: 6, h: 2 },
     Render: function (data: AEItemsResult): React.ReactElement {
         const storagePercent = data.totalBytes > 0 ? (data.usedBytes / data.totalBytes) * 100 : 0;
-        return <Percent percent={storagePercent} title="存储占用" subtitle={data ? `${formatBytes(data.usedBytes)} / ${formatBytes(data.totalBytes)}` : "-"} />
+        return <Percent percent={storagePercent} title="物品存储占用" subtitle={data ? `${formatBytes(data.usedBytes)} / ${formatBytes(data.totalBytes)}` : "-"} />
     }
 }
 
 export const AEItemType: Panel<AEItemsResult, coord> = {
-    title: "AE 类型占用",
+    title: "AE 物品类型占用",
     method: "aeItems",
     dataKey: (requestData?: coord) => {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
@@ -43,7 +43,35 @@ export const AEItemType: Panel<AEItemsResult, coord> = {
     size: { w: 6, h: 2 },
     Render: function (data: AEItemsResult): React.ReactElement {
         const typePercent = data.totalTypes > 0 ? (data.usedTypes / data.totalTypes) * 100 : 0;
-        return <Percent percent={typePercent} title="类型占用" subtitle={data ? `${formatCount(data.usedTypes)} / ${formatCount(data.totalTypes)}` : "-"} />
+        return <Percent percent={typePercent} title="物品类型占用" subtitle={data ? `${formatCount(data.usedTypes)} / ${formatCount(data.totalTypes)}` : "-"} />
+    }
+}
+
+export const AEFluidStorage: Panel<AEItemsResult, coord> = {
+    title: "AE 流体存储占用",
+    method: "aeItems",
+    dataKey: (requestData?: coord) => {
+        return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
+    },
+    dafaultData: item,
+    size: { w: 6, h: 2 },
+    Render: function (data: AEItemsResult): React.ReactElement {
+        const storagePercent = data.fluidTotalBytes > 0 ? (data.fluidUsedBytes / data.fluidTotalBytes) * 100 : 0;
+        return <Percent percent={storagePercent} title="流体存储占用" subtitle={data ? `${formatBytes(data.fluidUsedBytes)} / ${formatBytes(data.fluidTotalBytes)}` : "-"} />
+    }
+}
+
+export const AEFluidType: Panel<AEItemsResult, coord> = {
+    title: "AE 流体类型占用",
+    method: "aeItems",
+    dataKey: (requestData?: coord) => {
+        return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
+    },
+    dafaultData: item,
+    size: { w: 6, h: 2 },
+    Render: function (data: AEItemsResult): React.ReactElement {
+        const typePercent = data.fluidTotalTypes > 0 ? (data.fluidUsedTypes / data.fluidTotalTypes) * 100 : 0;
+        return <Percent percent={typePercent} title="流体类型占用" subtitle={data ? `${formatCount(data.fluidUsedTypes)} / ${formatCount(data.fluidTotalTypes)}` : "-"} />
     }
 }
 

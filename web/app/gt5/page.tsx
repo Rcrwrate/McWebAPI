@@ -292,7 +292,7 @@ export default function GT5Page() {
                         enqueueSnackbar("已清空所有设备数据", { variant: "success" })
                     }}>清空数据</Button>
             </Stack>
-            <Box sx={{ m: 1, px: 2, py: 1 }}>
+            <Box sx={{ m: { xs: 0, sm: 1 }, px: { xs: 0, sm: 2 }, py: 1 }}>
                 {!loaded ? (
                     <Box sx={{ textAlign: "center", py: 3 }}>
                         <CircularProgress />
@@ -415,13 +415,14 @@ export default function GT5Page() {
                                 },
                             }} />
                     </Paper>
-                    {Array.from(rowSelection.ids).map((id) => {
-                        const machine = liveMachines.find(m => m.id === id);
-                        return machine ?
-                            <Box key={id} sx={{ mt: 2 }}>
+                    <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mt: 1 }}>
+                        {Array.from(rowSelection.ids).map((id) => {
+                            const machine = liveMachines.find(m => m.id === id)
+                            return machine ? <Grid key={id} size={{ xs: 12, lg: 6 }}>
                                 <GTInfoCard machine={machine} />
-                            </Box> : null
-                    })}
+                            </Grid> : null
+                        })}
+                    </Grid>
                 </>}
             </Box>
         </RContainer>
