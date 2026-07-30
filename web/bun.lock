@@ -12,7 +12,7 @@
         "@mui/x-data-grid": "^9.6.0",
         "@mui/x-data-grid-pro": "^9.7.0",
         "@mui/x-license": "^9.7.0",
-        "@shirokasoke/webapi-sdk": "^2.9.0-bete2-0.6-test1",
+        "@shirokasoke/webapi-sdk": "2.9.0-bete2-0.6-test2",
         "next": "16.2.9",
         "notistack": "^3.0.2",
         "react": "19.2.7",
@@ -264,7 +264,7 @@
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@rtsao/scc/-/scc-1.1.0.tgz", {}, ""],
 
-    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@2.9.0-bete2-0.6-test1", "", { "dependencies": { "joi": "^18.2.1" } }, "sha512-7FY6Ge9wKm+gawObib+0X6RkgoE2IEizy098Ay5iTdHM3Tm5hGXKfre5588gjc3xMNt9IQrJ8RvYruF1OLiAQQ=="],
+    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@2.9.0-bete2-0.6-test2", "", { "dependencies": { "joi": "^18.2.1" } }, "sha512-ORSIADH7UGY6+JdTwEVQRP8jzexGHK828bsBseLz+qDZw0emdlSqygMMMfv14N3+6L41PI3QoX5+NOkC6V3nxQ=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@standard-schema/spec/-/spec-1.1.0.tgz", {}, ""],
 

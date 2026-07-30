@@ -1,7 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +15,8 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.api.util.NamedDimensionalCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
+import appeng.me.cluster.implementations.CraftingCPUCluster.TaskProgress;
+import love.shirokasoke.webapi.utils.Accessor;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Pattern;
 import love.shirokasoke.webapi.utils.log;
@@ -24,13 +25,6 @@ import love.shirokasoke.webapi.utils.log;
  * 查看 AE 网络中所有合成 CPU 状态
  */
 public class AECPUHandler extends AEBaseHandler {
-
-    /** 缓存 {@link CraftingCPUCluster } 的私有 tasks 字段 */
-    private static Field TASKS_FIELD = null;
-    /** 缓存 TaskProgress 的私有 value 字段 */
-    private static Field VALUE_FIELD = null;
-    /** 缓存 {@link CraftingCPUCluster } 的私有 waitingFor 字段 */
-    private static Field WAITING_FOR_FIELD = null;
 
     @Override
     public String getPath() {
@@ -107,35 +101,17 @@ public class AECPUHandler extends AEBaseHandler {
      */
     private void dumpCraftingTasks(CraftingCPUCluster cluster, ObjectNode cpuNode) {
         try {
-            if (TASKS_FIELD == null) {
-                TASKS_FIELD = CraftingCPUCluster.class.getDeclaredField("tasks");
-                TASKS_FIELD.setAccessible(true);
-            }
-
-            @SuppressWarnings("unchecked")
-            Map<ICraftingPatternDetails, Object> tasks = (Map<ICraftingPatternDetails, Object>) TASKS_FIELD
-                .get(cluster);
+            Map<ICraftingPatternDetails, TaskProgress> tasks = Accessor.CraftingCPUCluster_tasks(cluster);
 
             if (tasks != null && !tasks.isEmpty()) {
                 ArrayNode tasksArray = cpuNode.putArray("tasks");
-                for (Map.Entry<ICraftingPatternDetails, Object> entry : tasks.entrySet()) {
+                for (Map.Entry<ICraftingPatternDetails, TaskProgress> entry : tasks.entrySet()) {
                     ICraftingPatternDetails details = entry.getKey();
-                    Object taskProgress = entry.getValue();
+                    TaskProgress taskProgress = entry.getValue();
 
                     ObjectNode taskNode = tasksArray.addObject();
 
-                    long remaining = -1;
-                    try {
-                        if (VALUE_FIELD == null) {
-                            VALUE_FIELD = taskProgress.getClass()
-                                .getDeclaredField("value");
-                            VALUE_FIELD.setAccessible(true);
-                        }
-                        remaining = (long) VALUE_FIELD.get(taskProgress);
-                    } catch (Exception e) {
-                        log.e(e);
-                    }
-                    taskNode.put("remaining", remaining);
+                    taskNode.put("remaining", Accessor.TaskProgress_value(taskProgress));
 
                     ArrayNode inputsArray = taskNode.putArray("inputs");
                     for (IAEStack<?> input : details.getCondensedAEInputs()) {
@@ -177,12 +153,7 @@ public class AECPUHandler extends AEBaseHandler {
             }
 
             // 导出已派发、正在等待返回的产物（waitingFor）
-            if (WAITING_FOR_FIELD == null) {
-                WAITING_FOR_FIELD = CraftingCPUCluster.class.getDeclaredField("waitingFor");
-                WAITING_FOR_FIELD.setAccessible(true);
-            }
-            @SuppressWarnings("unchecked")
-            IItemList<IAEStack<?>> waitingFor = (IItemList<IAEStack<?>>) WAITING_FOR_FIELD.get(cluster);
+            IItemList<IAEStack<?>> waitingFor = Accessor.CraftingCPUCluster_waitingFor(cluster);
             if (waitingFor != null && !waitingFor.isEmpty()) {
                 ArrayNode taskingArray = cpuNode.putArray("tasking");
                 for (IAEStack<?> stack : waitingFor) {

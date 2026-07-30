@@ -47,6 +47,12 @@ public class LateMixinsLoader implements ILateMixinLoader {
             mixins.add("NBTMixin");
         }
 
+        if (MixinConfig.enableAECPUAccessor && loadedMods.contains("appliedenergistics2")) {
+            mixins.add("CraftingCPUClusterAccess");
+            mixins.add("TaskProgressAccess");
+            mixins.add("AECPUMixin");
+        }
+
         if (MixinConfig.ServerThreadLongHashMapBypass) {
             mixins.add("ServerThreadLongHashMapBypass");
         }

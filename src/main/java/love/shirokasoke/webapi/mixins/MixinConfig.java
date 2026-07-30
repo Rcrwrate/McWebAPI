@@ -37,6 +37,9 @@ public final class MixinConfig {
 
     public static boolean enableNBT = true;
 
+    /** AE2 合成 CPU 内部状态：使用 Mixin 替代反射 */
+    public static boolean enableAECPUAccessor = true;
+
     /** ServerThreadLongHashMap.logOffThread: 本 mod 线程的 off-thread 读取仅打印简短信息 (Hodgepodge) */
     public static boolean ServerThreadLongHashMapBypass = true;
 
@@ -67,6 +70,7 @@ public final class MixinConfig {
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             enableMTELapotronicSuperCapacitorGetInfoMap);
         enableNBT = parseBoolean(props, "mixin.nbt", enableNBT);
+        enableAECPUAccessor = parseBoolean(props, "mixin.late.AECPUAccessor", enableAECPUAccessor);
         ServerThreadLongHashMapBypass = parseBoolean(
             props,
             "mixin.late.ServerThreadLongHashMapBypass",
@@ -128,6 +132,7 @@ public final class MixinConfig {
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             String.valueOf(enableMTELapotronicSuperCapacitorGetInfoMap));
         defaultProps.setProperty("mixin.nbt", String.valueOf(enableNBT));
+        defaultProps.setProperty("mixin.late.AECPUAccessor", String.valueOf(enableAECPUAccessor));
         defaultProps
             .setProperty("mixin.late.ServerThreadLongHashMapBypass", String.valueOf(ServerThreadLongHashMapBypass));
 
@@ -156,6 +161,7 @@ public final class MixinConfig {
             "  mixin.late.MTELapotronicSuperCapacitor.getInfoMap = {}",
             enableMTELapotronicSuperCapacitorGetInfoMap);
         LOG.info("  mixin.nbt = {}", enableNBT);
+        LOG.info("  mixin.late.AECPUAccessor = {}", enableAECPUAccessor);
         LOG.info("  mixin.late.ServerThreadLongHashMapBypass = {}", ServerThreadLongHashMapBypass);
     }
 }

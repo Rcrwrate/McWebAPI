@@ -6,13 +6,20 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTSizeTracker;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import appeng.api.networking.crafting.ICraftingPatternDetails;
+import appeng.api.storage.data.IAEStack;
+import appeng.api.storage.data.IItemList;
+import appeng.me.cluster.implementations.CraftingCPUCluster;
+import appeng.me.cluster.implementations.CraftingCPUCluster.TaskProgress;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
 import gregtech.common.tileentities.machines.ISmartInputHatch;
@@ -66,7 +73,7 @@ public final class Accessor {
     /**
      * 访问 {@link NBTTagCompound#write } 的私有 read 方法
      * 
-     * @apiNote 修改时需同步修改Mixin版本 {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_write}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_write}
      */
     public static void NBTTagCompound_write(NBTTagCompound nbt, DataOutput output) {
         try {
@@ -89,7 +96,7 @@ public final class Accessor {
     /**
      * 访问 {@link NBTTagCompound#func_152446_a } 的私有 read 方法
      * 
-     * @apiNote 修改时需同步修改Mixin版本 {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_read}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_read}
      */
     public static void NBTTagCompound_read(NBTTagCompound nbt, DataInput input, int depth, NBTSizeTracker sizeTracker) {
         try {
@@ -101,6 +108,69 @@ public final class Accessor {
             nbtRead.invoke(nbt, input, depth, sizeTracker);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             log.e(e);
+        }
+    }
+
+    /** 缓存 {@link CraftingCPUCluster} 的私有 tasks 字段 */
+    private static Field craftingCPUClusterTasks = null;
+
+    /**
+     * 访问 {@link CraftingCPUCluster} 的私有 tasks 字段。
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     */
+    public static Map<ICraftingPatternDetails, TaskProgress> CraftingCPUCluster_tasks(CraftingCPUCluster cluster) {
+        try {
+            if (craftingCPUClusterTasks == null) {
+                craftingCPUClusterTasks = CraftingCPUCluster.class.getDeclaredField("tasks");
+                craftingCPUClusterTasks.setAccessible(true);
+            }
+            return (Map<ICraftingPatternDetails, TaskProgress>) craftingCPUClusterTasks.get(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            log.e(e);
+            return Collections.emptyMap();
+        }
+    }
+
+    /** 缓存 TaskProgress 的私有 value 字段 */
+    private static Field taskProgressValue = null;
+
+    /**
+     * 访问 {@link TaskProgress} 的私有 value 字段。
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     */
+    public static long TaskProgress_value(TaskProgress taskProgress) {
+        try {
+            if (taskProgressValue == null) {
+                taskProgressValue = TaskProgress.class.getDeclaredField("value");
+                taskProgressValue.setAccessible(true);
+            }
+            return taskProgressValue.getLong(taskProgress);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            log.e(e);
+            return -1;
+        }
+    }
+
+    /** 缓存 {@link CraftingCPUCluster} 的私有 waitingFor 字段 */
+    private static Field craftingCPUClusterWaitingFor = null;
+
+    /**
+     * 访问 {@link CraftingCPUCluster} 的私有 waitingFor 字段。
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     */
+    public static IItemList<IAEStack<?>> CraftingCPUCluster_waitingFor(CraftingCPUCluster cluster) {
+        try {
+            if (craftingCPUClusterWaitingFor == null) {
+                craftingCPUClusterWaitingFor = CraftingCPUCluster.class.getDeclaredField("waitingFor");
+                craftingCPUClusterWaitingFor.setAccessible(true);
+            }
+            return (IItemList<IAEStack<?>>) craftingCPUClusterWaitingFor.get(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            log.e(e);
+            return null;
         }
     }
 }
