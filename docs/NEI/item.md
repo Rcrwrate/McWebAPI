@@ -1,182 +1,173 @@
-用户想要我查看 NEI（NotEnoughItems）的源代码，了解它是如何列出所有物品的。NEI 是一个 Minecraft 的模组，通常用于查看物品和配方。
+# NEI 物品图标渲染路径
 
-用户提供了路径 `/workspace/tools/NotEnoughItems`，我需要先探索这个目录的结构，然后找到相关的代码来了解物品列表的实现。
+## 架构概览
 
-让我先查看这个目录的内容。
-我来帮你查看 NEI 的源代码，了解它是如何列出所有物品的。首先让我探索一下这个目录的结构。
-好，我看到了 NEI 的源代码结构。从文件列表来看，有几个关键的文件与物品列表相关：
+```text
+物品面板
+ItemsGrid.draw()
+  -> ItemsGrid.drawItems()
+  -> ItemsGridSlot.drawItem()
+  -> GuiContainerManager.drawItem()
 
-1. `ItemList.java` - 这个看起来是核心，18.39 KB
-2. `ItemPanel.java` - 物品面板，9.44 KB
-3. `ItemPanels.java` - 物品面板集合，193 B
-4. `ItemsGrid.java` - 物品网格，16.99 KB
-5. `ItemSorter.java` - 物品排序，5.18 KB
-6. `api/ItemInfo.java` - 物品信息，19.76 KB
+NEI 图标导出器
+GuiItemIconDumper.drawScreen()
+  -> drawItems()
+  -> GuiContainerManager.drawItem()
+  -> exportItems()
+  -> screenshot()
 
-让我读取这些关键文件来了解 NEI 是如何列出所有物品的。
-让我读取几个关键的源文件来了解 NEI 如何列出所有物品：
-好的，我已经读取了 NEI 的核心文件。现在让我再查看一下 ItemSorter 和相关的配置文件，以便更全面地了解物品列表的生成和排序机制。
-现在让我再看看 ItemSorter 和相关的文件：
-好的，让我也读取 ItemsPanelGrid.java 文件来完整了解整个系统。
-非常好！现在我已经对 NEI 如何列出所有物品有了完整的理解。让我总结一下关键点：
-
-## NEI 物品列表系统的核心机制
-
-### 1. **核心数据结构**
-- `ItemList.java` - 管理所有物品的加载和过滤
-- `ItemPanel.java` - 物品面板的 UI 组件
-- `ItemsGrid.java` - 抽象的物品网格布局系统
-- `ItemsPanelGrid.java` - 具体的物品网格实现
-- `ItemInfo.java` - 物品信息和元数据管理
-- `ItemSorter.java` - 物品排序逻辑
-
-### 2. **物品加载流程**（ItemList.java）
-
-#### **主要加载任务**（`loadItems` RestartableTask）：
-1. **遍历所有注册的物品**（第382行）：
-   ```java
-   StreamSupport.stream(((Iterable<Item>) Item.itemRegistry).spliterator(), true)
-   ```
-
-2. **生成物品的所有变体**（`getPermutations` 方法，第284行）：
-   - 首先检查 `ItemInfo.itemOverrides`（自定义覆盖）
-   - 然后调用 `item.getSubItems()` 获取子物品
-   - 如果没有子物品，进行 damage 搜索（0-15）
-   - 最后添加 `ItemInfo.itemVariants` 中的变体
-
-3. **过滤物品**（第297-301行）：
-   - 过滤掉 `null` 物品
-   - 过滤掉没有注册名的物品
-   - 过滤掉隐藏的物品（`ItemInfo.isHidden()`）
-
-4. **初始化 NBT 数据**（`forceTagCompoundInitialization` 方法，第323行）：
-   - 预先初始化物品的 NBT 数据，避免运行时计算
-   - 处理流体容器、耐久、附魔等属性
-
-5. **排序**（`updateOrdering` 方法，第251行）：
-   - 使用 `ItemSorter.sort()` 对物品进行排序
-   - 处理可折叠物品组（CollapsibleItems）
-
-### 3. **物品排序机制**（ItemSorter.java）
-
-NEI 提供了多种排序选项：
-- **minecraft** - Minecraft 原版物品优先
-- **mod** - 按模组名称排序
-- **id** - 按物品 ID 排序
-- **default** - 默认排序（注册顺序）
-- **damage** - 按物品 damage 值排序
-- **name** - 按显示名称排序
-
-用户可以自定义排序顺序，配置保存在 `inventory.itemsort` 设置中。
-
-### 4. **物品过滤机制**（ItemList.java）
-
-NEI 支持多种过滤方式：
-- **模式匹配**（PatternItemFilter）- 按名称搜索
-- **所有条件匹配**（AllMultiItemFilter）- 必须匹配所有过滤器
-- **任意条件匹配**（AnyMultiItemFilter）- 匹配任意过滤器
-- **取反**（NegatedItemFilter）- 反向匹配
-
-### 5. **可折叠物品组**（CollapsibleItems）
-
-这是 NEI 的一个重要特性，可以将相似的物品分组显示：
-- 通过 `CollapsibleItems.getGroupIndex()` 获取物品组索引
-- 组可以折叠/展开，减少界面混乱
-- 在 `ItemsPanelGrid.java` 中处理组的渲染和边框
-
-### 6. **性能优化**
-
-- **并行处理**：使用 ForkJoinPool 并行加载物品（第444行）
-- **缓存机制**：物品列表、排序结果、过滤结果都有缓存
-- **屏幕渲染缓存**：使用 Framebuffer 缓存渲染结果（ItemsGrid.java 第27行）
-- **超时控制**：使用 ThreadOperationTimer 防止单个物品加载超时
-
-### 7. **物品信息增强**（ItemInfo.java）
-
-- **物品覆盖**：允许其他模组添加自定义物品变体
-- **物品隐藏**：可以隐藏特定物品
-- **物品子集**：按模组、创意标签、工具类型等分类
-- **搜索提供器**：支持按名称、模组、矿物词典、提示等搜索
-
-### 8. **UI 渲染流程**
-
-1. `ItemPanel` 计算面板大小和位置
-2. `ItemsPanelGrid` 管理物品的网格布局
-3. 处理分页（每页显示固定数量的物品）
-4. 处理鼠标悬停、点击等交互
-5. 渲染物品图标、组边框、背景色等
-
-这就是 NEI 列出所有物品的完整机制！从遍历注册表到生成变体，从过滤排序到最终渲染，形成了一个完整的管道。
-好的！我已经分析了 NEI 的源代码。以下是 NEI 如何列出所有物品的核心机制：
-
-## NEI 物品列表系统核心机制
-
-### 1. **核心加载流程**（`ItemList.java`）
-
-NEI 使用 `RestartableTask` 异步加载所有物品，主要步骤：
-
-**遍历物品注册表**（第382行）：
-```java
-StreamSupport.stream(((Iterable<Item>) Item.itemRegistry).spliterator(), true)
+公共渲染入口
+GuiContainerManager.drawItem()
+  -> safeItemRenderContext()
+  -> RenderItem.renderItemAndEffectIntoGUI()
+  -> RenderItem.renderItemOverlayIntoGUI()
 ```
 
-**生成物品变体**（`getPermutations` 方法，第284-302行）：
-1. 首先检查 `ItemInfo.itemOverrides` 中的自定义覆盖
-2. 调用 `item.getSubItems()` 获取该物品的所有子类型（如不同颜色的羊毛）
-3. 如果没有子物品，进行 damage 值搜索（0-15）寻找不同变体
-4. 添加 `ItemInfo.itemVariants` 中的额外变体
-5. 过滤掉 null、无注册名和隐藏的物品
+## 关键源文件
 
-**预初始化 NBT 数据**（`forceTagCompoundInitialization` 方法）：
-- 预先初始化物品的 NBT 标签，避免运行时计算
-- 处理流体容器、耐久度、附魔、工具属性等
+| 文件 | 职责 |
+|------|------|
+| [`ItemsGrid.java`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/ItemsGrid.java) | 物品网格布局、逐槽绘制和渲染缓存入口 |
+| [`ItemsPanelGrid.java`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/ItemsPanelGrid.java) | NEI 物品面板的具体网格槽实现 |
+| [`GuiContainerManager.java`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java) | 统一物品 GUI 渲染入口、数量覆盖层和异常恢复 |
+| [`GuiItemIconDumper.java`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/config/GuiItemIconDumper.java) | NEI 自带的批量图标导出界面 |
+| [`ItemZoom.java`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/ItemZoom.java) | 通过缩放矩阵复用同一渲染入口的示例 |
 
-### 2. **排序系统**（`ItemSorter.java`）
+## 1. 物品面板渲染路径
 
-NEI 提供 6 种排序方式，可自定义组合：
-- **minecraft**：原版物品优先
-- **mod**：按模组名称排序
-- **id**：按物品 ID 排序
-- **default**：注册表顺序
-- **damage**：按 damage 值排序
-- **name**：按显示名称排序
+[`ItemsGrid.drawItems()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/ItemsGrid.java#L518) 遍历当前网格中的槽，并调用每个槽的 `drawItem()`：
 
-### 3. **过滤机制**
+```java
+for (T item : getMask()) {
+    item.drawItem(getSlotRect(item.slotIndex));
+}
+```
 
-支持多种过滤器组合：
-- **PatternItemFilter**：按名称正则表达式搜索
-- **AllMultiItemFilter**：必须匹配所有条件
-- **AnyMultiItemFilter**：匹配任意条件即可
-- **NegatedItemFilter**：反向匹配
+默认槽实现在 [`ItemsGridSlot.drawItem()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/ItemsGrid.java#L179)。标准 18 像素槽会在四周保留 1 像素边距，并把物品绘制到内部 16x16 区域：
 
-### 4. **可折叠物品组**（`CollapsibleItems` + `ItemsPanelGrid.java`）
+```java
+GuiContainerManager.drawItem(rect.x + 1, rect.y + 1, stack, true, "");
+```
 
-重要特性：自动将相似物品分组显示
-- 通过 `CollapsibleItems.getGroupIndex()` 获取组索引
-- 组可折叠/展开，减少界面混乱
-- 自动为组添加边框和背景色
-- 如果只有一组物品，自动展开显示
+当槽尺寸不是默认值时，NEI 先平移到槽的内容原点，再缩放 modelview 矩阵，仍然以 `(0, 0)` 和逻辑尺寸 16x16 绘制。物品放大功能也采用相同方式，见 [`ItemZoom.draw()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/ItemZoom.java#L41)。
 
-### 5. **性能优化**
+这里传入空字符串 `""`，会禁止绘制堆叠数量；物品本身和耐久度条仍由统一入口处理。
 
-- **并行加载**：使用 ForkJoinPool 并行处理物品
-- **多重缓存**：物品列表、排序结果、过滤结果都有缓存
-- **渲染缓存**：使用 Framebuffer 缓存网格渲染结果
-- **超时控制**：ThreadOperationTimer 防止单个物品卡死
+## 2. 公共 drawItem 入口
 
-### 6. **物品信息增强**（`ItemInfo.java`）
+[`GuiContainerManager.drawItem()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java#L300) 的重载最终都进入包含 `FontRenderer`、数量缩放选项和数量文本的完整版本。
 
-- **物品覆盖**：允许模组添加自定义物品变体
-- **物品隐藏**：可隐藏特定物品或按规则隐藏
-- **物品子集**：按模组、创意标签、工具类型等分类
-- **搜索提供器**：支持按名称、模组、矿物词典、提示文本搜索
+核心调用位于 [`GuiContainerManager.java#L320`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java#L320)：
 
-### 7. **UI 渲染流程**
+```java
+safeItemRenderContext(itemstack, offsetX, offsetY, fontRenderer, () -> {
+    drawItems.renderItemAndEffectIntoGUI(
+        fontRenderer,
+        renderEngine,
+        itemstack,
+        offsetX,
+        offsetY);
 
-1. `ItemPanel` 计算面板位置和大小
-2. `ItemsPanelGrid` 管理网格布局，处理分页
-3. 每页显示固定数量的物品（根据面板大小计算）
-4. 渲染物品图标、组边框、背景色
-5. 处理鼠标悬停、点击、拖拽等交互
+    drawItems.renderItemOverlayIntoGUI(
+        fontRenderer,
+        renderEngine,
+        itemstack,
+        offsetX,
+        offsetY,
+        stackSize);
+});
+```
 
-整个系统形成了一个完整的管道：**遍历注册表 → 生成变体 → 过滤 → 排序 → 分页 → 渲染**，确保了高效且灵活的物品列表展示。
+`drawItems` 是 NEI 持有的一个 `RenderItem` 实例。第一步绘制物品模型及效果，内部也会进入 Forge 的 inventory item renderer；第二步绘制数量和耐久度等 GUI 覆盖层。因此，使用 `GuiContainerManager.drawItem()` 比直接读取 `IIcon` 更接近玩家在 NEI 中实际看到的结果。
+
+### 数量文本
+
+[`drawItem()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java#L327) 根据参数决定数量文本：
+
+- `quantity == null`：根据 `ItemStack.stackSize` 自动绘制数量。
+- `quantity == ""`：不绘制数量。
+- `smallAmount == true`：允许 NEI 根据位数缩小数量文本。
+
+图标导出时，如果只需要物品图形而不需要数量，应该使用 `drawItem(x, y, stack, true, "")`；NEI 自带导出器调用的是三参数重载，所以会保留堆叠数量。
+
+## 3. 渲染上下文与异常恢复
+
+[`safeItemRenderContext()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java#L375) 为每个物品建立受控的 GUI 渲染环境：
+
+1. 将 `RenderItem.zLevel` 临时提高 100，避免图标被其他 GUI 元素遮挡。
+2. 保存启用状态、颜色缓冲和光照属性，并记录 modelview 矩阵栈深度。
+3. 启用光照和深度测试后执行实际渲染。
+4. 检查模组渲染器是否遗留了未弹出的矩阵，或让 `Tessellator` 停留在绘制状态。
+5. 渲染异常时恢复矩阵与 `Tessellator`，改为绘制火焰方块作为错误占位图。
+6. 恢复 GL 属性和原始 `zLevel`。
+
+相关的矩阵和属性保存实现在 [`enableMatrixStackLogging()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java#L413)，2D/3D 状态切换位于 [`enable3DRender()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/guihook/GuiContainerManager.java#L442)。
+
+这层保护主要约束单个物品渲染器，不负责保存调用者设置的 framebuffer、viewport、投影矩阵或 clear color；这些状态必须由外层界面或离屏导出器管理。
+
+## 4. NEI 自带图标导出器
+
+[`GuiItemIconDumper.drawScreen()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/config/GuiItemIconDumper.java#L80) 每帧依次执行批量绘制和像素导出。它不是为每个物品创建独立 framebuffer，而是把多个物品排布到当前屏幕，再从屏幕截图中逐个裁剪。
+
+### 投影与绘制状态
+
+[`GuiItemIconDumper.drawItems()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/config/GuiItemIconDumper.java#L90) 完成以下设置：
+
+```java
+GL11.glOrtho(
+    0.0D,
+    displayWidth * 16D / iconSize,
+    displayHeight * 16D / iconSize,
+    0.0D,
+    1000.0D,
+    3000.0D);
+
+GL11.glClearColor(0, 0, 0, 0);
+GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+RenderHelper.enableGUIStandardItemLighting();
+GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+GL11.glColor4f(1, 1, 1, 1);
+```
+
+投影宽高按 `16 / iconSize` 换算，使逻辑上的 16x16 物品最终占用 `iconSize x iconSize` 个物理像素。GUI 渲染流程已经给 modelview 设置了约 `z=-2000` 的平移，因此这里使用 `1000..3000` 的标准 GUI 深度范围。
+
+每个图标占用 18x18 个逻辑像素：16 像素图标加四周各 1 像素边界。批量绘制循环见 [`GuiItemIconDumper.java#L100`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/config/GuiItemIconDumper.java#L100)。
+
+### 读取与裁剪
+
+[`exportItems()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/config/GuiItemIconDumper.java#L119) 先获取整屏截图，再按网格位置裁出每个 `iconSize x iconSize` 子图。
+
+[`screenshot()`](../../tools/NotEnoughItems/src/main/java/codechicken/nei/config/GuiItemIconDumper.java#L162) 同时处理两种环境：
+
+- Framebuffer 开启：使用 `glGetTexImage()` 读取 Minecraft 主 framebuffer 的颜色纹理。
+- Framebuffer 关闭：使用 `glReadPixels()` 直接读取当前屏幕。
+
+读取格式是 `BGRA + GL_UNSIGNED_INT_8_8_8_8_REV`。随后通过 `TextureUtil.func_147953_a()` 翻转 OpenGL 与 `BufferedImage` 之间相反的 Y 轴。
+
+## 5. 当前实现
+
+[`ItemIconDumperThread`](../../src/main/java/love/shirokasoke/webapi/client/thread/ItemIconDumperThread.java#L49) 沿用了 NEI 的公共物品渲染入口，但导出结构不同：
+
+```text
+后台导出线程
+  -> Minecraft.func_152344_a() 投递到客户端主线程
+  -> 绑定独立的 iconSize x iconSize Framebuffer
+  -> 设置透明背景、正交投影和 GUI 标准光照
+  -> GuiContainerManager.drawItem(0, 0, stack)
+  -> glReadPixels()
+  -> 后台线程写入 PNG
+```
+
+实际绘制调用位于 [`ItemIconDumperThread.renderItem()`](../../src/main/java/love/shirokasoke/webapi/client/thread/ItemIconDumperThread.java#L287)。其投影把 16x16 逻辑坐标缩放到整个 framebuffer，因此输出尺寸与 NEI 导出器一致，并继续支持 3D 方块、自定义 inventory renderer 和附魔效果。
+
+### 实现约束
+
+独立 framebuffer 方案可以避免批量占用游戏屏幕，但外层必须额外负责 NEI 公共入口没有管理的状态：
+
+1. OpenGL 调用必须在 Minecraft 客户端主线程执行。
+2. 使用独立 framebuffer 前应检查 `OpenGlHelper.isFramebufferEnabled()`；FBO 被关闭时，`Framebuffer.bindFramebuffer()` 不会创建或绑定离屏目标。
+3. 使用 `try/finally` 恢复 framebuffer、viewport、投影矩阵、modelview 和 clear color。
+4. 绘制前显式设置 `GL11.glColor4f(1, 1, 1, 1)`，避免自定义渲染器继承旧颜色。
+5. 导出结束后必须在客户端主线程调用 `Framebuffer.deleteFramebuffer()`，释放颜色纹理和深度缓冲。
+
+后续更新重点应是 framebuffer 生命周期和 GL 状态隔离，而不是改为直接导出物品 atlas 中的 `IIcon`。

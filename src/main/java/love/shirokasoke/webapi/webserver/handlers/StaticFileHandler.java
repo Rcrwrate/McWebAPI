@@ -30,6 +30,8 @@ public class StaticFileHandler implements RouteHandler {
         return "Serve static files like favicon.ico";
     }
 
+    /** java8 callback */
+    @SuppressWarnings("unused")
     private static byte[] readAllBytes(InputStream input) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] temp = new byte[1024];
