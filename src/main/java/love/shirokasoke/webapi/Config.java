@@ -46,6 +46,10 @@ public class Config {
     // update checker
     public static boolean enableUpdateCheck = true;
 
+    // cloudflare tunnel
+    public static String cfPath = "";
+    public static String cfToken = "";
+
     // safe
     public static boolean chunkSafe = false;
 
@@ -176,6 +180,18 @@ public class Config {
         // update checker
         enableUpdateCheck = configuration
             .getBoolean("enableUpdateCheck", "update", enableUpdateCheck, "Enable update checking on server start");
+
+        // cloudflare tunnel
+        cfPath = configuration.getString(
+            "path",
+            "server.cf",
+            cfPath,
+            "Path to the cloudflared binary file (empty = tunnel disabled). If missing, auto-downloads into this exact path.");
+        cfToken = configuration.getString(
+            "token",
+            "server.cf",
+            cfToken,
+            "Cloudflare Tunnel token (empty = quick tunnel, requires no account)");
 
         // safe
         chunkSafe = configuration.getBoolean("chunk", "server.safe", chunkSafe, "enable chunk thread safe mode");

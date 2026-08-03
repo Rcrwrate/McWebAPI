@@ -12,6 +12,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import love.shirokasoke.webapi.server.Lang;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.thread.CloudflaredTunnel;
 import love.shirokasoke.webapi.webserver.Auth.Auth;
 import love.shirokasoke.webapi.webserver.WebServer;
 import love.shirokasoke.webapi.webserver.handlers.item.ItemStaticHandler;
@@ -53,6 +54,7 @@ public class CommonProxy {
         for (String i : Config.disabledRoutes) {
             WebServer.removeRoute(i);
         }
+        CloudflaredTunnel.start();
         FMLCommonHandler.instance()
             .bus()
             .register(new ServerThreadDispatcher());
@@ -81,6 +83,7 @@ public class CommonProxy {
 
     // Called when the server is stopping
     public void serverStopping(FMLServerStoppingEvent event) {
+        CloudflaredTunnel.stop();
         love.shirokasoke.webapi.thread.TPSRecorder._stop_();
         WebServer.stop();
     }
