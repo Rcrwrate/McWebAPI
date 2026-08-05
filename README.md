@@ -22,7 +22,7 @@
 
 ## 下载
 
-[![最新构建(测试)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
+[![最新构建(测试)](https://img.shields.io/github/actions/workflow/status/Rcrwrate/McWebAPI/build-and-test.yml?logo=github&label=Build%20and%20test&link=https%3A%2F%2Fgithub.com%2FRcrwrate%2FMcWebAPI%2Factions%2Fworkflows%2Fbuild-and-test.yml)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
 
 [![最新发布](https://img.shields.io/github/v/release/Rcrwrate/MCWebAPI)](https://github.com/Rcrwrate/McWebAPI/releases/latest)
 
@@ -31,7 +31,7 @@
 | GTNH版本    | 状态     | 最后版本            |
 | ----------- | -------- | ------------------- |
 | 2.8.4       | 停止维护 | 2.8.4-0.5-pre       |
-| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.6-pre |
+| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.7-pre |
 
 ## Lib下载(可选)
 
@@ -69,6 +69,8 @@
 > 默认目录为dumps，可在配置文件中修改
 
 [2.8.4.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.6.18.7z)
+
+[2.9.0-beta2.7z](https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.8.4-0.4-pre/2.9.0-beta2.dumps.7z)
 
 README更新不一定即时，可以在下方两个仓库中寻找预导出的压缩包
 
