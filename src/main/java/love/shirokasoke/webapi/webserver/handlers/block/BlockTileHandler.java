@@ -3,6 +3,7 @@ package love.shirokasoke.webapi.webserver.handlers.block;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,14 +28,12 @@ import love.shirokasoke.webapi.webserver.RouteHandler;
  */
 public class BlockTileHandler implements RouteHandler {
 
-    private final Map<String, String> blockTileMap = new HashMap<>();
+    private final Map<String, String> blockTileMap;
     private final File blockTileDir;
-    private boolean mapLoaded = false;
-    private final File blocksJsonFile;
 
     public BlockTileHandler(File blocksJsonFile, File blockTileDir) {
-        this.blocksJsonFile = blocksJsonFile;
         this.blockTileDir = blockTileDir;
+        this.blockTileMap = BlockTileHandler.ensureBlockTileMapLoaded(blocksJsonFile);
     }
 
     @Override
@@ -60,28 +59,26 @@ public class BlockTileHandler implements RouteHandler {
             registryName = params.get("regName");
         }
         if (registryName == null || registryName.isEmpty()) {
-            throw new Error(400, "Missing required parameter 'id' or 'registryName'");
+            throw new ApiException(400, "Missing required parameter 'id' or 'registryName'");
         }
-
-        ensureBlockTileMapLoaded();
 
         int meta = 0;
         if (params.containsKey("meta")) {
             try {
                 meta = Integer.parseInt(params.get("meta"));
             } catch (NumberFormatException e) {
-                throw new Error(400, "Invalid 'meta' parameter");
+                throw new ApiException(400, "Invalid 'meta' parameter");
             }
         }
 
         String fileName = lookupFileName(registryName, meta);
         if (fileName == null) {
-            throw new Error(404, "Block tile not found: " + registryName + ":" + meta);
+            throw new ApiException(404, "Block tile not found: " + registryName + ":" + meta);
         }
 
         File tileFile = new File(blockTileDir, fileName + ".png");
         if (!tileFile.exists() || !tileFile.isFile()) {
-            throw new Error(404, "Block tile image not found: " + tileFile.getName());
+            throw new ApiException(404, "Block tile image not found: " + tileFile.getName());
         }
 
         byte[] imageData = Files.readAllBytes(tileFile.toPath());
@@ -91,19 +88,18 @@ public class BlockTileHandler implements RouteHandler {
         sendResponse(exchange, imageData);
     }
 
-    private synchronized void ensureBlockTileMapLoaded() {
-        if (mapLoaded) {
-            return;
-        }
-        mapLoaded = true;
-
+    /**
+     * 从 blocks.json 加载 blockTileMap(预导出 PNG 文件名（不含扩展名）)
+     */
+    static public Map<String, String> ensureBlockTileMapLoaded(File blocksJsonFile) {
         if (!blocksJsonFile.exists()) {
             MyMod.LOG.warn("blocks.json 不存在: {}", blocksJsonFile);
-            return;
+            return Map.of();
         }
 
         try {
             ArrayNode array = (ArrayNode) mapper.readTree(blocksJsonFile);
+            Map<String, String> temp = new HashMap<>();
             for (JsonNode node : array) {
                 String regName = node.path("registryName")
                     .asText(null);
@@ -112,12 +108,15 @@ public class BlockTileHandler implements RouteHandler {
                 String fileName = node.path("fileName")
                     .asText(null);
                 if (regName != null && fileName != null) {
-                    blockTileMap.put(regName + ":" + meta, fileName);
+                    temp.put(regName + ":" + meta, fileName);
                 }
             }
-            MyMod.LOG.info("已加载 {} 条方块纹理映射", blockTileMap.size());
+
+            MyMod.LOG.info("已加载 {} 条方块纹理映射", temp.size());
+            return Collections.unmodifiableMap(temp);
         } catch (IOException e) {
             MyMod.LOG.error("加载 blocks.json 失败");
+            return Map.of();
         }
     }
 

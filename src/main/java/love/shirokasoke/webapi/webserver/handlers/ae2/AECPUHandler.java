@@ -18,8 +18,8 @@ import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.cluster.implementations.CraftingCPUCluster.TaskProgress;
 import love.shirokasoke.webapi.utils.Accessor;
 import love.shirokasoke.webapi.utils.ClassUtils;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.Pattern;
-import love.shirokasoke.webapi.utils.log;
 
 /**
  * 查看 AE 网络中所有合成 CPU 状态
@@ -43,7 +43,7 @@ public class AECPUHandler extends AEBaseHandler {
         // 从网格缓存中获取合成网格接口
         ICraftingGrid craftingGrid = grid.getCache(ICraftingGrid.class);
         if (craftingGrid == null) {
-            throw new Error(500, "Crafting grid not available");
+            throw new ApiException(500, "Crafting grid not available");
         }
 
         ArrayNode cpus = mapper.createArrayNode();
@@ -145,7 +145,7 @@ public class AECPUHandler extends AEBaseHandler {
                                 providersArray.add(coordNode);
                             }
                         } catch (Exception e) {
-                            log.e(e);
+                            Logs.e(e);
                         }
                         outputsArray.add(outputNode);
                     }
@@ -173,14 +173,14 @@ public class AECPUHandler extends AEBaseHandler {
                             providersArray.add(coordNode);
                         }
                     } catch (Exception e) {
-                        log.e(e);
+                        Logs.e(e);
                     }
 
                     taskingArray.add(itemNode);
                 }
             }
         } catch (Exception e) {
-            log.e(e);
+            Logs.e(e);
             cpuNode.put("tasksError", e.getMessage());
         }
     }

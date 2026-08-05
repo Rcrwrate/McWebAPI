@@ -29,14 +29,14 @@ import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.Items;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 public class AEItemHandler extends AEBaseHandler {
 
     /** 缓存刷新间隔（秒） */
-    private static long REFRESH_INTERVAL_SECONDS = Config.AEITEM_INTERVAL;
+    private static final long REFRESH_INTERVAL_SECONDS = Config.AEITEM_INTERVAL;
     /** 缓存空闲超时（毫秒），超过此时间无访问则终止该 grid 的缓存 */
-    private static long IDLE_TIMEOUT_MS = Config.AEITEM_IDLE_TIMEOUT * 60L * 1000L;
+    private static final long IDLE_TIMEOUT_MS = Config.AEITEM_IDLE_TIMEOUT * 60L * 1000L;
 
     /** 单线程定时调度器，负责触发各 grid 的缓存刷新 */
     private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -378,7 +378,7 @@ public class AEItemHandler extends AEBaseHandler {
                 try {
                     snap = collectSnapshot(gridRef);
                 } catch (Throwable e) {
-                    log.e(e);
+                    Logs.e(e);
                     return;
                 }
                 long collectMs = System.currentTimeMillis() - tickStart;
@@ -389,7 +389,7 @@ public class AEItemHandler extends AEBaseHandler {
                         byte[] bytes = buildJsonBytesFromSnapshot(snap);
                         entry.jsonBytes = bytes;
                     } catch (Throwable e) {
-                        log.e(e);
+                        Logs.e(e);
                         return;
                     }
                     MyMod.LOG.debug(

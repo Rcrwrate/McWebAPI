@@ -5,7 +5,7 @@ import net.minecraft.item.Item;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.utils.Items;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 public class ItemsThread extends Thread {
 
@@ -51,7 +51,7 @@ public class ItemsThread extends Thread {
                 .info("物品数据缓存构建完成，共 {} 个物品（{} 个有子类型），耗时 {}ms", Items.itemOverrides.size(), processedCount, duration);
         } catch (Throwable e) {
             MyMod.LOG.error("[ItemsThread] 构建物品数据缓存时出错");
-            log.e(e);
+            Logs.e(e);
         }
     }
 }

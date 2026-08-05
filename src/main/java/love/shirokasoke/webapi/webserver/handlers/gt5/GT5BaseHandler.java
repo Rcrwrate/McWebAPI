@@ -36,24 +36,24 @@ public class GT5BaseHandler extends BlockHandler {
         sendResponse(exchange, data);
     }
 
-    protected void GT5init(HttpExchange exchange) throws Error {
+    protected void GT5init(HttpExchange exchange) throws ApiException {
         String query = exchange.getRequestURI()
             .getQuery();
         co = checklist(query);
 
         TileEntity tileEntity = world.getTileEntity(co.posX, co.posY, co.posZ);
         if (!(tileEntity instanceof IGregTechTileEntity)) {
-            throw new Error(404, "Block at given coordinates is not a GT5 machine");
+            throw new ApiException(404, "Block at given coordinates is not a GT5 machine");
         }
 
         igte = (IGregTechTileEntity) tileEntity;
         if (!igte.canAccessData()) {
-            throw new Error(404, "GT5 machine has no valid MetaTileEntity");
+            throw new ApiException(404, "GT5 machine has no valid MetaTileEntity");
         }
 
         mte = (MetaTileEntity) igte.getMetaTileEntity();
         if (mte == null) {
-            throw new Error(404, "GT5 machine MetaTileEntity is null");
+            throw new ApiException(404, "GT5 machine MetaTileEntity is null");
         }
     }
 

@@ -66,7 +66,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
-            throw new Error(400, "Method must be POST");
+            throw new ApiException(400, "Method must be POST");
         }
 
         AEinit(exchange);
@@ -83,7 +83,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
                 (short) json.get("id")
                     .asInt());
         } else {
-            throw new Error(400, "missing field 'id'");
+            throw new ApiException(400, "missing field 'id'");
         }
         boolean isItem = true;
         if (json.has("Type")) {
@@ -94,7 +94,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
         if (json.has("Count")) {
             nbt.setInteger("Count", 1);
         } else {
-            throw new Error(400, "missing field 'Count'");
+            throw new ApiException(400, "missing field 'Count'");
         }
         long count = json.get("Count")
             .asLong();
@@ -133,13 +133,13 @@ public class AECPUTaskHandler extends AEBaseHandler {
         }
 
         if (craftWhat == null) {
-            throw new Error(500, "Failed to create AEItemStack");
+            throw new ApiException(500, "Failed to create AEItemStack");
         }
 
         // 获取合成网格
         ICraftingGrid craftingGrid = grid.getCache(ICraftingGrid.class);
         if (craftingGrid == null) {
-            throw new Error(500, "Crafting grid not available");
+            throw new ApiException(500, "Crafting grid not available");
         }
 
         // 构造 ActionSource
@@ -150,7 +150,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
         if (host instanceof IActionHost) {
             src = new MachineSource((IActionHost) host);
         } else {
-            throw new Error(500, "Host does not support action source");
+            throw new ApiException(500, "Host does not support action source");
         }
 
         // 开始异步计算合成计划
@@ -159,7 +159,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
 
         // 若计算结果为 simulation，说明材料不足或该物品无法合成
         if (job.isSimulation()) {
-            throw new Error(500, "Failed to simulate job (Materials missing or craft not possible)");
+            throw new ApiException(500, "Failed to simulate job (Materials missing or craft not possible)");
         }
 
         // 若请求中指定了 CPU，按名称查找；未指定则自动分配
@@ -172,14 +172,14 @@ public class AECPUTaskHandler extends AEBaseHandler {
                 }
             }
             if (targetCpu == null) {
-                throw new Error(404, "CPU not found: " + cpuName);
+                throw new ApiException(404, "CPU not found: " + cpuName);
             }
         }
 
         // 提交合成任务到目标 CPU
         ICraftingLink link = craftingGrid.submitJob(job, null, targetCpu, true, src);
         if (link == null) {
-            throw new Error(500, "Failed to submit job to CPU (no available CPU or insufficient resources)");
+            throw new ApiException(500, "Failed to submit job to CPU (no available CPU or insufficient resources)");
         }
 
         ObjectNode response = mapper.createObjectNode();
@@ -209,20 +209,19 @@ public class AECPUTaskHandler extends AEBaseHandler {
      *
      * @param future beginCraftingJob 返回的 Future
      * @return 计算完成的 ICraftingJob
-     * @throws Error 计算超时、被中断或发生异常时抛出
+     * @throws ApiException 计算超时、被中断或发生异常时抛出
      */
-    private ICraftingJob waitForJob(Future<ICraftingJob> future) throws Error {
+    private ICraftingJob<?> waitForJob(Future<ICraftingJob> future) throws ApiException {
         try {
             // V2 计算器：CraftingJobV2 自身实现了 Future 接口，需要轮询 simulateFor
-            if (future instanceof CraftingJobV2) {
-                CraftingJobV2 v2 = (CraftingJobV2) future;
+            if (future instanceof CraftingJobV2 v2) {
                 long deadline = System.currentTimeMillis() + CRAFTING_TIMEOUT_MS;
                 while (v2.simulateFor(100) && System.currentTimeMillis() < deadline) {
                     // 每次让出 100ms 给计算线程，直到完成或超时
                 }
                 if (!v2.isDone()) {
                     v2.cancel(true);
-                    throw new Error(504, "Crafting calculation timed out");
+                    throw new ApiException(504, "Crafting calculation timed out");
                 }
                 return v2;
             }
@@ -230,15 +229,15 @@ public class AECPUTaskHandler extends AEBaseHandler {
             return future.get(CRAFTING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (java.util.concurrent.TimeoutException e) {
             future.cancel(true);
-            throw new Error(504, "Crafting calculation timed out");
+            throw new ApiException(504, "Crafting calculation timed out");
         } catch (InterruptedException e) {
             future.cancel(true);
             Thread.currentThread()
                 .interrupt();
-            throw new Error(504, "Crafting calculation interrupted");
+            throw new ApiException(504, "Crafting calculation interrupted");
         } catch (Exception e) {
             future.cancel(true);
-            throw new Error(504, "Crafting calculation failed: " + e.getMessage());
+            throw new ApiException(504, "Crafting calculation failed: " + e.getMessage());
         }
     }
 }

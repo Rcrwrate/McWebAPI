@@ -36,28 +36,28 @@ public class BlockHandler implements RouteHandler {
         return "Get block information at specified coordinates. Query params: x, y, z, dim (optional, default=0)";
     }
 
-    protected coordinates checklist(String query) throws Error {
+    protected coordinates checklist(String query) throws ApiException {
         if (query == null) {
-            throw new Error(400, "Missing query parameters. Required: x, y, z");
+            throw new ApiException(400, "Missing query parameters. Required: x, y, z");
         }
         coordinates co = getCoordinates(query);
         server = getServer();
         world = server.worldServerForDimension(co.dimension);
         if (world == null) {
-            throw new Error(404, "Invalid dimension: " + co.dimension);
+            throw new ApiException(404, "Invalid dimension: " + co.dimension);
         }
         Boolean t = false;
         if (chunkSafe) {
             try {
                 t = !ServerThreadDispatcher.callOnServerThread(() -> world.blockExists(co.posX, co.posY, co.posZ));
             } catch (Exception e) {
-                throw new Error(500, "Error checking block existence: " + e.getMessage());
+                throw new ApiException(500, "Error checking block existence: " + e.getMessage());
             }
         } else {
             t = !world.blockExists(co.posX, co.posY, co.posZ);
         }
         if (t) {
-            throw new Error(404, "Chunk not loaded at coordinates: " + co.toString());
+            throw new ApiException(404, "Chunk not loaded at coordinates: " + co.toString());
         }
         return co;
     }

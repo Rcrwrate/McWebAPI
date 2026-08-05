@@ -1,6 +1,5 @@
 package love.shirokasoke.webapi.webserver.handlers;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,25 +29,13 @@ public class StaticFileHandler implements RouteHandler {
         return "Serve static files like favicon.ico";
     }
 
-    /** java8 callback */
-    @SuppressWarnings("unused")
-    private static byte[] readAllBytes(InputStream input) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        byte[] temp = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = input.read(temp)) != -1) {
-            buffer.write(temp, 0, bytesRead);
-        }
-        return buffer.toByteArray();
-    }
-
     @Override
     public void run(HttpExchange exchange) throws IOException {
         // Try to load resource from classpath
         InputStream is = StaticFileHandler.class.getResourceAsStream(resourcePath);
 
         if (is == null) {
-            throw new Error(404, "Resource not found");
+            throw new ApiException(404, "Resource not found");
         }
 
         InputStream resourceStream = is;

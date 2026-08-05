@@ -32,7 +32,7 @@ public final class Items {
         try {
             data.put("localizedName", stack.getDisplayName());
         } catch (Throwable e) {
-            log.e(e);
+            Logs.e(e);
         }
 
         data.put("HasSubtypes", item.getHasSubtypes());
@@ -79,7 +79,7 @@ public final class Items {
         try {
             rawName = raw.getDisplayName();
         } catch (Throwable e) {
-            log.e(e);
+            Logs.e(e);
             return;
         }
 
@@ -93,7 +93,7 @@ public final class Items {
             try {
                 displayName = subStack.getDisplayName();
             } catch (Throwable e) {
-                log.e(e);
+                Logs.e(e);
                 return;
             }
             // MyMod.LOG.info(displayName);
@@ -110,12 +110,8 @@ public final class Items {
                 && nameSet.add(displayName)) {
                 permutations.add(subStack);
             } else if (meta > 16 && regName.startsWith("minecraft")) {
-                subStack = null;
                 return;
-            } else {
-
             }
-            subStack = null;
         }
     }
 
@@ -210,7 +206,7 @@ public final class Items {
             return hexLength > 0 && hexLength < full.length() ? full.substring(0, hexLength) : full;
         } catch (java.security.NoSuchAlgorithmException e) {
             // SHA-256 是 JDK 标准算法，理论上不会缺失
-            log.e(e);
+            Logs.e(e);
             return Integer.toHexString(input.hashCode());
         }
     }

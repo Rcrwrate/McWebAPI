@@ -3,7 +3,6 @@ package love.shirokasoke.webapi.webserver.handlers;
 import java.util.Map;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -23,43 +22,32 @@ public class TestHandler implements RouteHandler {
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
         if (params == null || !params.containsKey("id")) {
-            throw new Error(400, "missing query param 'id'");
+            throw new ApiException(400, "missing query param 'id'");
         }
 
         if (Config.ItemIconFolder == null || Config.ItemIconFolder.isEmpty()) {
-            throw new Error(500, "ItemIconFolder not configured");
+            throw new ApiException(500, "ItemIconFolder not configured");
         }
 
-        NBTTagCompound nbt = new NBTTagCompound();
-
+        int id;
         try {
-            nbt.setShort("id", Short.parseShort(params.get("id")));
+            id = Short.parseShort(params.get("id"));
         } catch (NumberFormatException e) {
-            throw new Error(400, "invalid query param 'id'");
+            throw new ApiException(400, "invalid query param 'id'");
         }
 
-        nbt.setByte("Count", (byte) 1);
-
+        int damage = 0;
         String damageStr = params.get("damage");
         if (damageStr != null) {
             try {
-                nbt.setShort("Damage", Short.parseShort(damageStr));
+                damage = Short.parseShort(damageStr);
             } catch (NumberFormatException e) {
-                throw new Error(400, "invalid query param 'damage'");
-            }
-        } else {
-            nbt.setShort("Damage", (short) 0);
-        }
-
-        if (params.containsKey("tag")) {
-            NBTTagCompound tagNbt = NBT.readFromBase64(params.get("tag"));
-            if (tagNbt != null) {
-                nbt.setTag("tag", tagNbt);
+                throw new ApiException(400, "invalid query param 'damage'");
             }
         }
 
-        ItemStack stack = ItemStack.loadItemStackFromNBT(nbt);
+        ItemStack stack = NBT.toItemStack(id, damage, params.get("tag"));
         String fileName = Items.getFileName(stack) + ".png";
-        throw new Error(200, fileName);
+        throw new ApiException(200, fileName);
     }
 }

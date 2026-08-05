@@ -2,7 +2,6 @@ package love.shirokasoke.webapi.utils;
 
 import static gregtech.api.util.GTUtility.validMTEList;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -45,16 +44,13 @@ public final class GT5Utils {
     }
 
     public static MachineType getMachineType(MetaTileEntity mte) {
-        if (mte instanceof MTEMultiBlockBase) {
-            return MachineType.MULTIBLOCK;
-        } else if (mte instanceof MTEHatch) {
-            return MachineType.HATCH;
-        } else if (mte instanceof MTEBasicGenerator) {
-            return MachineType.GENERATOR;
-        } else if (mte instanceof MTEBasicMachine) {
-            return MachineType.SINGLE;
-        }
-        return MachineType.UNKNOWN;
+        return switch (mte) {
+            case MTEMultiBlockBase _ -> MachineType.MULTIBLOCK;
+            case MTEHatch _ -> MachineType.HATCH;
+            case MTEBasicGenerator _ -> MachineType.GENERATOR;
+            case MTEBasicMachine _ -> MachineType.SINGLE;
+            default -> MachineType.UNKNOWN;
+        };
     }
 
     /**
@@ -227,13 +223,10 @@ public final class GT5Utils {
     }
 
     private static List<MTEHatch> validHatches(List<?> hatchList) {
-        List<MTEHatch> result = new ArrayList<>();
-        for (Object hatch : hatchList) {
-            if (hatch instanceof MTEHatch) {
-                result.add((MTEHatch) hatch);
-            }
-        }
-        return result;
+        return hatchList.stream()
+            .filter(MTEHatch.class::isInstance)
+            .map(MTEHatch.class::cast)
+            .toList();
     }
 
     public static ArrayNode writeHatchCoords(List<?> hatchList) {

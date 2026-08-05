@@ -1,7 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,7 +31,7 @@ public class AECPUCancelHandler extends AEBaseHandler {
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("DELETE")) {
-            throw new Error(400, "Method must be DELETE");
+            throw new ApiException(400, "Method must be DELETE");
         }
 
         AEinit(exchange);
@@ -46,19 +45,18 @@ public class AECPUCancelHandler extends AEBaseHandler {
         boolean hasName = targetName != null && !targetName.isEmpty();
 
         if (!hasName && targetId < 0) {
-            throw new Error(400, "Request body must contain 'name' or 'id'");
+            throw new ApiException(400, "Request body must contain 'name' or 'id'");
         }
 
         ICraftingGrid craftingGrid = grid.getCache(ICraftingGrid.class);
         if (craftingGrid == null) {
-            throw new Error(500, "Crafting grid not available");
+            throw new ApiException(500, "Crafting grid not available");
         }
 
         // 将 CPUs 转为 List 以便按索引访问
-        List<ICraftingCPU> cpuList = new ArrayList<>();
-        for (ICraftingCPU cpu : craftingGrid.getCpus()) {
-            cpuList.add(cpu);
-        }
+        List<ICraftingCPU> cpuList = craftingGrid.getCpus()
+            .stream()
+            .toList();
 
         ICraftingCPU targetCpu = null;
 
@@ -70,19 +68,19 @@ public class AECPUCancelHandler extends AEBaseHandler {
                 }
             }
             if (targetCpu == null) {
-                throw new Error(404, "CPU not found with name: " + targetName);
+                throw new ApiException(404, "CPU not found with name: " + targetName);
             }
         }
 
         if (targetCpu == null && targetId >= 0) {
             if (targetId >= cpuList.size()) {
-                throw new Error(404, "CPU index out of range: " + targetId + " (total: " + cpuList.size() + ")");
+                throw new ApiException(404, "CPU index out of range: " + targetId + " (total: " + cpuList.size() + ")");
             }
             targetCpu = cpuList.get(targetId);
         }
 
         if (targetCpu == null) {
-            throw new Error(404, "Target CPU not found");
+            throw new ApiException(404, "Target CPU not found");
         }
 
         // 取消任务。ICraftingCPU 接口没有 cancel()，实际实现类 CraftingCPUCluster 才有
@@ -91,10 +89,10 @@ public class AECPUCancelHandler extends AEBaseHandler {
             try {
                 ServerThreadDispatcher.runOnServerThread(cluster::cancel);
             } catch (Exception e) {
-                throw new Error(500, "Cancel failed: " + e.getMessage());
+                throw new ApiException(500, "Cancel failed: " + e.getMessage());
             }
         } else {
-            throw new Error(500, "Target CPU does not support cancel operation");
+            throw new ApiException(500, "Target CPU does not support cancel operation");
         }
 
         ObjectNode response = mapper.createObjectNode();

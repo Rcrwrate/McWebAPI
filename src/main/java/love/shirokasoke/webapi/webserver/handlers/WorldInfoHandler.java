@@ -29,14 +29,16 @@ public class WorldInfoHandler implements RouteHandler {
         ObjectNode root = mapper.createObjectNode();
 
         for (Integer dimId : DimensionManager.getIDs()) {
-            {
-                ObjectNode wNode = root.putObject(dimId.toString());
-                WorldServer worldServer = DimensionManager.getWorld(dimId.intValue());
-                WorldInfo worldInfo = worldServer.getWorldInfo();
-                ClassUtils.getClassInfo(worldServer, wNode, "WorldServerClass");
-                ClassUtils.getClassInfo(worldInfo, wNode, "WorldInfoClass");
-                wNode.set("WorldInfo", mapper.valueToTree(worldInfo));
+            WorldServer worldServer = DimensionManager.getWorld(dimId.intValue());
+            if (worldServer == null) {
+                // 维度未加载，跳过以避免 NPE（参考 TPSHandler / EntityHandler 的判空写法）
+                continue;
             }
+            ObjectNode wNode = root.putObject(dimId.toString());
+            WorldInfo worldInfo = worldServer.getWorldInfo();
+            ClassUtils.getClassInfo(worldServer, wNode, "WorldServerClass");
+            ClassUtils.getClassInfo(worldInfo, wNode, "WorldInfoClass");
+            wNode.set("WorldInfo", mapper.valueToTree(worldInfo));
         }
 
         sendResponse(exchange, root);

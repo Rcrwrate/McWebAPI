@@ -20,7 +20,7 @@ import codechicken.lib.vec.BlockCoord;
 import cpw.mods.fml.common.FMLCommonHandler;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.webserver.Auth.Auth;
 
 /**
@@ -73,8 +73,8 @@ public interface RouteHandler extends HttpHandler {
             MyMod.LOG.info("[{}]\t{} - {}ms", method, uri, String.format("%.3f", duration)); // 缺一个来源IP地址
         } catch (Throwable e) {
             double duration = (System.nanoTime() - startTime) / 1_000_000.0;
-            if (e instanceof Error) {
-                Error e2 = (Error) e;
+            if (e instanceof ApiException) {
+                ApiException e2 = (ApiException) e;
                 sendErrorResponse(exchange, e2.code, e2.getMessage(), null);
                 MyMod.LOG.error(
                     "[{}]\t{} - Error after {}ms\t{}",
@@ -92,7 +92,7 @@ public interface RouteHandler extends HttpHandler {
                 e.getMessage() != null ? e.getMessage()
                     : e.getClass()
                         .getSimpleName(),
-                log.e(e));
+                Logs.e(e));
         }
     }
 
@@ -130,7 +130,7 @@ public interface RouteHandler extends HttpHandler {
                         .add("Vary", "Accept-Encoding");
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                Logs.e(t);
             }
         }
         exchange.sendResponseHeaders(statusCode, body.length);
@@ -279,11 +279,11 @@ public interface RouteHandler extends HttpHandler {
         return parseQueryParams(query);
     }
 
-    public class Error extends IOException {
+    public class ApiException extends IOException {
 
         public int code;
 
-        public Error(int code, String message) {
+        public ApiException(int code, String message) {
             super(message);
             this.code = code;
         }
@@ -316,11 +316,11 @@ public interface RouteHandler extends HttpHandler {
         }
     }
 
-    default public MinecraftServer getServer() throws Error {
+    default public MinecraftServer getServer() throws ApiException {
         MinecraftServer server = FMLCommonHandler.instance()
             .getMinecraftServerInstance();
         if (server == null) {
-            throw new Error(503, "Server not available");
+            throw new ApiException(503, "Server not available");
         }
         return server;
     }

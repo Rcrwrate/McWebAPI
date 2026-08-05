@@ -34,7 +34,7 @@ public class LangDumperThread extends Thread {
 
     @Override
     public void run() {
-        // log.debugFields(new StringTranslate());
+        // Logs.debugFields(new StringTranslate());
         try {
             Map<String, String> lang = getLanguageList();
             MyMod.LOG.info("[LangDumper] 获取到 {} 条翻译条目", lang.size());

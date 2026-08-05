@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
@@ -68,7 +67,7 @@ public class CItems {
             .filter(
                 stack -> stack.getItem() != null && stack.getItem().delegate.name() != null
                     && !ItemInfo.isHidden(stack))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private static void damageSearch(Item item, List<ItemStack> permutations) {

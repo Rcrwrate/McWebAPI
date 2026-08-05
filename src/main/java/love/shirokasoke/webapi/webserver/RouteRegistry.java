@@ -44,13 +44,14 @@ public class RouteRegistry {
 
         register(new love.shirokasoke.webapi.webserver.handlers.TPSHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.TestHandler());
-        love.shirokasoke.webapi.webserver.handlers.block.init.i();
-        love.shirokasoke.webapi.webserver.handlers.item.init.i();
-        love.shirokasoke.webapi.webserver.handlers.chunk.init.i();
-        love.shirokasoke.webapi.webserver.handlers.entity.init.i();
-        love.shirokasoke.webapi.webserver.handlers.ae2.init.i();
-        love.shirokasoke.webapi.webserver.handlers.fluid.init.i();
-        love.shirokasoke.webapi.webserver.handlers.gt5.init.i();
+        love.shirokasoke.webapi.webserver.handlers.block.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.item.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.chunk.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.entity.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.ae2.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.fluid.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.gt5.Init.i();
+        // love.shirokasoke.webapi.webserver.handlers.recipe.Init.i();
         register(new love.shirokasoke.webapi.webserver.handlers.ProfilerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.LagAnalyzerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.WorldInfoHandler());

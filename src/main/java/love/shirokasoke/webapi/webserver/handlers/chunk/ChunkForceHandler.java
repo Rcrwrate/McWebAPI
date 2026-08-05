@@ -1,10 +1,10 @@
 package love.shirokasoke.webapi.webserver.handlers.chunk;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -68,7 +68,7 @@ public class ChunkForceHandler extends ChunkHandler {
         }
     }
 
-    public static final Map<String, ChunkLoadInfo> activeChunkLoads = new HashMap<>();
+    public static final Map<String, ChunkLoadInfo> activeChunkLoads = new ConcurrentHashMap<>();
 
     @Override
     public String getPath() {
@@ -98,7 +98,7 @@ public class ChunkForceHandler extends ChunkHandler {
                 handleUnloadChunk(exchange, params);
                 break;
             default:
-                throw new Error(400, "Invalid action. Use 'load' or 'unload'");
+                throw new ApiException(400, "Invalid action. Use 'load' or 'unload'");
         }
     }
 
@@ -121,26 +121,26 @@ public class ChunkForceHandler extends ChunkHandler {
         int duration = Integer.parseInt(params.getOrDefault("duration", "60"));
 
         if (duration <= 0) {
-            throw new Error(400, "Duration must be large then 0 seconds");
+            throw new ApiException(400, "Duration must be large then 0 seconds");
         }
 
         MinecraftServer server = getServer();
 
         WorldServer world = server.worldServerForDimension(dimension);
         if (world == null) {
-            throw new Error(404, "Invalid dimension: " + dimension);
+            throw new ApiException(404, "Invalid dimension: " + dimension);
         }
 
         String ticketKey = dimension + ":" + chunkX + ":" + chunkZ;
 
         if (activeChunkLoads.containsKey(ticketKey)) {
-            throw new Error(409, "Chunk already being force loaded: " + ticketKey);
+            throw new ApiException(409, "Chunk already being force loaded: " + ticketKey);
         }
 
         Ticket ticket = ForgeChunkManager.requestTicket(MyMod.INST, world, ForgeChunkManager.Type.NORMAL);
 
         if (ticket == null) {
-            throw new Error(503, "Failed to acquire chunk loading ticket. Too many chunks already loaded.");
+            throw new ApiException(503, "Failed to acquire chunk loading ticket. Too many chunks already loaded.");
         }
 
         ChunkCoordIntPair chunk = new ChunkCoordIntPair(chunkX, chunkZ);
@@ -192,7 +192,7 @@ public class ChunkForceHandler extends ChunkHandler {
             response.put("action", "unload");
             sendResponse(exchange, response);
         } else {
-            throw new Error(404, "No active chunk loading ticket found for " + ticketKey);
+            throw new ApiException(404, "No active chunk loading ticket found for " + ticketKey);
         }
     }
 }

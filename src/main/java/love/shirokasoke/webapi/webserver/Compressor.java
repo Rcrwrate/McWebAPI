@@ -11,7 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 /**
  * 自适应 HTTP 内容压缩协商器，仅响应体积超过 {@link #THRESHOLD} 时才协商压缩
@@ -20,8 +20,8 @@ public class Compressor {
 
     /** 低于此字节数不压缩（压缩头开销大于收益） */
     public static final int THRESHOLD = Config.Compressor_THRESHOLD;
-    public static boolean br = false;
-    public static boolean zstd = false;
+    public static volatile boolean br = false;
+    public static volatile boolean zstd = false;
 
     /**
      * Accept-Encoding 按 RFC 7231 解析 q 值，选择 q 最高的可用算法。
@@ -99,7 +99,7 @@ public class Compressor {
             br = com.aayushatharva.brotli4j.Brotli4jLoader.isAvailable();
         } catch (Throwable e) {
             if (!(e instanceof java.lang.NoClassDefFoundError)) {
-                log.e(e);
+                Logs.e(e);
             }
         }
         try {
@@ -107,7 +107,7 @@ public class Compressor {
             zstd = com.github.luben.zstd.util.Native.isLoaded();
         } catch (Throwable e) {
             if (!(e instanceof java.lang.NoClassDefFoundError)) {
-                log.e(e);
+                Logs.e(e);
             }
         }
         MyMod.LOG.info("压缩算法可用性:\tbr {} zstd {}", br, zstd);

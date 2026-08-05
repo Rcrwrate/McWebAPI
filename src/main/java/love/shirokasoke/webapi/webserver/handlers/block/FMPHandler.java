@@ -25,7 +25,7 @@ public class FMPHandler extends BlockHandler {
 
         TileMultipart mp = TileMultipart.getOrConvertTile(world, co.BlockCoord());
         if (mp == null) {
-            throw new Error(404, "Not TileMultipart");
+            throw new ApiException(404, "Not TileMultipart");
         } else {
             ArrayNode root = mapper.createArrayNode();
             Iterator<TMultiPart> it = ((scala.collection.Iterable<TMultiPart>) mp.partList()).iterator();

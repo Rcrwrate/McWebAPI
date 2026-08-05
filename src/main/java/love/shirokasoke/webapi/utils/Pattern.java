@@ -149,7 +149,7 @@ public final class Pattern {
                 }
             } catch (Throwable e) {
                 // PatternHelper 构造失败（如 NBT 数据不完整或配方已失效）
-                log.e(e);
+                Logs.e(e);
                 node.put("patternParseError", e.getMessage());
             }
         }
@@ -170,7 +170,7 @@ public final class Pattern {
         } else if (stack instanceof IAEFluidStack fluid && fluid.getFluid() != null) {
             node = Fluids.dump(fluid.getFluid());
         } else {
-            log.e(new Exception(stack.toString()));
+            Logs.e(new Exception(stack.toString()));
             return null;
         }
         node.put("stackSize", stack.getStackSize());

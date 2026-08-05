@@ -31,7 +31,7 @@ import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.utils.Items;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 /**
  * 客户端后台线程：导出所有方块的顶面纹理为 PNG 图片，并可选导出方块元数据到 JSON。
@@ -89,7 +89,7 @@ public class MapTileDumperThread extends Thread {
                 MyMod.LOG.info("blocks.json 导出完成，共 {} 条记录", dumps.size());
             } catch (IOException e) {
                 MyMod.LOG.error("写入 blocks.json 失败");
-                log.e(e);
+                Logs.e(e);
             }
 
             MyMod.LOG.info("共 {} 个方块变体需要导出", allBlocks.size());
@@ -117,7 +117,7 @@ public class MapTileDumperThread extends Thread {
                         result.image = img;
                     } catch (Exception e) {
                         MyMod.LOG.error("渲染方块顶面失败: {}", entryRef);
-                        log.e(e);
+                        Logs.e(e);
                         result.image = null;
                     } finally {
                         result.done = true;
@@ -139,7 +139,7 @@ public class MapTileDumperThread extends Thread {
                         exported++;
                     } catch (IOException e) {
                         MyMod.LOG.error("保存图片失败: {}", outFile.getAbsolutePath());
-                        log.e(e);
+                        Logs.e(e);
                     }
                 }
 
@@ -162,7 +162,7 @@ public class MapTileDumperThread extends Thread {
             MyMod.LOG.info("导出完成，共 {} 个方块，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
         } catch (Throwable e) {
             MyMod.LOG.error("导出方块顶面时出错");
-            log.e(e);
+            Logs.e(e);
         }
     }
 

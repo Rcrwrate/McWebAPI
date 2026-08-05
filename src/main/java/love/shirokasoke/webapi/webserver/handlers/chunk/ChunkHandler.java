@@ -26,11 +26,11 @@ public class ChunkHandler implements RouteHandler {
     protected int chunkZ;
     protected int dimension = 0;
 
-    protected void getCo(HttpExchange exchange) throws Error {
+    protected void getCo(HttpExchange exchange) throws ApiException {
         getCo(parseQueryParams(exchange));
     }
 
-    protected void getCo(java.util.Map<String, String> params) throws Error {
+    protected void getCo(java.util.Map<String, String> params) throws ApiException {
         if (params.containsKey("chunkX") && params.containsKey("chunkZ")) {
             chunkX = Integer.parseInt(params.get("chunkX"));
             chunkZ = Integer.parseInt(params.get("chunkZ"));
@@ -40,7 +40,7 @@ public class ChunkHandler implements RouteHandler {
             chunkX = worldX >> 4;
             chunkZ = worldZ >> 4;
         } else {
-            throw new Error(400, "Missing required parameters. Provide either chunkX & chunkZ, or x & z");
+            throw new ApiException(400, "Missing required parameters. Provide either chunkX & chunkZ, or x & z");
         }
         if (params.containsKey("dim") || params.containsKey("dimension")) {
             dimension = Integer.parseInt(params.get("dim") != null ? params.get("dim") : params.get("dimension"));
@@ -54,11 +54,11 @@ public class ChunkHandler implements RouteHandler {
         MinecraftServer server = getServer();
         WorldServer world = server.worldServerForDimension(dimension);
         if (world == null) {
-            throw new Error(404, "Invalid dimension: " + dimension);
+            throw new ApiException(404, "Invalid dimension: " + dimension);
         }
 
         if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
-            throw new Error(
+            throw new ApiException(
                 404,
                 "Chunk not loaded at coordinates: chunkX=" + chunkX
                     + ", chunkZ="
@@ -69,7 +69,7 @@ public class ChunkHandler implements RouteHandler {
 
         Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
         if (chunk == null) {
-            throw new Error(404, "Chunk not found at coordinates: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
+            throw new ApiException(404, "Chunk not found at coordinates: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
         }
 
         ObjectNode data = mapper.createObjectNode();

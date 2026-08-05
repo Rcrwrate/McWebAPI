@@ -42,7 +42,7 @@ public class AEMEHandler extends AEBaseHandler {
                 sendPatterns(exchange, patternInv, null);
                 return;
             }
-            throw new Error(404, "ME interface has no IInventory");
+            throw new ApiException(404, "ME interface has no IInventory");
         }
 
         // 2) FMP 形式的 ME 接口（PartInterface 以 CableBusPart 的面部件存在）
@@ -68,7 +68,7 @@ public class AEMEHandler extends AEBaseHandler {
             }
         }
 
-        throw new Error(404, "AE ME Interface not found");
+        throw new ApiException(404, "AE ME Interface not found");
     }
 
     /**

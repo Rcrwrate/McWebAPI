@@ -27,7 +27,7 @@ import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.utils.Fluids;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 /**
  * 客户端后台线程：导出所有已注册流体的 Icon 为 PNG 图片。
@@ -80,7 +80,7 @@ public class FluidIconDumperThread extends Thread {
                 MyMod.LOG.info("fluids.json 导出完成，共 {} 条记录", dumps.size());
             } catch (IOException e) {
                 MyMod.LOG.error("写入 fluids.json 失败");
-                log.e(e);
+                Logs.e(e);
             }
 
             MyMod.LOG.info("共 {} 个流体需要导出", allFluids.size());
@@ -115,7 +115,7 @@ public class FluidIconDumperThread extends Thread {
                         result.image = img;
                     } catch (Exception e) {
                         MyMod.LOG.error("渲染流体失败: {}", fluidRef.getName());
-                        log.e(e);
+                        Logs.e(e);
                         result.image = null;
                     } finally {
                         result.done = true;
@@ -137,7 +137,7 @@ public class FluidIconDumperThread extends Thread {
                         exported++;
                     } catch (IOException e) {
                         MyMod.LOG.error("保存图片失败: {}", outFile.getAbsolutePath());
-                        log.e(e);
+                        Logs.e(e);
                     }
                 }
 
@@ -160,7 +160,7 @@ public class FluidIconDumperThread extends Thread {
             MyMod.LOG.info("导出完成，共 {} 个流体，耗时 {}ms，输出目录: {}", exported, duration, outputDir.getAbsolutePath());
         } catch (Throwable e) {
             MyMod.LOG.error("导出流体图标时出错");
-            log.e(e);
+            Logs.e(e);
         }
     }
 

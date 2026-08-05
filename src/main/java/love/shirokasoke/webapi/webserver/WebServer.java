@@ -14,8 +14,8 @@ import love.shirokasoke.webapi.MyMod;
  */
 public class WebServer {
 
-    private static HttpServer server;
-    private static boolean isRunning = false;
+    private static volatile HttpServer server;
+    private static volatile boolean isRunning = false;
 
     /**
      * Start the HTTP server on the specified port
@@ -130,7 +130,6 @@ public class WebServer {
             server.removeContext(path);
         } catch (Exception e) {
             MyMod.LOG.error("[WebServer] Error removing route '{}': {}", path, e.getMessage());
-            e.printStackTrace();
         }
     }
 }

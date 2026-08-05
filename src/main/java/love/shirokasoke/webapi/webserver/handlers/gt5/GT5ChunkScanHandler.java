@@ -20,7 +20,7 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.GT5Utils;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
@@ -102,7 +102,7 @@ public class GT5ChunkScanHandler implements RouteHandler {
             chunkX = Integer.parseInt(params.get("x")) >> 4;
             chunkZ = Integer.parseInt(params.get("z")) >> 4;
         } else {
-            throw new RouteHandler.Error(400, "Missing required parameters. Provide either chunkX & chunkZ, or x & z");
+            throw new ApiException(400, "Missing required parameters. Provide either chunkX & chunkZ, or x & z");
         }
 
         int dimension = 0;
@@ -114,16 +114,16 @@ public class GT5ChunkScanHandler implements RouteHandler {
         MinecraftServer server = getServer();
         WorldServer world = server.worldServerForDimension(dim);
         if (world == null) {
-            throw new Error(404, "Invalid dimension: " + dim);
+            throw new ApiException(404, "Invalid dimension: " + dim);
         }
 
         if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
-            throw new Error(404, "Chunk not loaded: chunkX=" + chunkX + ", chunkZ=" + chunkZ + ", dim=" + dim);
+            throw new ApiException(404, "Chunk not loaded: chunkX=" + chunkX + ", chunkZ=" + chunkZ + ", dim=" + dim);
         }
 
         final Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
         if (chunk == null) {
-            throw new RouteHandler.Error(404, "Chunk not found: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
+            throw new ApiException(404, "Chunk not found: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
         }
 
         String jobId = dim + "_" + chunkX + "_" + chunkZ;
@@ -145,7 +145,7 @@ public class GT5ChunkScanHandler implements RouteHandler {
                         scanCell(world, chunk, job, worldX, worldZ, colX, colZ);
                     } catch (Exception e) {
                         job.failCount.incrementAndGet();
-                        job.addError(log.e(e));
+                        job.addError(Logs.e(e));
                     } finally {
                         int completed = job.completedCount.incrementAndGet();
                         if (completed >= job.total) {
@@ -167,12 +167,12 @@ public class GT5ChunkScanHandler implements RouteHandler {
         Map<String, String> params = parseQueryParams(exchange);
         String id = params.get("id");
         if (id == null || id.isEmpty()) {
-            throw new RouteHandler.Error(400, "Missing required parameter: id");
+            throw new ApiException(400, "Missing required parameter: id");
         }
 
         ScanJob job = JOBS.get(id);
         if (job == null) {
-            throw new RouteHandler.Error(404, "Task not found: " + id);
+            throw new ApiException(404, "Task not found: " + id);
         }
 
         ObjectNode data = mapper.createObjectNode();

@@ -44,7 +44,7 @@ public class EntityHandler implements RouteHandler {
         }
 
         if (target == null) {
-            throw new Error(404, "Entity not found with id: " + entityId);
+            throw new ApiException(404, "Entity not found with id: " + entityId);
         }
 
         ObjectNode result = Entitys.dump(target, true);

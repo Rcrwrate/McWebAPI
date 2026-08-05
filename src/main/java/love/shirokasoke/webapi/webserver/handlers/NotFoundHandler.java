@@ -31,12 +31,12 @@ public class NotFoundHandler implements RouteHandler {
         response.put("modid", MyMod.MODID);
         response.put("version", Tags.VERSION);
 
-        java.util.Date buildTime = UpdateChecker.readLocalBuildTime();
+        java.time.Instant buildTime = UpdateChecker.readLocalBuildTime();
         if (buildTime != null) {
-            response.put("buildTime", buildTime.getTime() / 1000);
+            response.put("buildTime", buildTime.getEpochSecond());
         }
 
         setCache(exchange, 86400);
-        throw new Error(404, mapper.writeValueAsString(response));
+        throw new ApiException(404, mapper.writeValueAsString(response));
     }
 }

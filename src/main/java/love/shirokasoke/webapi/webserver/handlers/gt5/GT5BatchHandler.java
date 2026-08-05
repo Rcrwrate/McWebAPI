@@ -22,7 +22,7 @@ import gregtech.api.metatileentity.MetaTileEntity;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.GT5Utils;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class GT5BatchHandler implements RouteHandler {
@@ -113,7 +113,7 @@ public class GT5BatchHandler implements RouteHandler {
     private void POST(HttpExchange exchange) throws Exception {
         JsonNode body = getBody(exchange);
         if (body == null || !body.isArray() || body.isEmpty()) {
-            throw new Error(
+            throw new ApiException(
                 400,
                 "Request body must contain a non-empty 'machines' array: [{\"x\":0,\"y\":0,\"z\":0,\"dim\":0}, ...]");
         }
@@ -136,18 +136,18 @@ public class GT5BatchHandler implements RouteHandler {
         Map<String, String> params = parseQueryParams(exchange);
         String id = params.get("id");
         if (id == null || id.isEmpty()) {
-            throw new Error(400, "Missing required parameter: id");
+            throw new ApiException(400, "Missing required parameter: id");
         }
 
         BatchJob job = JOBS.get(id);
         if (job == null) {
-            throw new Error(404, "Task not found: " + id);
+            throw new ApiException(404, "Task not found: " + id);
         }
 
         // 如果任务仍在运行中，拒绝重入
         if (job.getStatus()
             .equals("running")) {
-            throw new Error(409, "Task is still running, cannot re-execute now");
+            throw new ApiException(409, "Task is still running, cannot re-execute now");
         }
 
         job.resetForRerun();
@@ -164,12 +164,12 @@ public class GT5BatchHandler implements RouteHandler {
         Map<String, String> params = parseQueryParams(exchange);
         String id = params.get("id");
         if (id == null || id.isEmpty()) {
-            throw new Error(400, "Missing required parameter: id");
+            throw new ApiException(400, "Missing required parameter: id");
         }
 
         BatchJob job = JOBS.get(id);
         if (job == null) {
-            throw new Error(404, "Task not found: " + id);
+            throw new ApiException(404, "Task not found: " + id);
         }
 
         ObjectNode data = mapper.createObjectNode();
@@ -207,7 +207,7 @@ public class GT5BatchHandler implements RouteHandler {
         sendResponse(exchange, data);
     }
 
-    private void submitTasks(BatchJob job) throws Error {
+    private void submitTasks(BatchJob job) throws ApiException {
         MinecraftServer server = getServer();
         job.startTime = System.currentTimeMillis();
 
@@ -222,7 +222,7 @@ public class GT5BatchHandler implements RouteHandler {
                     fetchMachine(server, job, x, y, z, dim);
                 } catch (Exception e) {
                     job.failCount.incrementAndGet();
-                    job.addError(log.e(e));
+                    job.addError(Logs.e(e));
                 } finally {
                     int completed = job.completedCount.incrementAndGet();
                     if (completed >= job.total) {
@@ -270,11 +270,11 @@ public class GT5BatchHandler implements RouteHandler {
         }
     }
 
-    private List<coordinates> parseMachineCoords(JsonNode machinesNode) throws Error {
+    private List<coordinates> parseMachineCoords(JsonNode machinesNode) throws ApiException {
         List<coordinates> coords = new ArrayList<>();
         for (JsonNode node : machinesNode) {
             if (!node.has("x") || !node.has("y") || !node.has("z")) {
-                throw new Error(400, "Each machine entry must have x, y, z fields");
+                throw new ApiException(400, "Each machine entry must have x, y, z fields");
             }
             int x = node.get("x")
                 .asInt();

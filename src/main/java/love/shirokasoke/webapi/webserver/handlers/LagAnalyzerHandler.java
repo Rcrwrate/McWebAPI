@@ -1,7 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +14,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.webserver.RouteHandler;
@@ -39,39 +40,21 @@ public class LagAnalyzerHandler implements RouteHandler {
     public void run(HttpExchange exchange) throws IOException {
         MinecraftServer server = getServer();
 
-        StringBuilder response = new StringBuilder();
-        response.append("{");
+        ObjectNode root = mapper.createObjectNode();
 
         // Analyze entities by type
-        appendEntityAnalysis(server, response);
-        response.append(", ");
+        root.set("entities", buildEntityAnalysis(server));
 
         // Analyze tile entities
-        appendTileEntityAnalysis(server, response);
-        response.append(", ");
+        root.set("tileEntities", buildTileEntityAnalysis(server));
 
         // Memory and GC info
-        appendMemoryInfo(response);
+        root.set("memory", buildMemoryInfo());
 
-        response.append("}");
-
-        exchange.getResponseHeaders()
-            .set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(
-            200,
-            response.toString()
-                .getBytes().length);
-
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(
-                response.toString()
-                    .getBytes());
-        }
+        sendResponse(exchange, root);
     }
 
-    private void appendEntityAnalysis(MinecraftServer server, StringBuilder response) {
-        response.append("\"entities\": {");
-
+    private ObjectNode buildEntityAnalysis(MinecraftServer server) {
         Map<String, EntityStats> entityStats = new HashMap<>();
         Map<String, Integer> dimensionEntityCounts = new HashMap<>();
 
@@ -83,8 +66,7 @@ public class LagAnalyzerHandler implements RouteHandler {
             int dimEntityCount = 0;
 
             for (Object obj : world.loadedEntityList) {
-                if (obj instanceof Entity) {
-                    Entity entity = (Entity) obj;
+                if (obj instanceof Entity entity) {
                     String entityName = EntityList.getEntityString(entity);
 
                     if (entityName == null) {
@@ -113,41 +95,35 @@ public class LagAnalyzerHandler implements RouteHandler {
         List<Map.Entry<String, EntityStats>> sortedStats = new ArrayList<>(entityStats.entrySet());
         sortedStats.sort((a, b) -> Integer.compare(b.getValue().count, a.getValue().count));
 
-        response.append("\"byType\": [");
+        ObjectNode entityNode = mapper.createObjectNode();
+
+        // Top 20 entity types
+        ArrayNode byType = mapper.createArrayNode();
         int count = 0;
         for (Map.Entry<String, EntityStats> entry : sortedStats) {
             if (count >= 20) break; // Top 20 entity types
-
-            if (count > 0) response.append(", ");
-
             EntityStats stats = entry.getValue();
-            response.append(
-                String.format(
-                    "{\"name\": \"%s\", \"count\": %d, \"items\": %d, \"xpOrbs\": %d}",
-                    entry.getKey(),
-                    stats.count,
-                    stats.itemCount,
-                    stats.xpOrbCount));
+            byType.add(
+                mapper.createObjectNode()
+                    .put("name", entry.getKey())
+                    .put("count", stats.count)
+                    .put("items", stats.itemCount)
+                    .put("xpOrbs", stats.xpOrbCount));
             count++;
         }
-        response.append("], ");
+        entityNode.set("byType", byType);
 
         // Dimension breakdown
-        response.append("\"byDimension\": {");
-        boolean first = true;
+        ObjectNode byDimension = mapper.createObjectNode();
         for (Map.Entry<String, Integer> entry : dimensionEntityCounts.entrySet()) {
-            if (!first) response.append(", ");
-            response.append(String.format("\"%s\": %d", entry.getKey(), entry.getValue()));
-            first = false;
+            byDimension.put(entry.getKey(), entry.getValue());
         }
-        response.append("}");
+        entityNode.set("byDimension", byDimension);
 
-        response.append("}");
+        return entityNode;
     }
 
-    private void appendTileEntityAnalysis(MinecraftServer server, StringBuilder response) {
-        response.append("\"tileEntities\": {");
-
+    private ObjectNode buildTileEntityAnalysis(MinecraftServer server) {
         Map<String, TileEntityStats> teStats = new HashMap<>();
         Map<String, Integer> dimensionTECounts = new HashMap<>();
 
@@ -159,8 +135,7 @@ public class LagAnalyzerHandler implements RouteHandler {
             int dimTECount = 0;
 
             for (Object obj : world.loadedTileEntityList) {
-                if (obj instanceof TileEntity) {
-                    TileEntity te = (TileEntity) obj;
+                if (obj instanceof TileEntity te) {
                     String teName = te.getClass()
                         .getSimpleName();
 
@@ -182,48 +157,46 @@ public class LagAnalyzerHandler implements RouteHandler {
         List<Map.Entry<String, TileEntityStats>> sortedStats = new ArrayList<>(teStats.entrySet());
         sortedStats.sort((a, b) -> Integer.compare(b.getValue().count, a.getValue().count));
 
-        response.append("\"byType\": [");
+        ObjectNode teNode = mapper.createObjectNode();
+
+        // Top 20 TE types
+        ArrayNode byType = mapper.createArrayNode();
         int count = 0;
         for (Map.Entry<String, TileEntityStats> entry : sortedStats) {
             if (count >= 20) break; // Top 20 TE types
-
-            if (count > 0) response.append(", ");
-
             TileEntityStats stats = entry.getValue();
-            response.append(
-                String.format(
-                    "{\"name\": \"%s\", \"count\": %d, \"samplePositions\": [\"%s\"]}",
-                    entry.getKey(),
-                    stats.count,
-                    String.join("\", \"", stats.positions)));
+            ArrayNode positions = mapper.createArrayNode();
+            for (String pos : stats.positions) {
+                positions.add(pos);
+            }
+            byType.add(
+                mapper.createObjectNode()
+                    .put("name", entry.getKey())
+                    .put("count", stats.count)
+                    .set("samplePositions", positions));
             count++;
         }
-        response.append("], ");
+        teNode.set("byType", byType);
 
         // Dimension breakdown
-        response.append("\"byDimension\": {");
-        boolean first = true;
+        ObjectNode byDimension = mapper.createObjectNode();
         for (Map.Entry<String, Integer> entry : dimensionTECounts.entrySet()) {
-            if (!first) response.append(", ");
-            response.append(String.format("\"%s\": %d", entry.getKey(), entry.getValue()));
-            first = false;
+            byDimension.put(entry.getKey(), entry.getValue());
         }
-        response.append("}");
+        teNode.set("byDimension", byDimension);
 
-        response.append("}");
+        return teNode;
     }
 
-    private void appendMemoryInfo(StringBuilder response) {
+    private ObjectNode buildMemoryInfo() {
         Runtime runtime = Runtime.getRuntime();
 
-        response.append("\"memory\": {");
-        response.append(String.format("\"totalMB\": %d, ", runtime.totalMemory() / 1024 / 1024));
-        response.append(String.format("\"freeMB\": %d, ", runtime.freeMemory() / 1024 / 1024));
-        response
-            .append(String.format("\"usedMB\": %d, ", (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024));
-        response.append(String.format("\"maxMB\": %d, ", runtime.maxMemory() / 1024 / 1024));
-        response.append(String.format("\"availableProcessors\": %d", runtime.availableProcessors()));
-        response.append("}");
+        return mapper.createObjectNode()
+            .put("totalMB", runtime.totalMemory() / 1024 / 1024)
+            .put("freeMB", runtime.freeMemory() / 1024 / 1024)
+            .put("usedMB", (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024)
+            .put("maxMB", runtime.maxMemory() / 1024 / 1024)
+            .put("availableProcessors", runtime.availableProcessors());
     }
 
     private static class EntityStats {

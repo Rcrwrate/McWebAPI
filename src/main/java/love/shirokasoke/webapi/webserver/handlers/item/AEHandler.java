@@ -17,7 +17,7 @@ import appeng.api.definitions.IItemDefinition;
 import appeng.api.util.AEColor;
 import appeng.api.util.AEColoredItemDefinition;
 import love.shirokasoke.webapi.utils.Items;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class AEHandler implements RouteHandler {
@@ -87,9 +87,9 @@ public class AEHandler implements RouteHandler {
                     node.put("name", name);
                     array.add(node);
                 } catch (java.lang.NullPointerException ex) {
-                    // log.debugFields(stack);
-                    // log.debugMethods(stack);
-                    log.e(ex);
+                    // Logs.debugFields(stack);
+                    // Logs.debugMethods(stack);
+                    Logs.e(ex);
                 }
             }
         }

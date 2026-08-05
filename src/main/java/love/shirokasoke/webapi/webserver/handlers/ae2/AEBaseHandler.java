@@ -40,7 +40,7 @@ public class AEBaseHandler extends BlockHandler {
         sendResponse(exchange, response);
     }
 
-    protected void AEinit(HttpExchange exchange) throws Error {
+    protected void AEinit(HttpExchange exchange) throws ApiException {
         String query = exchange.getRequestURI()
             .getQuery();
         co = checklist(query);
@@ -49,11 +49,11 @@ public class AEBaseHandler extends BlockHandler {
             host = (IGridHost) tileEntity;
 
         } else {
-            throw new Error(401, "Not belong to AE");
+            throw new ApiException(401, "Not belong to AE");
         }
         aenode = host.getGridNode(ForgeDirection.UNKNOWN);
         if (aenode == null || !aenode.isActive()) {
-            throw new Error(500, "AE Netowrk is not active!");
+            throw new ApiException(500, "AE Netowrk is not active!");
         }
         grid = aenode.getGrid();
     }

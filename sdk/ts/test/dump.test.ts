@@ -27,7 +27,7 @@ describe("dump", () => {
         const x = Math.floor(Math.random() * 40000) + 10000;
         const z = Math.floor(Math.random() * 40000) + 10000;
         const y = Math.floor(Math.random() * 50) + 50;
-        assert.rejects(() => api.getChunkMap({ x, z }), { message: `Chunk not loaded at ${x >> 4},${z >> 4}` })
+        assert.rejects(() => api.getChunkMap({ x, z }), { message: `Chunk not loaded at ${x >> 4},${z >> 4},${0}` })
     })
 
     it("itemIcon", async () => {

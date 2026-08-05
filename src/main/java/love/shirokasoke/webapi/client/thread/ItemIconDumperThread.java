@@ -31,8 +31,8 @@ import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.utils.CItems;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.NBT;
-import love.shirokasoke.webapi.utils.log;
 
 /**
  * 客户端后台线程：导出所有物品 Icon 为 PNG 图片。
@@ -83,7 +83,7 @@ public class ItemIconDumperThread extends Thread {
             }
         } catch (Throwable e) {
             MyMod.LOG.error("导出物品图标时出错");
-            log.e(e);
+            Logs.e(e);
         }
     }
 
@@ -99,7 +99,7 @@ public class ItemIconDumperThread extends Thread {
             root = Constant.mapper.readTree(missingFile);
         } catch (IOException e) {
             MyMod.LOG.error("读取 missing-icons.json 失败");
-            log.e(e);
+            Logs.e(e);
             return;
         }
 
@@ -131,7 +131,7 @@ public class ItemIconDumperThread extends Thread {
                         .asInt(),
                     node.path("damage")
                         .asInt());
-                log.e(e);
+                Logs.e(e);
             }
         }
 
@@ -165,7 +165,7 @@ public class ItemIconDumperThread extends Thread {
                 MyMod.LOG.info("已加载现有 items.json，共 {} 条记录", merged.size());
             } catch (IOException e) {
                 MyMod.LOG.error("读取已存在的 items.json 失败");
-                log.e(e);
+                Logs.e(e);
             }
         }
         for (ItemStack stack : allStacks) {
@@ -185,7 +185,7 @@ public class ItemIconDumperThread extends Thread {
             MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
         } catch (IOException e) {
             MyMod.LOG.error("写入 items.json 失败");
-            log.e(e);
+            Logs.e(e);
         }
         exportIcons(allStacks);
     }
@@ -215,7 +215,7 @@ public class ItemIconDumperThread extends Thread {
                     result.image = img;
                 } catch (Exception e) {
                     MyMod.LOG.error("渲染物品失败: {}", stackRef);
-                    log.e(e);
+                    Logs.e(e);
                     result.image = null;
                 } finally {
                     result.done = true;
@@ -242,7 +242,7 @@ public class ItemIconDumperThread extends Thread {
                     exported++;
                 } catch (IOException e) {
                     MyMod.LOG.error("保存图片失败: {}", outFile.getAbsolutePath());
-                    log.e(e);
+                    Logs.e(e);
                 }
             }
             // 可配置的延迟，降低 CPU/GPU 占用
@@ -369,30 +369,23 @@ public class ItemIconDumperThread extends Thread {
 
     private static ItemStack fromDump(JsonNode node) {
         if (node == null || !node.has("id")) return null;
-        net.minecraft.nbt.NBTTagCompound nbt = new net.minecraft.nbt.NBTTagCompound();
-        nbt.setShort(
-            "id",
-            (short) node.get("id")
-                .asInt());
-        nbt.setByte("Count", (byte) 1);
-        nbt.setShort(
-            "Damage",
-            (short) node.path("damage")
-                .asInt(0));
-
+        int id = node.get("id")
+            .asInt();
+        int damage = node.path("damage")
+            .asInt(0);
+        String tagBase64 = null;
         if (node.has("tag") && !node.get("tag")
             .isNull()) {
-            String nbtWrite = node.get("tag")
+            tagBase64 = node.get("tag")
                 .asText();
-            if (nbtWrite != null && !nbtWrite.isEmpty()) {
-                net.minecraft.nbt.NBTTagCompound tagNbt = NBT.readFromBase64(nbtWrite);
-                if (tagNbt != null) {
-                    nbt.setTag("tag", tagNbt);
-                }
-            }
         }
-
-        ItemStack stack = ItemStack.loadItemStackFromNBT(nbt);
+        if ((tagBase64 == null || tagBase64.isEmpty()) && node.has("nbtWrite")
+            && !node.get("nbtWrite")
+                .isNull()) {
+            tagBase64 = node.get("nbtWrite")
+                .asText();
+        }
+        ItemStack stack = NBT.toItemStack(id, damage, tagBase64);
         if (stack == null || stack.getItem() == null) return null;
         return stack;
     }

@@ -8,9 +8,13 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,23 +37,29 @@ public class UpdateChecker {
 
     private static final String GITHUB_API = "https://api.github.com/repos/Rcrwrate/McWebAPI/releases/latest";
 
-    private static volatile Date cachedLocalBuildTime;
+    /** 复用的虚拟线程执行器，避免每次检查都新建线程池（Java 21+） */
+    private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+
+    private static volatile Instant cachedLocalBuildTime;
+
+    private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")
+        .withZone(ZoneId.systemDefault());
 
     private static class ReleaseInfo {
 
-        final Date publishedAt;
+        final Instant publishedAt;
         final String version;
-        final String downloadUrl;
+        final String[] downloadUrls;
 
-        ReleaseInfo(Date publishedAt, String version, String downloadUrl) {
+        ReleaseInfo(Instant publishedAt, String version, String[] downloadUrls) {
             this.publishedAt = publishedAt;
             this.version = version;
-            this.downloadUrl = downloadUrl;
+            this.downloadUrls = downloadUrls;
         }
     }
 
     /** Read local build timestamp from assets/build.json (cached) */
-    public static Date readLocalBuildTime() {
+    public static Instant readLocalBuildTime() {
         if (cachedLocalBuildTime != null) {
             return cachedLocalBuildTime;
         }
@@ -60,7 +70,7 @@ public class UpdateChecker {
                 long ts = node.path("buildTime")
                     .asLong(0);
                 if (ts > 0) {
-                    cachedLocalBuildTime = new Date(ts * 1000);
+                    cachedLocalBuildTime = Instant.ofEpochSecond(ts);
                     return cachedLocalBuildTime;
                 }
             }
@@ -71,22 +81,17 @@ public class UpdateChecker {
     }
 
     public CompletableFuture<Void> checkAsync() {
-        ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
-            Thread t = new Thread(r, "UpdateCheck");
-            t.setDaemon(true);
-            return t;
-        });
         return CompletableFuture.runAsync(() -> {
             try {
                 checkForUpdate();
             } catch (Exception e) {
                 MyMod.LOG.warn("Update check failed: {}", e.getMessage());
             }
-        }, executor);
+        }, EXECUTOR);
     }
 
     private void checkForUpdate() {
-        Date local = readLocalBuildTime();
+        Instant local = readLocalBuildTime();
         if (local == null) {
             MyMod.LOG.warn("Cannot check for updates: local build time not available");
             return;
@@ -97,7 +102,7 @@ public class UpdateChecker {
             return;
         }
 
-        if (release.publishedAt != null && release.publishedAt.after(local)) {
+        if (release.publishedAt != null && release.publishedAt.isAfter(local)) {
             MyMod.LOG.info("========================================");
             MyMod.LOG.info("  A new version of WebAPI is available!");
             MyMod.LOG.info("  Local build:  {}", formatDate(local));
@@ -105,8 +110,11 @@ public class UpdateChecker {
             if (!release.version.isEmpty()) {
                 MyMod.LOG.info("  Version:       {}", release.version);
             }
-            if (!release.downloadUrl.isEmpty()) {
-                MyMod.LOG.info("  Download:       {}", release.downloadUrl);
+            if (release.downloadUrls.length > 0) {
+                MyMod.LOG.info("  Download:   ");
+                for (String downloadUrl : release.downloadUrls) {
+                    MyMod.LOG.info("  {}", downloadUrl);
+                }
             }
             MyMod.LOG.info("========================================");
         } else {
@@ -142,34 +150,38 @@ public class UpdateChecker {
                     .asText("");
             }
 
-            Date publishedAt = null;
+            Instant publishedAt = null;
             String publishedAtStr = root.path("published_at")
                 .asText("");
             if (!publishedAtStr.isEmpty()) {
                 try {
-                    SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-                    publishedAt = isoFormat.parse(publishedAtStr);
-                } catch (Exception e) {
+                    // GitHub 返回 UTC ISO-8601 时间戳
+                    publishedAt = OffsetDateTime.parse(publishedAtStr)
+                        .toInstant();
+                } catch (DateTimeParseException e) {
                     MyMod.LOG.debug("Failed to parse published_at '{}': {}", publishedAtStr, e.getMessage());
                 }
             }
 
-            String downloadUrl = "";
+            List<String> downloadUrls = new ArrayList<>();
             JsonNode assets = root.path("assets");
-            if (assets.isArray() && assets.size() > 0) {
-                downloadUrl = assets.get(0)
-                    .path("browser_download_url")
-                    .asText("");
-                if (downloadUrl.isEmpty()) {
-                    downloadUrl = assets.get(0)
-                        .path("url")
+            if (assets.isArray()) {
+                for (JsonNode asset : assets) {
+                    String downloadUrl = asset.path("browser_download_url")
                         .asText("");
+                    if (downloadUrl.isEmpty()) {
+                        downloadUrl = asset.path("url")
+                            .asText("");
+                    }
+                    if (!downloadUrl.isEmpty()) {
+                        downloadUrls.add(downloadUrl);
+                    }
                 }
             }
 
             if (publishedAt != null || !version.isEmpty()) {
                 MyMod.LOG.debug("Update check succeeded. Remote: {}", publishedAtStr);
-                return new ReleaseInfo(publishedAt, version, downloadUrl);
+                return new ReleaseInfo(publishedAt, version, downloadUrls.toArray(String[]::new));
             }
             return null;
         } catch (IOException e) {
@@ -194,7 +206,7 @@ public class UpdateChecker {
         }
     }
 
-    private static String formatDate(Date date) {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z").format(date);
+    private static String formatDate(Instant instant) {
+        return DISPLAY_FORMAT.format(instant);
     }
 }

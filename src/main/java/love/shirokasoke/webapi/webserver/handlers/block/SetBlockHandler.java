@@ -26,7 +26,7 @@ public class SetBlockHandler extends BlockHandler {
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
-            throw new Error(400, "Method must be POST");
+            throw new ApiException(400, "Method must be POST");
         }
         JsonNode data = getBody(exchange);
         String query = exchange.getRequestURI()
@@ -42,7 +42,7 @@ public class SetBlockHandler extends BlockHandler {
 
         Block block = Block.getBlockById(id);
         if (block == null) {
-            throw new Error(404, "block id not found");
+            throw new ApiException(404, "block id not found");
         }
 
         boolean changed = false;

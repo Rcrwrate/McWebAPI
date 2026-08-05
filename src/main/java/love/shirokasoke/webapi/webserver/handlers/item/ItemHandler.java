@@ -22,7 +22,7 @@ public class ItemHandler implements RouteHandler {
     @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
-        if (params == null) throw new Error(400, "missing query");
+        if (params == null) throw new ApiException(400, "missing query");
 
         int id = Integer.parseInt(params.get("id"));
         Item item = Item.getItemById(id);

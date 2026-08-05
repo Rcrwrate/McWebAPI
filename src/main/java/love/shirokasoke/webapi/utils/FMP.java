@@ -145,7 +145,7 @@ public final class FMP {
                 }
             }
         } catch (Throwable e) {
-            log.e(e);
+            Logs.e(e);
             aeNode.put("error", e.getMessage());
         }
     }

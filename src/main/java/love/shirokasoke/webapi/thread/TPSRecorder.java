@@ -4,8 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +16,7 @@ import net.minecraftforge.common.DimensionManager;
 import cpw.mods.fml.common.FMLCommonHandler;
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 /**
  * TPS Recorder - Periodically samples server TPS / TickTime and appends records
@@ -26,7 +26,7 @@ import love.shirokasoke.webapi.utils.log;
  */
 public class TPSRecorder extends Thread {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static volatile TPSRecorder instance;
 
     private final File outputFile;
@@ -80,7 +80,7 @@ public class TPSRecorder extends Thread {
             }
 
             MyMod.LOG.info(
-                "开始记录TPS数据，间隔 {} 秒，输出文件: {}，目标维度: {}",
+                "开始记录TPS数据，间隔 {} 秒，输出文件: {} ，目标维度: {}",
                 Config.tpsRecordInterval,
                 outputFile.getAbsolutePath(),
                 targetDims.isEmpty() ? "全部" : targetDims.toString());
@@ -90,7 +90,7 @@ public class TPSRecorder extends Thread {
                     recordOnce();
                 } catch (Throwable e) {
                     MyMod.LOG.error("TPS record failed");
-                    log.e(e);
+                    Logs.e(e);
                 }
 
                 try {
@@ -103,7 +103,7 @@ public class TPSRecorder extends Thread {
             }
         } catch (Throwable e) {
             MyMod.LOG.error("[TPSRecorder] 记录TPS数据时出错");
-            log.e(e);
+            Logs.e(e);
         } finally {
             if (writer != null) {
                 try {
@@ -120,7 +120,8 @@ public class TPSRecorder extends Thread {
             .getMinecraftServerInstance();
         if (server == null) return;
 
-        String timestamp = DATE_FORMAT.format(new Date());
+        String timestamp = LocalDateTime.now()
+            .format(DATE_FORMAT);
         long epochMs = System.currentTimeMillis();
 
         for (Integer dimId : DimensionManager.getIDs()) {

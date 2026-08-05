@@ -1,8 +1,8 @@
 package love.shirokasoke.webapi.webserver.Auth;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
@@ -18,7 +18,8 @@ import love.shirokasoke.webapi.MyMod;
  */
 public class Auth {
 
-    private static final List<AuthProvider> providers = new ArrayList<>();
+    /** 读多写少，使用 CopyOnWriteArrayList 保证线程安全 */
+    private static final List<AuthProvider> providers = new CopyOnWriteArrayList<>();
 
     /**
      * 注册所有认证插件
@@ -35,7 +36,7 @@ public class Auth {
 
     public static void registerProvider(AuthProvider provider) {
         providers.add(provider);
-        Collections.sort(providers, (a, b) -> Integer.compare(a.getPriority(), b.getPriority()));
+        providers.sort((a, b) -> Integer.compare(a.getPriority(), b.getPriority()));
         MyMod.LOG.info("Registered AuthProvider: {} (priority={})", provider.getName(), provider.getPriority());
     }
 
@@ -56,9 +57,10 @@ public class Auth {
             AuthResult result = provider.authenticate(uri, method, Authorization);
 
             switch (result.getStatus()) {
-                case PASS:
+                case PASS -> {
                     return true;
-                case DENY:
+                }
+                case DENY -> {
                     MyMod.LOG.warn(
                         "Auth denied by provider [{}]: {} - {} {}",
                         provider.getName(),
@@ -66,8 +68,10 @@ public class Auth {
                         uri,
                         result.getMessage());
                     return false;
-                case SKIP:
-                    continue;
+                }
+                case SKIP -> {
+                    // 跳过，继续下一个 provider
+                }
             }
         }
 

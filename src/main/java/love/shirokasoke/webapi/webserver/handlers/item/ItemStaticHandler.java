@@ -91,7 +91,7 @@ public class ItemStaticHandler implements RouteHandler {
         }
 
         if (matches.size() == 0) {
-            // throw new Error(404, "item not found");
+            // throw new ApiException(404, "item not found");
             fallback.handle(exchange);
             return;
         }

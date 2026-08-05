@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +45,8 @@ public final class Accessor {
             }
             return (ArrayList<ISmartInputHatch>) mSmartInputHatches.get(multi);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            log.e(e);
-            return new ArrayList<ISmartInputHatch>();
+            Logs.e(e);
+            return new ArrayList<>();
         }
     }
 
@@ -62,8 +61,8 @@ public final class Accessor {
             }
             return (List<NBTBase>) field_74747_a.get(tagList);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            log.e(e);
-            return new ArrayList<NBTBase>();
+            Logs.e(e);
+            return new ArrayList<>();
         }
     }
 
@@ -86,7 +85,7 @@ public final class Accessor {
             }
             nbtWrite.invoke(nbt, output);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            log.e(e);
+            Logs.e(e);
         }
     }
 
@@ -107,7 +106,7 @@ public final class Accessor {
             }
             nbtRead.invoke(nbt, input, depth, sizeTracker);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            log.e(e);
+            Logs.e(e);
         }
     }
 
@@ -127,8 +126,8 @@ public final class Accessor {
             }
             return (Map<ICraftingPatternDetails, TaskProgress>) craftingCPUClusterTasks.get(cluster);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            log.e(e);
-            return Collections.emptyMap();
+            Logs.e(e);
+            return Map.of();
         }
     }
 
@@ -148,7 +147,7 @@ public final class Accessor {
             }
             return taskProgressValue.getLong(taskProgress);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            log.e(e);
+            Logs.e(e);
             return -1;
         }
     }
@@ -169,7 +168,7 @@ public final class Accessor {
             }
             return (IItemList<IAEStack<?>>) craftingCPUClusterWaitingFor.get(cluster);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            log.e(e);
+            Logs.e(e);
             return null;
         }
     }

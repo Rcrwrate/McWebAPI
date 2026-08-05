@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 public class BatchSetBlockHandler extends BlockHandler {
 
@@ -45,22 +45,22 @@ public class BatchSetBlockHandler extends BlockHandler {
         } else if ("GET".equals(method)) {
             handleQuery(exchange);
         } else {
-            throw new Error(400, "Method must be POST or GET");
+            throw new ApiException(400, "Method must be POST or GET");
         }
     }
 
     private void handleSubmit(HttpExchange exchange) throws IOException {
         JsonNode root = getBody(exchange);
         if (!root.isArray()) {
-            throw new Error(400, "Request body must be a JSON array");
+            throw new ApiException(400, "Request body must be a JSON array");
         }
 
         int size = root.size();
         if (size == 0) {
-            throw new Error(400, "Task array is empty");
+            throw new ApiException(400, "Task array is empty");
         }
         if (size > 65536) {
-            throw new Error(400, "Too many tasks (max 65536)");
+            throw new ApiException(400, "Too many tasks (max 65536)");
         }
 
         // 预校验所有任务并收集
@@ -87,12 +87,12 @@ public class BatchSetBlockHandler extends BlockHandler {
 
             WorldServer world = server.worldServerForDimension(dim);
             if (world == null) {
-                throw new Error(400, "Invalid dimension " + dim + " at tasks[" + i + "]");
+                throw new ApiException(400, "Invalid dimension " + dim + " at tasks[" + i + "]");
             }
 
             Block block = Block.getBlockById(id);
             if (block == null) {
-                throw new Error(400, "Block id not found at tasks[" + i + "]");
+                throw new ApiException(400, "Block id not found at tasks[" + i + "]");
             }
 
             batchTasks.add(new SetBlockTask(world, x, y, z, block, metadata, flag));
@@ -115,7 +115,7 @@ public class BatchSetBlockHandler extends BlockHandler {
                     }
                 } catch (Exception e) {
                     job.failCount.incrementAndGet();
-                    job.addFailure(task.x, task.y, task.z, log.e(e));
+                    job.addFailure(task.x, task.y, task.z, Logs.e(e));
                 } finally {
                     int completed = job.completedCount.incrementAndGet();
                     if (completed >= job.total) {
@@ -135,12 +135,12 @@ public class BatchSetBlockHandler extends BlockHandler {
     private void handleQuery(HttpExchange exchange) throws IOException {
         String id = parseQueryParams(exchange).get("id");
         if (id == null || id.isEmpty()) {
-            throw new Error(400, "Missing query param 'id'");
+            throw new ApiException(400, "Missing query param 'id'");
         }
 
         BatchJob job = JOBS.get(id);
         if (job == null) {
-            throw new Error(404, "Job not found: " + id);
+            throw new ApiException(404, "Job not found: " + id);
         }
 
         sendResponse(exchange, buildJobDetail(job));

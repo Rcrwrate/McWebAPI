@@ -1,12 +1,14 @@
 package love.shirokasoke.webapi.webserver.handlers.chunk;
 
+import static love.shirokasoke.webapi.webserver.handlers.block.BlockTileHandler.ensureBlockTileMapLoaded;
+
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
 
@@ -15,7 +17,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
@@ -40,15 +41,11 @@ import love.shirokasoke.webapi.MyMod;
 public class ChunkMapHandler extends ChunkHandler {
 
     /** (registryName + ":" + meta) → 预导出 PNG 文件名（不含扩展名） */
-    private final Map<String, String> blockTileMap = new HashMap<>();
+    private final Map<String, String> blockTileMap;
     /** 文件名 → 缓存的 BufferedImage */
-    private final Map<String, BufferedImage> tileCache = new HashMap<>();
+    private final Map<String, BufferedImage> tileCache = new ConcurrentHashMap<>();
     /** 缺失纹理的占位图（透明） */
-    private BufferedImage missingTile;
-    /** 是否已尝试加载映射表 */
-    private boolean mapLoaded = false;
-    /** blocks.json 文件 */
-    private final File blocksJsonFile;
+    private volatile BufferedImage missingTile;
     /** block_tiles 目录 */
     private final File blockTileDir;
 
@@ -76,9 +73,9 @@ public class ChunkMapHandler extends ChunkHandler {
     }
 
     public ChunkMapHandler(File blocksJsonFile, File blockTileDir, int tileSize) {
-        this.blocksJsonFile = blocksJsonFile;
         this.blockTileDir = blockTileDir;
         this.tileSize = tileSize > 0 ? tileSize : 16;
+        this.blockTileMap = ensureBlockTileMapLoaded(blocksJsonFile);
     }
 
     @Override
@@ -98,18 +95,15 @@ public class ChunkMapHandler extends ChunkHandler {
         MinecraftServer server = getServer();
         WorldServer world = server.worldServerForDimension(dimension);
         if (world == null) {
-            throw new Error(404, "Invalid dimension: " + dimension);
+            throw new ApiException(404, "Invalid dimension: " + dimension);
         }
         if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
-            throw new Error(404, "Chunk not loaded at " + chunkX + "," + chunkZ);
+            throw new ApiException(404, "Chunk not loaded at " + chunkX + "," + chunkZ + "," + dimension);
         }
         Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
         if (chunk == null) {
-            throw new Error(404, "Chunk not found at " + chunkX + "," + chunkZ);
+            throw new ApiException(404, "Chunk not found at " + chunkX + "," + chunkZ + "," + dimension);
         }
-
-        // 确保映射表已加载
-        ensureBlockTileMapLoaded();
 
         BlockInfo[][] data = extractChunkData(chunk);
         setCache(exchange, 60);
@@ -271,39 +265,6 @@ public class ChunkMapHandler extends ChunkHandler {
             missingTile = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
         }
         return missingTile;
-    }
-
-    /**
-     * 确保 blockTileMap 已从 blocks.json 加载。
-     */
-    private synchronized void ensureBlockTileMapLoaded() {
-        if (mapLoaded) {
-            return;
-        }
-        mapLoaded = true;
-
-        if (!blocksJsonFile.exists()) {
-            MyMod.LOG.warn("blocks.json 不存在: {}", blocksJsonFile);
-            return;
-        }
-
-        try {
-            ArrayNode array = (ArrayNode) mapper.readTree(blocksJsonFile);
-            for (JsonNode node : array) {
-                String regName = node.path("registryName")
-                    .asText(null);
-                int meta = node.path("meta")
-                    .asInt(0);
-                String fileName = node.path("fileName")
-                    .asText(null);
-                if (regName != null && fileName != null) {
-                    blockTileMap.put(regName + ":" + meta, fileName);
-                }
-            }
-            MyMod.LOG.info("已加载 {} 条方块纹理映射", blockTileMap.size());
-        } catch (IOException e) {
-            MyMod.LOG.error("加载 blocks.json 失败");
-        }
     }
 
 }

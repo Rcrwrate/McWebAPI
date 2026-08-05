@@ -25,11 +25,11 @@ public class FluidIconHandler implements RouteHandler {
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
         if (params == null || (!params.containsKey("id") && !params.containsKey("name"))) {
-            throw new Error(400, "missing query param 'id' or 'name'");
+            throw new ApiException(400, "missing query param 'id' or 'name'");
         }
 
         if (Config.FluidIconFolder == null || Config.FluidIconFolder.isEmpty()) {
-            throw new Error(500, "FluidIconFolder not configured");
+            throw new ApiException(500, "FluidIconFolder not configured");
         }
 
         Fluid fluid = null;
@@ -40,7 +40,7 @@ public class FluidIconHandler implements RouteHandler {
         }
 
         if (fluid == null) {
-            throw new Error(404, "fluid not found");
+            throw new ApiException(404, "fluid not found");
         }
 
         String fileName = Fluids.getFileName(fluid) + ".png";
@@ -48,7 +48,7 @@ public class FluidIconHandler implements RouteHandler {
 
         if (!iconFile.exists() || !iconFile.isFile()) {
             MyMod.LOG.warn("[FluidIconHandler] Icon not found: {}", iconFile.getAbsolutePath());
-            throw new Error(404, "icon not found");
+            throw new ApiException(404, "icon not found");
         }
 
         byte[] imageData = Files.readAllBytes(iconFile.toPath());
