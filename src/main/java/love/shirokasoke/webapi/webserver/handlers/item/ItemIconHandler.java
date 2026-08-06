@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.util.Map;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -38,35 +37,24 @@ public class ItemIconHandler implements RouteHandler {
             throw new ApiException(500, "ItemIconFolder not configured");
         }
 
-        NBTTagCompound nbt = new NBTTagCompound();
-
+        int id;
         try {
-            nbt.setShort("id", Short.parseShort(params.get("id")));
+            id = Short.parseShort(params.get("id"));
         } catch (NumberFormatException e) {
             throw new ApiException(400, "invalid query param 'id'");
         }
 
-        nbt.setByte("Count", (byte) 1);
-
+        int damage = 0;
         String damageStr = params.get("damage");
         if (damageStr != null) {
             try {
-                nbt.setShort("Damage", Short.parseShort(damageStr));
+                damage = Short.parseShort(damageStr);
             } catch (NumberFormatException e) {
                 throw new ApiException(400, "invalid query param 'damage'");
             }
-        } else {
-            nbt.setShort("Damage", (short) 0);
         }
 
-        if (params.containsKey("tag")) {
-            NBTTagCompound tagNbt = NBT.readFromBase64(params.get("tag"));
-            if (tagNbt != null) {
-                nbt.setTag("tag", tagNbt);
-            }
-        }
-
-        ItemStack stack = ItemStack.loadItemStackFromNBT(nbt);
+        ItemStack stack = NBT.toItemStack(id, damage, params.get("tag"));
         if (stack == null || stack.getItem() == null) {
             throw new ApiException(400, "failed to restore ItemStack from NBT");
         }
