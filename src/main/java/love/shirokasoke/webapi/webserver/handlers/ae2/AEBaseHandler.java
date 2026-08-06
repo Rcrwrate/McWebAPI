@@ -11,6 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.handlers.block.BlockHandler;
 
 public class AEBaseHandler extends BlockHandler {
@@ -44,7 +45,7 @@ public class AEBaseHandler extends BlockHandler {
         String query = exchange.getRequestURI()
             .getQuery();
         co = checklist(query);
-        TileEntity tileEntity = world.getTileEntity(co.posX, co.posY, co.posZ);
+        TileEntity tileEntity = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
         if (tileEntity instanceof IGridHost) {
             host = (IGridHost) tileEntity;
 

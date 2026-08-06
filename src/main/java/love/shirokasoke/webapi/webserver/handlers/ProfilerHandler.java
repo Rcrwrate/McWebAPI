@@ -10,12 +10,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
@@ -36,9 +36,8 @@ public class ProfilerHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        MinecraftServer server = getServer();
+        MinecraftServer server = McAccessor.getServer();
 
-        ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = mapper.createObjectNode();
 
         // Add server overview

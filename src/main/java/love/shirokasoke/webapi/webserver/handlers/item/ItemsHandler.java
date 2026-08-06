@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class ItemsHandler implements RouteHandler {
@@ -23,7 +24,7 @@ public class ItemsHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws Exception {
-        getServer();
+        McAccessor.getServer();
 
         ArrayNode data = mapper.createArrayNode();
 

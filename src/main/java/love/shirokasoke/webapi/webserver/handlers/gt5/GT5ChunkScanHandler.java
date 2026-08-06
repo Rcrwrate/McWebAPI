@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -21,6 +20,7 @@ import gregtech.api.metatileentity.MetaTileEntity;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.GT5Utils;
 import love.shirokasoke.webapi.utils.Logs;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
@@ -111,20 +111,8 @@ public class GT5ChunkScanHandler implements RouteHandler {
         }
         final int dim = dimension;
 
-        MinecraftServer server = getServer();
-        WorldServer world = server.worldServerForDimension(dim);
-        if (world == null) {
-            throw new ApiException(404, "Invalid dimension: " + dim);
-        }
-
-        if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
-            throw new ApiException(404, "Chunk not loaded: chunkX=" + chunkX + ", chunkZ=" + chunkZ + ", dim=" + dim);
-        }
-
-        final Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
-        if (chunk == null) {
-            throw new ApiException(404, "Chunk not found: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
-        }
+        WorldServer world = McAccessor.getWorld(dim);
+        final Chunk chunk = McAccessor.loadChunk(world, chunkX, chunkZ);
 
         String jobId = dim + "_" + chunkX + "_" + chunkZ;
         ScanJob job = new ScanJob(jobId, 256, chunkX, chunkZ, dim);
@@ -217,7 +205,11 @@ public class GT5ChunkScanHandler implements RouteHandler {
         sendResponse(exchange, data);
     }
 
-    /** 扫描区块中的一个 (x,z) 位置，从 y=0 遍历到高度上限 */
+    /**
+     * 扫描区块中的一个 (x,z) 位置，从 y=0 遍历到高度上限
+     * 
+     * @apiNote 主线程运行，无需关心线程安全
+     */
     private void scanCell(WorldServer world, Chunk chunk, ScanJob job, int worldX, int worldZ, int colX, int colZ) {
         int height = chunk.getHeightValue(colX, colZ);
         for (int y = 0; y <= height; y++) {

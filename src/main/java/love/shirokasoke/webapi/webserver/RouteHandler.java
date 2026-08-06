@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChunkCoordinates;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,7 +16,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import codechicken.lib.vec.BlockCoord;
-import cpw.mods.fml.common.FMLCommonHandler;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.utils.Logs;
@@ -314,15 +312,6 @@ public interface RouteHandler extends HttpHandler {
         try (java.io.InputStream is = exchange.getRequestBody()) {
             return mapper.readValue(is, clazz);
         }
-    }
-
-    default public MinecraftServer getServer() throws ApiException {
-        MinecraftServer server = FMLCommonHandler.instance()
-            .getMinecraftServerInstance();
-        if (server == null) {
-            throw new ApiException(503, "Server not available");
-        }
-        return server;
     }
 
     default public void setNoCache(HttpExchange exchange) {

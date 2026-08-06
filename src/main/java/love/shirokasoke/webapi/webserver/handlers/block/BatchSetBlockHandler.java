@@ -20,6 +20,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Logs;
+import love.shirokasoke.webapi.utils.McAccessor;
 
 public class BatchSetBlockHandler extends BlockHandler {
 
@@ -64,7 +65,7 @@ public class BatchSetBlockHandler extends BlockHandler {
         }
 
         // 预校验所有任务并收集
-        MinecraftServer server = getServer();
+        MinecraftServer server = McAccessor.getServer();
         List<SetBlockTask> batchTasks = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
@@ -85,7 +86,7 @@ public class BatchSetBlockHandler extends BlockHandler {
             int flag = taskNode.path("flag")
                 .asInt(2);
 
-            WorldServer world = server.worldServerForDimension(dim);
+            WorldServer world = McAccessor.getWorld(server, dim);
             if (world == null) {
                 throw new ApiException(400, "Invalid dimension " + dim + " at tasks[" + i + "]");
             }

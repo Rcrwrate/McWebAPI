@@ -18,6 +18,7 @@ import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Blocks;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class BlockHandler implements RouteHandler {
@@ -41,11 +42,9 @@ public class BlockHandler implements RouteHandler {
             throw new ApiException(400, "Missing query parameters. Required: x, y, z");
         }
         coordinates co = getCoordinates(query);
-        server = getServer();
-        world = server.worldServerForDimension(co.dimension);
-        if (world == null) {
-            throw new ApiException(404, "Invalid dimension: " + co.dimension);
-        }
+        server = McAccessor.getServer();
+        world = McAccessor.getWorld(server, co.dimension);
+
         Boolean t = false;
         if (chunkSafe) {
             try {
@@ -91,7 +90,7 @@ public class BlockHandler implements RouteHandler {
 
         // 检查是否有TileEntity（如箱子、熔炉等）
         if (block.hasTileEntity(metadata)) {
-            TileEntity tileEntity = world.getTileEntity(co.posX, co.posY, co.posZ);
+            TileEntity tileEntity = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
             if (tileEntity != null) {
                 ObjectNode tileEntityData = mapper.createObjectNode();
                 ClassUtils.getClassInfo(tileEntity, tileEntityData);

@@ -13,8 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 
 import net.minecraft.block.Block;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -22,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.utils.McAccessor;
 
 /**
  * 返回指定区块的最顶层图像 PNG。
@@ -92,18 +91,7 @@ public class ChunkMapHandler extends ChunkHandler {
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
         getCo(params);
-        MinecraftServer server = getServer();
-        WorldServer world = server.worldServerForDimension(dimension);
-        if (world == null) {
-            throw new ApiException(404, "Invalid dimension: " + dimension);
-        }
-        if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
-            throw new ApiException(404, "Chunk not loaded at " + chunkX + "," + chunkZ + "," + dimension);
-        }
-        Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
-        if (chunk == null) {
-            throw new ApiException(404, "Chunk not found at " + chunkX + "," + chunkZ + "," + dimension);
-        }
+        Chunk chunk = McAccessor.loadChunk(dimension, chunkX, chunkZ);
 
         BlockInfo[][] data = extractChunkData(chunk);
         setCache(exchange, 60);

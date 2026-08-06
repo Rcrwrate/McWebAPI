@@ -18,6 +18,7 @@ import appeng.parts.CableBusContainer;
 import appeng.tile.misc.TileInterface;
 import codechicken.multipart.TMultiPart;
 import codechicken.multipart.TileMultipart;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.utils.Pattern;
 import scala.collection.Iterator;
 
@@ -31,7 +32,7 @@ public class AEMEHandler extends AEBaseHandler {
     @Override
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
-        TileEntity tile = world.getTileEntity(co.posX, co.posY, co.posZ);
+        TileEntity tile = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
 
         // 1) 方块形式的 ME 接口（TileInterface）
         if (tile instanceof TileInterface) {

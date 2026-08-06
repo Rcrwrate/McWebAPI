@@ -10,6 +10,7 @@ import com.sun.net.httpserver.HttpExchange;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
 import love.shirokasoke.webapi.utils.GT5Utils;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.handlers.block.BlockHandler;
 
 public class GT5BaseHandler extends BlockHandler {
@@ -41,7 +42,7 @@ public class GT5BaseHandler extends BlockHandler {
             .getQuery();
         co = checklist(query);
 
-        TileEntity tileEntity = world.getTileEntity(co.posX, co.posY, co.posZ);
+        TileEntity tileEntity = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
         if (!(tileEntity instanceof IGregTechTileEntity)) {
             throw new ApiException(404, "Block at given coordinates is not a GT5 machine");
         }

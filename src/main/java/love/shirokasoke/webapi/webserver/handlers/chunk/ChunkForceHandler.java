@@ -6,7 +6,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeChunkManager;
@@ -18,6 +17,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.utils.McAccessor;
 
 public class ChunkForceHandler extends ChunkHandler {
 
@@ -124,13 +124,7 @@ public class ChunkForceHandler extends ChunkHandler {
             throw new ApiException(400, "Duration must be large then 0 seconds");
         }
 
-        MinecraftServer server = getServer();
-
-        WorldServer world = server.worldServerForDimension(dimension);
-        if (world == null) {
-            throw new ApiException(404, "Invalid dimension: " + dimension);
-        }
-
+        WorldServer world = McAccessor.getWorld(dimension);
         String ticketKey = dimension + ":" + chunkX + ":" + chunkZ;
 
         if (activeChunkLoads.containsKey(ticketKey)) {

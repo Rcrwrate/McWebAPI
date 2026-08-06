@@ -51,7 +51,7 @@ public class Config {
     public static String cfToken = "";
 
     // safe
-    public static boolean chunkSafe = false;
+    public static boolean chunkSafe = true;
 
     // client
     public static int itemIconDelayMs = 10;

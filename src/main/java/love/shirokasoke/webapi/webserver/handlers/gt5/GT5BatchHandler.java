@@ -23,6 +23,7 @@ import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.GT5Utils;
 import love.shirokasoke.webapi.utils.Logs;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class GT5BatchHandler implements RouteHandler {
@@ -208,7 +209,7 @@ public class GT5BatchHandler implements RouteHandler {
     }
 
     private void submitTasks(BatchJob job) throws ApiException {
-        MinecraftServer server = getServer();
+        MinecraftServer server = McAccessor.getServer();
         job.startTime = System.currentTimeMillis();
 
         for (coordinates coord : job.coords) {
@@ -233,7 +234,11 @@ public class GT5BatchHandler implements RouteHandler {
         }
     }
 
-    /** 获取单个机器的完整信息 */
+    /**
+     * 获取单个机器的完整信息，
+     * 
+     * @apiNote 主线程运行，无需关心线程安全
+     */
     private void fetchMachine(MinecraftServer server, BatchJob job, int x, int y, int z, int dim) {
         WorldServer world = server.worldServerForDimension(dim);
         if (world == null) {

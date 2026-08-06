@@ -1,13 +1,12 @@
 package love.shirokasoke.webapi.webserver.handlers.chunk;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.utils.Chunks;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class ChunkHandler implements RouteHandler {
@@ -50,28 +49,7 @@ public class ChunkHandler implements RouteHandler {
     @Override
     public void run(HttpExchange exchange) throws Exception {
         getCo(exchange);
-
-        MinecraftServer server = getServer();
-        WorldServer world = server.worldServerForDimension(dimension);
-        if (world == null) {
-            throw new ApiException(404, "Invalid dimension: " + dimension);
-        }
-
-        if (!world.theChunkProviderServer.chunkExists(chunkX, chunkZ)) {
-            throw new ApiException(
-                404,
-                "Chunk not loaded at coordinates: chunkX=" + chunkX
-                    + ", chunkZ="
-                    + chunkZ
-                    + ", dimension="
-                    + dimension);
-        }
-
-        Chunk chunk = world.theChunkProviderServer.loadChunk(chunkX, chunkZ);
-        if (chunk == null) {
-            throw new ApiException(404, "Chunk not found at coordinates: chunkX=" + chunkX + ", chunkZ=" + chunkZ);
-        }
-
+        Chunk chunk = McAccessor.loadChunk(dimension, chunkX, chunkZ);
         ObjectNode data = mapper.createObjectNode();
         data.put("dimension", dimension);
         Chunks.dump(chunk, data, 2);

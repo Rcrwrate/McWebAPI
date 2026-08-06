@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
@@ -38,7 +39,7 @@ public class LagAnalyzerHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        MinecraftServer server = getServer();
+        MinecraftServer server = McAccessor.getServer();
 
         ObjectNode root = mapper.createObjectNode();
 

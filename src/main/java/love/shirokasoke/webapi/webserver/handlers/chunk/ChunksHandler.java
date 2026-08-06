@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.utils.Chunks;
 import love.shirokasoke.webapi.utils.ClassUtils;
+import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class ChunksHandler implements RouteHandler {
@@ -23,7 +24,7 @@ public class ChunksHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws Exception {
-        MinecraftServer server = getServer();
+        MinecraftServer server = McAccessor.getServer();
         ObjectNode data = mapper.createObjectNode();
         for (WorldServer world : server.worldServers) {
             if (world == null) continue;
