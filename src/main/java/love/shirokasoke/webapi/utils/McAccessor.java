@@ -14,6 +14,11 @@ import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.webserver.RouteHandler.ApiException;
 
+/**
+ * 统一管理MC相关对象的获取
+ * 
+ * @apiNote 用于规避链表的不安全访问
+ */
 public final class McAccessor {
 
     private McAccessor() {}
@@ -39,6 +44,18 @@ public final class McAccessor {
         return getWorld(getServer(), dim);
     }
 
+    /**
+     * 绕过原版的逻辑，直接从安全的HashMap副本取出
+     * </p>
+     * 涉及的堆栈:
+     * </p>
+     * {@link net.minecraft.world.gen.ChunkProviderServer#loadChunk(int, int, Runnable)}
+     * </p>
+     * 避免操作LongHashMap: {@link net.minecraft.world.gen.ChunkProviderServer#chunksToUnload}
+     * </p>
+     * 受影响导致NPE的Mixin:
+     * {@link com.mitchej123.hodgepodge.mixins.early.minecraft.fastload.MixinChunkProviderServer_FastUnload#unloadQueuedChunks}
+     */
     public static Chunk loadChunk(WorldServer world, int chunkX, int chunkZ) throws ApiException {
         long k = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
         final Chunk chunk;
@@ -69,15 +86,23 @@ public final class McAccessor {
     }
 
     /**
-     * {@link WorldServer#getTileEntity}会通过{@link WorldServer#getChunkFromChunkCoords}
+     * 涉及的堆栈:
+     * </p>
+     * {@link net.minecraft.world.World#getTileEntity} ->
+     * {@link net.minecraft.world.World#addedTileEntityList} 为ArrayList(线程不安全，但是无需关注)
+     * </p>
+     * {@link net.minecraft.world.World#getChunkFromChunkCoords} ->
+     * {@link net.minecraft.world.gen.ChunkProviderServer#provideChunk} 调用之前<b>必须</b>判断区块存在！否则不安全
+     * </p>
+     * provideChunk涉及Mixin,同样是调用之前<b>必须</b>判断区块存在！否则不安全
+     * {@link com.mitchej123.hodgepodge.mixins.early.minecraft.fastload.MixinChunkProviderServer_EntityGuard#provideChunk}
      * 
-     * 访问到{@link net.minecraft.world.gen.ChunkProviderServer#provideChunk} ,
-     * 
-     * 存在不安全的可能
+     * @apiNote 存在不安全的可能
      */
     public static TileEntity getTileEntity(WorldServer world, int x, int y, int z) throws ApiException {
         final TileEntity te;
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap) {
+            MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             te = world.getTileEntity(x, y, z);
         } else if (Config.chunkSafe) {
             try {
@@ -90,5 +115,27 @@ public final class McAccessor {
             te = world.getTileEntity(x, y, z);
         }
         return te;
+    }
+
+    /**
+     * 涉及的堆栈:
+     * </p>
+     * {@link net.minecraft.world.World#blockExists} ->
+     * {@link net.minecraft.world.gen.ChunkProviderServer#chunkExists}
+     */
+    public static boolean blockExists(WorldServer world, int x, int y, int z) throws ApiException {
+        if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap) {
+            MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
+            return world.blockExists(x, y, z);
+        } else if (Config.chunkSafe) {
+            try {
+                return ServerThreadDispatcher.callOnServerThread(() -> world.blockExists(x, y, z));
+            } catch (Exception e) {
+                Logs.e(e);
+                throw new ApiException(500, "Error checking block existence: " + e.getMessage());
+            }
+        } else {
+            return world.blockExists(x, y, z);
+        }
     }
 }

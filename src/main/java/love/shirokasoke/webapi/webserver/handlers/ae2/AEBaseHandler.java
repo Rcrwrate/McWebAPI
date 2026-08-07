@@ -48,7 +48,6 @@ public class AEBaseHandler extends BlockHandler {
         TileEntity tileEntity = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
         if (tileEntity instanceof IGridHost) {
             host = (IGridHost) tileEntity;
-
         } else {
             throw new ApiException(401, "Not belong to AE");
         }

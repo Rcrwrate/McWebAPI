@@ -73,15 +73,23 @@ public class AEItemHandler extends AEBaseHandler {
     /**
      * 获取指定网格的缓存条目。若缓存不存在（首次请求），则立即同步构建一次，
      * 并激活每 {@link #REFRESH_INTERVAL_SECONDS} 秒刷新的定时任务。
+     * 
+     * @throws ApiException
      */
-    private static CacheEntry getOrCreateCacheEntry(UUID gridId, IGrid grid) {
+    private static CacheEntry getOrCreateCacheEntry(UUID gridId, IGrid grid) throws ApiException {
         CacheEntry entry = CACHE.get(gridId);
         if (entry == null) {
             synchronized (CACHE) {
                 entry = CACHE.get(gridId);
                 if (entry == null) {
-                    // 首次请求在 HTTP 线程内同步完成：主线程采集快照 + 当前线程构建 JSON
-                    RawSnapshot snap = collectSnapshot(grid);
+                    RawSnapshot snap;
+                    try {
+                        snap = ServerThreadDispatcher.callOnServerThread(() -> collectSnapshot(grid));
+                    } catch (Exception e) {
+                        Logs.e(e);
+                        throw new ApiException(503, e.getMessage());
+                    }
+
                     byte[] bytes = buildJsonBytesFromSnapshot(snap);
                     entry = new CacheEntry(bytes, grid);
                     // 激活定时缓存刷新任务
