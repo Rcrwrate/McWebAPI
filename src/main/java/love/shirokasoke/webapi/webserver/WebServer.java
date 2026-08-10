@@ -3,6 +3,8 @@ package love.shirokasoke.webapi.webserver;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.sun.net.httpserver.HttpServer;
 
@@ -17,10 +19,19 @@ public class WebServer {
     private static volatile HttpServer server;
     private static volatile boolean isRunning = false;
 
-    /**
-     * Start the HTTP server on the specified port
-     * Automatically registers all routes from RouteRegistry
-     */
+    private static ThreadFactory threadFactory = new ThreadFactory() {
+
+        private final AtomicInteger count = new AtomicInteger(0);
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setName("http-worker-" + count.incrementAndGet());
+            t.setDaemon(false);
+            return t;
+        }
+    };
+
     public static void start(int port, int nThreads) {
         if (isRunning) {
             MyMod.LOG.warn("[WebServer] Server is already running!");
@@ -30,22 +41,14 @@ public class WebServer {
         try {
             MyMod.LOG.info("[WebServer] Starting HTTP server on port {}...", port);
 
-            // Initialize default routes if not already done
             if (RouteRegistry.getAllRoutes()
                 .isEmpty()) {
                 RouteRegistry.initializeDefaultRoutes();
             }
 
-            // Create HTTP server
             server = HttpServer.create(new InetSocketAddress(port), 0);
-
-            // Register all routes
             registerRoutes();
-
-            // Set thread pool executor
-            server.setExecutor(Executors.newFixedThreadPool(nThreads));
-
-            // Start server
+            server.setExecutor(Executors.newFixedThreadPool(nThreads, threadFactory));
             server.start();
             isRunning = true;
 

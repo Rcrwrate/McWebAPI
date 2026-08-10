@@ -32,6 +32,9 @@ public final class McAccessor {
         return server;
     }
 
+    /**
+     * 涉及的堆栈: {@link net.minecraftforge.common.DimensionManager#worlds} 为 Hashtable 并发安全
+     */
     public static WorldServer getWorld(MinecraftServer server, int dim) throws ApiException {
         WorldServer world = server.worldServerForDimension(dim);
         if (world == null) {
@@ -89,7 +92,7 @@ public final class McAccessor {
      * 涉及的堆栈:
      * </p>
      * {@link net.minecraft.world.World#getTileEntity} ->
-     * {@link net.minecraft.world.World#addedTileEntityList} 为ArrayList(线程不安全，但是无需关注)
+     * {@link net.minecraft.world.World#addedTileEntityList} 为ArrayList(fail-fast，无需关心)
      * </p>
      * {@link net.minecraft.world.World#getChunkFromChunkCoords} ->
      * {@link net.minecraft.world.gen.ChunkProviderServer#provideChunk} 调用之前<b>必须</b>判断区块存在！否则不安全

@@ -35,7 +35,7 @@ public final class Accessor {
     private static Field mSmartInputHatches = null;
 
     /**
-     * 访问 {@link MTEMultiBlockBase#mSmartInputHatches}
+     * 访问 {@link MTEMultiBlockBase#mSmartInputHatches} 类型 {@link ArrayList} (fail-fast，无需关心)
      */
     public static ArrayList<ISmartInputHatch> MTEMultiBlockBase_mSmartInputHatches(MTEMultiBlockBase multi) {
         try {
@@ -110,11 +110,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 {@link CraftingCPUCluster} 的私有 tasks 字段 */
+    /** 缓存私有字段 {@link CraftingCPUCluster#tasks} */
     private static Field craftingCPUClusterTasks = null;
 
     /**
-     * 访问 {@link CraftingCPUCluster} 的私有 tasks 字段。
+     * 访问私有字段 {@link CraftingCPUCluster#tasks} 类型 {@link java.util.TreeMap} (fail-fast，无需关心)
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
      */
@@ -131,11 +131,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 TaskProgress 的私有 value 字段 */
+    /** 缓存私有字段 {@link TaskProgress#value} */
     private static Field taskProgressValue = null;
 
     /**
-     * 访问 {@link TaskProgress} 的私有 value 字段。
+     * 访问私有字段 {@link TaskProgress#value}
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
      */
@@ -152,11 +152,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 {@link CraftingCPUCluster} 的私有 waitingFor 字段 */
+    /** 缓存私有字段 {@link CraftingCPUCluster#waitingFor} */
     private static Field craftingCPUClusterWaitingFor = null;
 
     /**
-     * 访问 {@link CraftingCPUCluster} 的私有 waitingFor 字段。
+     * 访问私有字段 {@link CraftingCPUCluster#waitingFor}
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
      */

@@ -76,31 +76,33 @@ public class AEItemHandler extends AEBaseHandler {
      * 
      * @throws ApiException
      */
-    private static CacheEntry getOrCreateCacheEntry(UUID gridId, IGrid grid) throws ApiException {
+    private CacheEntry getOrCreateCacheEntry(UUID gridId, IGrid grid) throws ApiException {
         CacheEntry entry = CACHE.get(gridId);
         if (entry == null) {
-            synchronized (CACHE) {
-                entry = CACHE.get(gridId);
-                if (entry == null) {
-                    RawSnapshot snap;
-                    try {
-                        snap = ServerThreadDispatcher.callOnServerThread(() -> collectSnapshot(grid));
-                    } catch (Exception e) {
-                        Logs.e(e);
-                        throw new ApiException(503, e.getMessage());
-                    }
+            RawSnapshot snap;
+            try {
+                snap = ServerThreadDispatcher.callOnServerThread(() -> collectSnapshot(grid));
+            } catch (Exception e) {
+                Logs.e(e);
+                throw new ApiException(503, e.getMessage());
+            }
 
-                    byte[] bytes = buildJsonBytesFromSnapshot(snap);
-                    entry = new CacheEntry(bytes, grid);
-                    // 激活定时缓存刷新任务
-                    ScheduledFuture<?> future = SCHEDULER.scheduleAtFixedRate(
-                        new RefreshTask(gridId),
-                        REFRESH_INTERVAL_SECONDS,
-                        REFRESH_INTERVAL_SECONDS,
-                        TimeUnit.SECONDS);
-                    entry.future = future;
-                    CACHE.put(gridId, entry);
-                }
+            byte[] bytes = buildJsonBytesFromSnapshot(snap);
+            CacheEntry newEntry = new CacheEntry(bytes, grid);
+            // 激活定时缓存刷新任务
+            ScheduledFuture<?> future = SCHEDULER.scheduleAtFixedRate(
+                new RefreshTask(gridId),
+                REFRESH_INTERVAL_SECONDS,
+                REFRESH_INTERVAL_SECONDS,
+                TimeUnit.SECONDS);
+            newEntry.future = future;
+
+            CacheEntry existing = CACHE.putIfAbsent(gridId, newEntry);
+            if (existing == null) {
+                entry = newEntry; // 竞争获胜，使用自己的条目
+            } else {
+                future.cancel(false); // 竞争失败：取消多余的刷新任务
+                entry = existing;
             }
         }
         entry.lastAccessMs = System.currentTimeMillis();
@@ -109,6 +111,14 @@ public class AEItemHandler extends AEBaseHandler {
 
     /**
      * 在主线程采集 AE2 网络的原始数据快照
+     * <p>
+     * {@line IMEMonitor#getStorageList()} 的委托实现位于
+     * {@link appeng.me.cache.NetworkMonitor#getStorageList()}
+     * <p>
+     * 访问{@code cachedList} -> {@link appeng.util.item.ItemList#setRecords}/{@link appeng.util.item.FluidList#records}
+     * <p>
+     * 类型 {@link it.unimi.dsi.fastutil.objects.ObjectOpenHashSet} (非线程安全，非fail-fast，需要注意，getStorageList会触发cachedList重建)
+     * @apiNote 必须在主线程操作
      */
     private static RawSnapshot collectSnapshot(IGrid grid) {
         IStorageGrid storageGrid = grid.getCache(IStorageGrid.class);
@@ -375,7 +385,7 @@ public class AEItemHandler extends AEBaseHandler {
                 if (entry.future != null) {
                     entry.future.cancel(false);
                 }
-                CACHE.remove(gridId);
+                CACHE.remove(gridId, entry);
                 return;
             }
 

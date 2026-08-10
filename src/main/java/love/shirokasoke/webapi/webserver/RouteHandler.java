@@ -277,7 +277,7 @@ public interface RouteHandler extends HttpHandler {
         return parseQueryParams(query);
     }
 
-    public class ApiException extends IOException {
+    public final class ApiException extends IOException {
 
         public int code;
 

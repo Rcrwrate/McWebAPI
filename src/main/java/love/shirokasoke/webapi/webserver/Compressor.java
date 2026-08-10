@@ -110,6 +110,6 @@ public class Compressor {
                 Logs.e(e);
             }
         }
-        MyMod.LOG.info("压缩算法可用性:\tbr {} zstd {}", br, zstd);
+        MyMod.LOG.debug("压缩算法可用性:\tbr {} zstd {}", br, zstd);
     }
 }

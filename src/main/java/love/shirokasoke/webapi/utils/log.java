@@ -17,8 +17,9 @@ public final class log {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
-        MyMod.LOG.error(sw);
-        return sw.toString();
+        String stackTrace = sw.toString();
+        MyMod.LOG.error(stackTrace);
+        return stackTrace;
     }
 
     public static void debugFields(Object obj) {

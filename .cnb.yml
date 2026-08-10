@@ -39,7 +39,7 @@ $:
   vscode:
     - runner:
         tags: cnb:arch:amd64
-        cpus: 36
+        cpus: 34
       services:
         - docker
       imports:
