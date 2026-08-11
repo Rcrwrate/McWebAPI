@@ -13,6 +13,7 @@ import appeng.api.networking.security.IActionHost;
 import appeng.api.parts.IPart;
 import appeng.api.util.DimensionalCoord;
 import love.shirokasoke.webapi.utils.ClassUtils;
+import love.shirokasoke.webapi.webserver.Context;
 
 /**
  * 查看 AE 网络中的所有节点信息
@@ -31,10 +32,10 @@ public class AENodesHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        AEinit(exchange);
+        Context context = AEinit(exchange);
 
         ArrayNode nodes = mapper.createArrayNode();
-        for (IGridNode node : grid.getNodes()) {
+        for (IGridNode node : context.grid.getNodes()) {
             ObjectNode nodeData = nodes.addObject();
             nodeData.put("active", node.isActive());
             nodeData.put("meetsChannel", node.meetsChannelRequirements());

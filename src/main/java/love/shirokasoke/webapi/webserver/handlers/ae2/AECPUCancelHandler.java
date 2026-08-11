@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
+import appeng.api.networking.IGrid;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
@@ -34,7 +35,7 @@ public class AECPUCancelHandler extends AEBaseHandler {
             throw new ApiException(400, "Method must be DELETE");
         }
 
-        AEinit(exchange);
+        IGrid grid = AEinit(exchange).grid;
 
         JsonNode body = getBody(exchange);
         String targetName = body.path("name")

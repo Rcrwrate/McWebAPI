@@ -90,8 +90,8 @@ public class ChunkMapHandler extends ChunkHandler {
     @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
-        getCo(params);
-        Chunk chunk = McAccessor.loadChunk(dimension, chunkX, chunkZ);
+        ChunkCoord cc = getCo(params);
+        Chunk chunk = McAccessor.loadChunk(cc.dimension, cc.chunkXPos, cc.chunkZPos);
 
         BlockInfo[][] data = extractChunkData(chunk);
         setCache(exchange, 60);

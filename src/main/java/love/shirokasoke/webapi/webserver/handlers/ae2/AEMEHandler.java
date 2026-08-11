@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,8 +19,8 @@ import appeng.parts.CableBusContainer;
 import appeng.tile.misc.TileInterface;
 import codechicken.multipart.TMultiPart;
 import codechicken.multipart.TileMultipart;
-import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.utils.Pattern;
+import love.shirokasoke.webapi.webserver.Context;
 import scala.collection.Iterator;
 
 public class AEMEHandler extends AEBaseHandler {
@@ -31,8 +32,8 @@ public class AEMEHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        AEinit(exchange);
-        TileEntity tile = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
+        Context context = AEinit(exchange);
+        TileEntity tile = context.tileEntity;
 
         // 1) 方块形式的 ME 接口（TileInterface）
         if (tile instanceof TileInterface) {
@@ -40,14 +41,14 @@ public class AEMEHandler extends AEBaseHandler {
             IInventory patternInv = iface.getInterfaceDuality()
                 .getPatterns();
             if (patternInv != null) {
-                sendPatterns(exchange, patternInv, null);
+                sendPatterns(exchange, patternInv, null, context.world);
                 return;
             }
             throw new ApiException(404, "ME interface has no IInventory");
         }
 
         // 2) FMP 形式的 ME 接口（PartInterface 以 CableBusPart 的面部件存在）
-        TileMultipart mp = TileMultipart.getOrConvertTile(world, co.BlockCoord());
+        TileMultipart mp = TileMultipart.getOrConvertTile(context.world, context.co.BlockCoord());
         if (mp != null) {
             Iterator<TMultiPart> it = ((scala.collection.Iterable<TMultiPart>) mp.partList()).iterator();
             while (it.hasNext()) {
@@ -60,7 +61,7 @@ public class AEMEHandler extends AEBaseHandler {
                         if (sidePart instanceof IInterfaceHost) {
                             IInventory patternInv = ((IInterfaceHost) sidePart).getPatterns();
                             if (patternInv != null) {
-                                sendPatterns(exchange, patternInv, dir.name());
+                                sendPatterns(exchange, patternInv, dir.name(), context.world);
                                 return;
                             }
                         }
@@ -79,7 +80,8 @@ public class AEMEHandler extends AEBaseHandler {
      * @param patternInv 样板物品栏
      * @param direction  部件所在方向（FMP 形式时提供，方块形式可为 null）
      */
-    private void sendPatterns(HttpExchange exchange, IInventory patternInv, String direction) throws IOException {
+    private void sendPatterns(HttpExchange exchange, IInventory patternInv, String direction, WorldServer world)
+        throws IOException {
         ArrayNode patterns = mapper.createArrayNode();
         for (int i = 0; i < patternInv.getSizeInventory(); i++) {
             ItemStack patternStack = patternInv.getStackInSlot(i);

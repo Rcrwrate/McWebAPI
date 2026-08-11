@@ -21,8 +21,9 @@ import com.sun.net.httpserver.HttpExchange;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.McAccessor;
+import love.shirokasoke.webapi.webserver.RouteHandler;
 
-public class BatchSetBlockHandler extends BlockHandler {
+public class BatchSetBlockHandler implements RouteHandler {
 
     private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
     private static final ConcurrentHashMap<String, BatchJob> JOBS = new ConcurrentHashMap<>();

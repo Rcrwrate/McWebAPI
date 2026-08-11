@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import appeng.api.AEApi;
+import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IInterfaceViewable;
@@ -29,7 +30,7 @@ public class AEMEsHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        AEinit(exchange);
+        IGrid grid = AEinit(exchange).grid;
         Map<String, String> params = parseQueryParams(exchange);
 
         // 获取可被ME接口终端查看的机器类型列表

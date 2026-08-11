@@ -20,6 +20,7 @@ import love.shirokasoke.webapi.utils.Accessor;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.Pattern;
+import love.shirokasoke.webapi.webserver.Context;
 
 /**
  * 查看 AE 网络中所有合成 CPU 状态
@@ -38,10 +39,10 @@ public class AECPUHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        AEinit(exchange);
+        Context context = AEinit(exchange);
 
         // 从网格缓存中获取合成网格接口
-        ICraftingGrid craftingGrid = grid.getCache(ICraftingGrid.class);
+        ICraftingGrid craftingGrid = context.grid.getCache(ICraftingGrid.class);
         if (craftingGrid == null) {
             throw new ApiException(500, "Crafting grid not available");
         }

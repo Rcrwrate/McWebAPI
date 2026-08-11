@@ -9,8 +9,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.webserver.Context;
+import love.shirokasoke.webapi.webserver.RouteHandler;
 
-public class SetBlockHandler extends BlockHandler {
+public class SetBlockHandler implements RouteHandler {
 
     @Override
     public String getPath() {
@@ -31,7 +33,10 @@ public class SetBlockHandler extends BlockHandler {
         JsonNode data = getBody(exchange);
         String query = exchange.getRequestURI()
             .getQuery();
-        coordinates co = checklist(query);
+        coordinates co = getCoordinates(query);
+        Context context = new Context(co).initServer()
+            .initWorld()
+            .checkblockExists();
 
         int id = data.get("id")
             .asInt();
@@ -48,7 +53,7 @@ public class SetBlockHandler extends BlockHandler {
         boolean changed = false;
         try {
             changed = ServerThreadDispatcher
-                .callOnServerThread(() -> world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag));
+                .callOnServerThread(() -> context.world.setBlock(co.posX, co.posY, co.posZ, block, metadataIn, flag));
         } catch (Exception e) {
             throw new IOException(e);
         }

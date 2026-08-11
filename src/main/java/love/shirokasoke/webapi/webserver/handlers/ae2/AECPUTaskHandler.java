@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import appeng.api.AEApi;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridHost;
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.ICraftingJob;
@@ -28,6 +30,7 @@ import appeng.crafting.v2.CraftingJobV2;
 import appeng.util.Platform;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.NBT;
+import love.shirokasoke.webapi.webserver.Context;
 
 /**
  * 向 AE 合成网络提交自动合成任务
@@ -69,7 +72,9 @@ public class AECPUTaskHandler extends AEBaseHandler {
             throw new ApiException(400, "Method must be POST");
         }
 
-        AEinit(exchange);
+        Context context = AEinit(exchange);
+        IGrid grid = context.grid;
+        IGridHost host = context.host;
 
         JsonNode json = getBody(exchange);
 
@@ -154,7 +159,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
         }
 
         // 开始异步计算合成计划
-        Future<ICraftingJob> future = craftingGrid.beginCraftingJob(world, grid, src, craftWhat, null);
+        Future<ICraftingJob> future = craftingGrid.beginCraftingJob(context.world, grid, src, craftWhat, null);
         ICraftingJob<?> job = waitForJob(future);
 
         // 若计算结果为 simulation，说明材料不足或该物品无法合成

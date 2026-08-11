@@ -30,6 +30,7 @@ import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
+import love.shirokasoke.webapi.webserver.Context;
 
 public class AEItemHandler extends AEBaseHandler {
 
@@ -62,9 +63,9 @@ public class AEItemHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        AEinit(exchange);
-        UUID gridId = grid.getId();
-        CacheEntry entry = getOrCreateCacheEntry(gridId, grid);
+        Context context = AEinit(exchange);
+        UUID gridId = context.grid.getId();
+        CacheEntry entry = getOrCreateCacheEntry(gridId, context.grid);
         exchange.getResponseHeaders()
             .set("Content-Type", "application/json");
         sendResponse(exchange, 200, entry.jsonBytes);
@@ -118,6 +119,7 @@ public class AEItemHandler extends AEBaseHandler {
      * 访问{@code cachedList} -> {@link appeng.util.item.ItemList#setRecords}/{@link appeng.util.item.FluidList#records}
      * <p>
      * 类型 {@link it.unimi.dsi.fastutil.objects.ObjectOpenHashSet} (非线程安全，非fail-fast，需要注意，getStorageList会触发cachedList重建)
+     * 
      * @apiNote 必须在主线程操作
      */
     private static RawSnapshot collectSnapshot(IGrid grid) {

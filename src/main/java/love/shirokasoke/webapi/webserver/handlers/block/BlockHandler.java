@@ -5,7 +5,6 @@ import java.io.IOException;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
@@ -17,12 +16,10 @@ import love.shirokasoke.webapi.utils.Blocks;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.McAccessor;
+import love.shirokasoke.webapi.webserver.Context;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class BlockHandler implements RouteHandler {
-
-    protected MinecraftServer server;
-    protected WorldServer world;
 
     @Override
     public String getPath() {
@@ -34,26 +31,18 @@ public class BlockHandler implements RouteHandler {
         return "Get block information at specified coordinates. Query params: x, y, z, dim (optional, default=0)";
     }
 
-    protected coordinates checklist(String query) throws ApiException {
-        if (query == null) {
-            throw new ApiException(400, "Missing query parameters. Required: x, y, z");
-        }
-        coordinates co = getCoordinates(query);
-        server = McAccessor.getServer();
-        world = McAccessor.getWorld(server, co.dimension);
-
-        Boolean t = !McAccessor.blockExists(world, co.posX, co.posY, co.posZ);
-        if (t) {
-            throw new ApiException(404, "Chunk not loaded at coordinates: " + co.toString());
-        }
-        return co;
-    }
-
     @Override
     public void run(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI()
             .getQuery();
-        coordinates co = checklist(query);
+        if (query == null) {
+            throw new ApiException(400, "Missing query parameters. Required: x, y, z");
+        }
+        coordinates co = getCoordinates(query);
+        Context context = new Context(co).initServer()
+            .initWorld()
+            .checkblockExists();
+        WorldServer world = context.world;
 
         Block block = world.getBlock(co.posX, co.posY, co.posZ);
         int metadata = world.getBlockMetadata(co.posX, co.posY, co.posZ);

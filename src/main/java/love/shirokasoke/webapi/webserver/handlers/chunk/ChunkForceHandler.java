@@ -6,7 +6,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
@@ -117,15 +116,15 @@ public class ChunkForceHandler extends ChunkHandler {
     }
 
     private void handleLoadChunk(HttpExchange exchange, Map<String, String> params) throws IOException {
-        getCo(params);
+        ChunkCoord cc = getCo(params);
         int duration = Integer.parseInt(params.getOrDefault("duration", "60"));
 
         if (duration <= 0) {
             throw new ApiException(400, "Duration must be large then 0 seconds");
         }
 
-        WorldServer world = McAccessor.getWorld(dimension);
-        String ticketKey = dimension + ":" + chunkX + ":" + chunkZ;
+        WorldServer world = McAccessor.getWorld(cc.dimension);
+        String ticketKey = cc.dimension + ":" + cc.chunkXPos + ":" + cc.chunkZPos;
 
         if (activeChunkLoads.containsKey(ticketKey)) {
             throw new ApiException(409, "Chunk already being force loaded: " + ticketKey);
@@ -137,12 +136,11 @@ public class ChunkForceHandler extends ChunkHandler {
             throw new ApiException(503, "Failed to acquire chunk loading ticket. Too many chunks already loaded.");
         }
 
-        ChunkCoordIntPair chunk = new ChunkCoordIntPair(chunkX, chunkZ);
-        ForgeChunkManager.forceChunk(ticket, chunk);
+        ForgeChunkManager.forceChunk(ticket, cc);
 
         // Ensure the chunk is actually loaded into memory
         ServerThreadDispatcher
-            .scheduleOnServerThread(() -> { world.theChunkProviderServer.loadChunk(chunkX, chunkZ); });
+            .scheduleOnServerThread(() -> { world.theChunkProviderServer.loadChunk(cc.chunkXPos, cc.chunkZPos); });
 
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
@@ -159,7 +157,14 @@ public class ChunkForceHandler extends ChunkHandler {
 
         timer.schedule(task, duration * 1000L);
 
-        ChunkLoadInfo info = new ChunkLoadInfo(ticket, chunkX, chunkZ, dimension, duration, timer, ticketKey);
+        ChunkLoadInfo info = new ChunkLoadInfo(
+            ticket,
+            cc.chunkXPos,
+            cc.chunkZPos,
+            cc.dimension,
+            duration,
+            timer,
+            ticketKey);
         activeChunkLoads.put(ticketKey, info);
 
         ObjectNode response = info.dump();
@@ -169,8 +174,8 @@ public class ChunkForceHandler extends ChunkHandler {
     }
 
     private void handleUnloadChunk(HttpExchange exchange, Map<String, String> params) throws IOException {
-        getCo(params);
-        String ticketKey = dimension + ":" + chunkX + ":" + chunkZ;
+        ChunkCoord cc = getCo(params);
+        String ticketKey = cc.dimension + ":" + cc.chunkXPos + ":" + cc.chunkZPos;
         ChunkLoadInfo info = activeChunkLoads.remove(ticketKey);
 
         if (info != null) {

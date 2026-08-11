@@ -8,9 +8,11 @@ import com.sun.net.httpserver.HttpExchange;
 import codechicken.multipart.TMultiPart;
 import codechicken.multipart.TileMultipart;
 import love.shirokasoke.webapi.utils.FMP;
+import love.shirokasoke.webapi.webserver.Context;
+import love.shirokasoke.webapi.webserver.RouteHandler;
 import scala.collection.Iterator;
 
-public class FMPHandler extends BlockHandler {
+public class FMPHandler implements RouteHandler {
 
     @Override
     public String getPath() {
@@ -21,9 +23,11 @@ public class FMPHandler extends BlockHandler {
     public void run(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI()
             .getQuery();
-        coordinates co = checklist(query);
+        Context con = new Context(getCoordinates(query)).initServer()
+            .initWorld()
+            .checkblockExists();
 
-        TileMultipart mp = TileMultipart.getOrConvertTile(world, co.BlockCoord());
+        TileMultipart mp = TileMultipart.getOrConvertTile(con.world, con.co.BlockCoord());
         if (mp == null) {
             throw new ApiException(404, "Not TileMultipart");
         } else {

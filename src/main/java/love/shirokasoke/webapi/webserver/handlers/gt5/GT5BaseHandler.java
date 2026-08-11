@@ -2,22 +2,14 @@ package love.shirokasoke.webapi.webserver.handlers.gt5;
 
 import java.io.IOException;
 
-import net.minecraft.tileentity.TileEntity;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
-import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
-import gregtech.api.metatileentity.MetaTileEntity;
 import love.shirokasoke.webapi.utils.GT5Utils;
-import love.shirokasoke.webapi.utils.McAccessor;
-import love.shirokasoke.webapi.webserver.handlers.block.BlockHandler;
+import love.shirokasoke.webapi.webserver.Context;
+import love.shirokasoke.webapi.webserver.RouteHandler;
 
-public class GT5BaseHandler extends BlockHandler {
-
-    protected IGregTechTileEntity igte;
-    protected MetaTileEntity mte;
-    protected coordinates co;
+public class GT5BaseHandler implements RouteHandler {
 
     @Override
     public String getPath() {
@@ -31,44 +23,32 @@ public class GT5BaseHandler extends BlockHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        GT5init(exchange);
-
-        ObjectNode data = buildMachineInfo();
+        ObjectNode data = buildMachineInfo(GT5init(exchange));
         sendResponse(exchange, data);
     }
 
-    protected void GT5init(HttpExchange exchange) throws ApiException {
+    protected Context GT5init(HttpExchange exchange) throws ApiException {
         String query = exchange.getRequestURI()
             .getQuery();
-        co = checklist(query);
-
-        TileEntity tileEntity = McAccessor.getTileEntity(world, co.posX, co.posY, co.posZ);
-        if (!(tileEntity instanceof IGregTechTileEntity)) {
-            throw new ApiException(404, "Block at given coordinates is not a GT5 machine");
-        }
-
-        igte = (IGregTechTileEntity) tileEntity;
-        if (!igte.canAccessData()) {
-            throw new ApiException(404, "GT5 machine has no valid MetaTileEntity");
-        }
-
-        mte = (MetaTileEntity) igte.getMetaTileEntity();
-        if (mte == null) {
-            throw new ApiException(404, "GT5 machine MetaTileEntity is null");
-        }
+        coordinates co = getCoordinates(query);
+        return new Context(co).initServer()
+            .initWorld()
+            .checkblockExists()
+            .initTileEntity()
+            .initGT();
     }
 
-    protected ObjectNode buildMachineInfo() {
+    protected ObjectNode buildMachineInfo(Context context) {
         ObjectNode data = mapper.createObjectNode();
 
-        data.put("x", co.posX)
-            .put("y", co.posY)
-            .put("z", co.posZ)
-            .put("dimension", co.dimension);
+        data.put("x", context.co.posX)
+            .put("y", context.co.posY)
+            .put("z", context.co.posZ)
+            .put("dimension", context.co.dimension);
 
-        GT5Utils.writeBasicMachineInfo(igte, mte, data);
-        GT5Utils.write(mte, data);
-        GT5Utils.writeState(igte, data.putObject("state"));
+        GT5Utils.writeBasicMachineInfo(context.igte, context.mte, data);
+        GT5Utils.write(context.mte, data);
+        GT5Utils.writeState(context.igte, data.putObject("state"));
         return data;
     }
 }
