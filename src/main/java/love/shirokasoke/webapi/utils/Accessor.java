@@ -65,7 +65,7 @@ public final class Accessor {
             return (List<NBTBase>) field_74747_a.get(tagList);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             Logs.e(e);
-            return new ArrayList<>();
+            return List.of();
         }
     }
 

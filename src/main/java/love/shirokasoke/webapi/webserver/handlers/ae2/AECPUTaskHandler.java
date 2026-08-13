@@ -5,7 +5,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
@@ -27,7 +26,6 @@ import appeng.api.networking.security.MachineSource;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.crafting.v2.CraftingJobV2;
-import appeng.util.Platform;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.NBT;
 import love.shirokasoke.webapi.webserver.Context;
@@ -35,13 +33,7 @@ import love.shirokasoke.webapi.webserver.Context;
 /**
  * 向 AE 合成网络提交自动合成任务
  *
- * <p>
- * <b>实现流程：</b>
- * <ol>
- * <li>校验请求方法为 POST，解析 JSON 请求体</li>
- * <li>通过坐标参数定位 AE 网络并初始化</li>
- * <li>根据 id + damage 构造 {@link ItemStack}，再包装为 {@link IAEItemStack}
- * 并设置合成数量</li>
+ * <li>构造 {@link ItemStack}，再包装为 {@link IAEItemStack} 并设置合成数量</li>
  * <li>调用 {@link ICraftingGrid#beginCraftingJob} 异步计算合成计划</li>
  * <li>等待计算完成（兼容 V1/V2 两种计算器，30 秒超时）</li>
  * <li>若计算结果为 simulation（材料不足），返回失败</li>
@@ -81,47 +73,27 @@ public class AECPUTaskHandler extends AEBaseHandler {
         String cpuName = json.path("cpu")
             .asText(null);
 
-        NBTTagCompound nbt = new NBTTagCompound();
-        if (json.has("id")) {
-            nbt.setShort(
-                "id",
-                (short) json.get("id")
-                    .asInt());
-        } else {
-            throw new ApiException(400, "missing field 'id'");
+        int id = json.path("id")
+            .asInt(-1);
+        if (id < 0) {
+            throw new ApiException(400, "invalid field 'id'");
         }
-        boolean isItem = true;
-        if (json.has("Type")) {
-            isItem = !"fluid".equals(
-                json.get("Type")
-                    .asText());
-        }
-        if (json.has("Count")) {
-            nbt.setInteger("Count", 1);
-        } else {
-            throw new ApiException(400, "missing field 'Count'");
-        }
-        long count = json.get("Count")
-            .asLong();
-        if (json.has("Damage")) {
-            nbt.setShort(
-                "Damage",
-                (short) json.get("Damage")
-                    .asInt());
-        } else {
-            nbt.setShort("Damage", (short) 0);
-        }
-        if (json.has("tag")) {
-            NBTTagCompound tagNbt = NBT.readFromBase64(
-                json.get("tag")
-                    .asText());
-            if (tagNbt != null) {
-                nbt.setTag("tag", tagNbt);
-            }
+        boolean isItem = !"fluid".equals(
+            json.path("Type")
+                .asText("item"));
+        long count = json.path("Count")
+            .asLong(-1);
+        if (count < 0) {
+            throw new ApiException(400, "invalid field 'Count'");
         }
         IAEStack<?> craftWhat;
         if (isItem) {
-            ItemStack stack = Platform.loadItemStackFromNBT(nbt);
+            ItemStack stack = NBT.toItemStack(
+                id,
+                json.path("Damage")
+                    .asInt(0),
+                json.path("tag")
+                    .asText(null));
             craftWhat = AEApi.instance()
                 .storage()
                 .createItemStack(stack)

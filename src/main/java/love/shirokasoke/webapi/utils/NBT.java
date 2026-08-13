@@ -92,7 +92,7 @@ public final class NBT {
     }
 
     /**
-     * 统一构造{@link ItemStack}
+     * 统一构造{@link ItemStack}, stackSize需要自行设置
      */
     public static ItemStack toItemStack(int id, int damage, String tagBase64) {
         NBTTagCompound nbt = new NBTTagCompound();
