@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.utils.log;
+import love.shirokasoke.webapi.utils.Logs;
 
 public class CloudflaredTunnel {
 
@@ -110,7 +110,7 @@ public class CloudflaredTunnel {
             MyMod.LOG.info("[CloudFlared] started, log -> {}", new File(LOG_FILE).getAbsolutePath());
         } catch (IOException e) {
             MyMod.LOG.error("[CloudFlared] failed to start cloudflared: {}", e.getMessage());
-            log.e(e);
+            Logs.e(e);
         }
     }
 
@@ -183,7 +183,7 @@ public class CloudflaredTunnel {
                 }
             }
         } catch (IOException e) {
-            log.e(e);
+            Logs.e(e);
             if (download.exists()) {
                 download.delete();
             }

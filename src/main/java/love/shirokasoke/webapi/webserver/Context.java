@@ -14,6 +14,9 @@ import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler.ApiException;
 import love.shirokasoke.webapi.webserver.RouteHandler.coordinates;
 
+/**
+ * MC上下文封装
+ */
 public class Context {
 
     public coordinates co;

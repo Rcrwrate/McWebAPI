@@ -1,7 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -51,12 +50,13 @@ public class AECPUHandler extends AEBaseHandler {
         for (ICraftingCPU cpu : craftingGrid.getCpus()) {
             ObjectNode cpuNode = mapper.createObjectNode();
 
-            // 若 CPU 是 CraftingCPUCluster，尝试导出更详细的任务与机器坐标信息
+            // 理论上 CPU 只可能是 CraftingCPUCluster
             if (cpu instanceof CraftingCPUCluster cluster) {
                 dumpCraftingTasks(cluster, cpuNode);
+                dumpBasicInfo(cluster, cpuNode);
+            } else {
+                Logs.debugFields(cpus);
             }
-            // 后置，因为调用isBusy会清空已完成的task
-            dumpBasicInfo(cpu, cpuNode);
             cpus.add(cpuNode);
         }
         setCache(exchange, 5);
@@ -64,11 +64,11 @@ public class AECPUHandler extends AEBaseHandler {
     }
 
     /**
-     * 导出 CPU 的基础信息。
+     * 导出 CPU 的基础信息，类型访问安全
      */
-    private ObjectNode dumpBasicInfo(ICraftingCPU cpu, ObjectNode cpuNode) {
+    private ObjectNode dumpBasicInfo(CraftingCPUCluster cpu, ObjectNode cpuNode) {
         cpuNode.put("name", cpu.getName())
-            .put("busy", cpu.isBusy())
+            // .put("busy", cpu.isBusy()) isBusy会对task进行写入，规避，已移至dumpCraftingTasks
             .put("availableStorage", cpu.getAvailableStorage())
             .put("usedStorage", cpu.getUsedStorage())
             .put("coProcessors", cpu.getCoProcessors())
@@ -98,13 +98,17 @@ public class AECPUHandler extends AEBaseHandler {
      *
      * <p>
      * 每个任务包含输入物品、输出物品、剩余次数以及执行该样板的机器位置列表。
-     * </p>
+     * <p>
+     * 
+     * {@link ICraftingPatternDetails} 实现于 {@link appeng.helpers.PatternHelper} 一次性构建完成后不会修改
      */
     private void dumpCraftingTasks(CraftingCPUCluster cluster, ObjectNode cpuNode) {
         try {
             Map<ICraftingPatternDetails, TaskProgress> tasks = Accessor.CraftingCPUCluster_tasks(cluster);
+            boolean isBusy = false;
 
             if (tasks != null && !tasks.isEmpty()) {
+                isBusy = true;
                 ArrayNode tasksArray = cpuNode.putArray("tasks");
                 for (Map.Entry<ICraftingPatternDetails, TaskProgress> entry : tasks.entrySet()) {
                     ICraftingPatternDetails details = entry.getKey();
@@ -133,11 +137,10 @@ public class AECPUHandler extends AEBaseHandler {
                         ObjectNode outputNode = Pattern.dumpAEStack(output);
                         if (outputNode == null) continue;
 
-                        // 通过 getProviders 获取执行该输出的机器坐标（支持并行合成）
                         ArrayNode providersArray = outputNode.putArray("providers");
                         try {
-                            List<NamedDimensionalCoord> providers = cluster.getProviders(output);
-                            for (NamedDimensionalCoord coord : providers) {
+                            for (NamedDimensionalCoord coord : Accessor
+                                .CraftingCPUCluster_getProviders(cluster, output)) {
                                 ObjectNode coordNode = mapper.createObjectNode();
                                 coordNode.put("x", coord.x);
                                 coordNode.put("y", coord.y);
@@ -153,9 +156,9 @@ public class AECPUHandler extends AEBaseHandler {
                 }
             }
 
-            // 导出已派发、正在等待返回的产物（waitingFor）
             IItemList<IAEStack<?>> waitingFor = Accessor.CraftingCPUCluster_waitingFor(cluster);
             if (waitingFor != null && !waitingFor.isEmpty()) {
+                isBusy = true;
                 ArrayNode taskingArray = cpuNode.putArray("tasking");
                 for (IAEStack<?> stack : waitingFor) {
                     if (stack == null) continue;
@@ -164,8 +167,7 @@ public class AECPUHandler extends AEBaseHandler {
 
                     ArrayNode providersArray = itemNode.putArray("providers");
                     try {
-                        List<NamedDimensionalCoord> providers = cluster.getProviders(stack);
-                        for (NamedDimensionalCoord coord : providers) {
+                        for (NamedDimensionalCoord coord : Accessor.CraftingCPUCluster_getProviders(cluster, stack)) {
                             ObjectNode coordNode = mapper.createObjectNode();
                             coordNode.put("x", coord.x);
                             coordNode.put("y", coord.y);
@@ -176,10 +178,10 @@ public class AECPUHandler extends AEBaseHandler {
                     } catch (Exception e) {
                         Logs.e(e);
                     }
-
                     taskingArray.add(itemNode);
                 }
             }
+            cpuNode.put("busy", isBusy);
         } catch (Exception e) {
             Logs.e(e);
             cpuNode.put("tasksError", e.getMessage());

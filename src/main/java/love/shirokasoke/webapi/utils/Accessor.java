@@ -6,6 +6,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +19,7 @@ import net.minecraft.nbt.NBTTagList;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
+import appeng.api.util.NamedDimensionalCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.cluster.implementations.CraftingCPUCluster.TaskProgress;
 import cpw.mods.fml.relauncher.ReflectionHelper;
@@ -135,7 +138,7 @@ public final class Accessor {
     private static Field taskProgressValue = null;
 
     /**
-     * 访问私有字段 {@link TaskProgress#value}
+     * 访问私有字段 {@link TaskProgress#value} 访问安全
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
      */
@@ -157,6 +160,8 @@ public final class Accessor {
 
     /**
      * 访问私有字段 {@link CraftingCPUCluster#waitingFor}
+     * <p>
+     * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
      */
@@ -171,5 +176,30 @@ public final class Accessor {
             Logs.e(e);
             return null;
         }
+    }
+
+    private static Field craftingCPUClusterProviders = null;
+
+    /**
+     * 访问私有字段 {@link CraftingCPUCluster#providers}
+     * <p>
+     * 直接调用{@link CraftingCPUCluster#getProviders(IAEStack)}存在跨线程写入的风险，采用反射绕过
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     */
+    public static List<NamedDimensionalCoord> CraftingCPUCluster_getProviders(CraftingCPUCluster cluster,
+        IAEStack<?> is) {
+        Map<IAEStack<?>, List<NamedDimensionalCoord>> providers = Collections.emptyMap();
+        try {
+            if (craftingCPUClusterProviders == null) {
+                craftingCPUClusterProviders = CraftingCPUCluster.class.getDeclaredField("providers");
+                craftingCPUClusterProviders.setAccessible(true);
+            }
+            providers = (HashMap<IAEStack<?>, List<NamedDimensionalCoord>>) craftingCPUClusterProviders.get(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return Collections.EMPTY_LIST;
+        }
+        return providers.getOrDefault(is, Collections.EMPTY_LIST);
     }
 }

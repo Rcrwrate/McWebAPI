@@ -6,7 +6,7 @@
     "echo": "echo \"${CNB_VSCODE_PROXY_URI/\\{\\{port\\}\\}/3000}\"",
     "dev": "npm run echo && next dev",
     "build": "next build",
-    "start": "npm run echo && npx serve@latest out -y",
+    "start": "npm run echo && npx -y serve@latest out",
     "lint": "eslint"
   },
   "dependencies": {
@@ -30,7 +30,7 @@
     "@types/react-dom": "19.2.3",
     "eslint": "10.8.0",
     "eslint-config-next": "16.2.12",
-    "typescript": "^6"
+    "typescript": "6.0.3"
   },
   "ignoreScripts": [
     "sharp",
