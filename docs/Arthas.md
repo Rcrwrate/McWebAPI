@@ -205,3 +205,11 @@ ts=2026-08-07 17:13:40.974; [cost=1.719526757318616E9ms] result=@ArrayList[
 Command execution times exceed limit: 1, so command will exit. You can set it with -n option.
 [arthas@74662]$
 ```
+
+## 访问实例
+
+访问MC合成表
+
+```bash
+vmtool --action getInstances --className net.minecraft.item.crafting.CraftingManager --express 'instances[0]["field_77597_b"]'
+```

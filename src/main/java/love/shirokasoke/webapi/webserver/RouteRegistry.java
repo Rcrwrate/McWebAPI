@@ -51,7 +51,7 @@ public class RouteRegistry {
         love.shirokasoke.webapi.webserver.handlers.ae2.Init.i();
         love.shirokasoke.webapi.webserver.handlers.fluid.Init.i();
         love.shirokasoke.webapi.webserver.handlers.gt5.Init.i();
-        // love.shirokasoke.webapi.webserver.handlers.recipe.Init.i();
+        love.shirokasoke.webapi.webserver.handlers.recipe.Init.i();
         register(new love.shirokasoke.webapi.webserver.handlers.ProfilerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.LagAnalyzerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.WorldInfoHandler());
