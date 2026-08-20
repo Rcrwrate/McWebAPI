@@ -1,5 +1,8 @@
 package love.shirokasoke.webapi.utils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -200,6 +203,110 @@ public final class ClassUtils {
         if (superClass != null && superClass != Object.class) {
             extractAllInterfaces(superClass, interfaceNames);
         }
+    }
+
+    /**
+     * 将字段打包为 ObjectNode
+     *
+     * @param field 字段
+     * @param obj   字段所属实例（为 null 时不读取字段值）
+     * @return 包含 name、modifiers、type、value 的 ObjectNode
+     */
+    public static ObjectNode fieldToNode(Field field, Object obj) {
+        ObjectNode node = mapper.createObjectNode();
+        field.setAccessible(true);
+        node.put("name", field.getName());
+        node.put("modifiers", field.getModifiers());
+        node.put(
+            "type",
+            field.getType()
+                .getName());
+        if (obj != null) {
+            try {
+                node.put("value", String.valueOf(field.get(obj)));
+            } catch (IllegalAccessException e) {
+                node.put("value", "访问失败: " + e.getMessage());
+            }
+        }
+        return node;
+    }
+
+    /**
+     * 将方法打包为 ObjectNode
+     *
+     * @param method 方法
+     * @return 包含 name、modifiers、returnType、parameters 的 ObjectNode
+     */
+    public static ObjectNode methodToNode(Method method) {
+        ObjectNode node = mapper.createObjectNode();
+        method.setAccessible(true);
+        node.put("name", method.getName());
+        node.put("modifiers", method.getModifiers());
+        node.put(
+            "returnType",
+            method.getReturnType()
+                .getSimpleName());
+        ArrayNode params = mapper.createArrayNode();
+        for (Parameter param : method.getParameters()) {
+            params.add(
+                param.getType()
+                    .getSimpleName());
+        }
+        node.set("parameters", params);
+        return node;
+    }
+
+    /**
+     * 将对象的所有声明字段打包为 ObjectNode
+     *
+     * @param obj 输入对象
+     * @return 包含 fields 数组的 ObjectNode
+     */
+    public static ObjectNode getFieldsInfo(Object obj) {
+        ObjectNode result = mapper.createObjectNode();
+        ArrayNode fieldsArray = mapper.createArrayNode();
+        if (obj != null) {
+            for (Field field : obj.getClass()
+                .getDeclaredFields()) {
+                fieldsArray.add(fieldToNode(field, obj));
+            }
+        }
+        result.set("fields", fieldsArray);
+        return result;
+    }
+
+    /**
+     * 将对象的所有声明方法打包为 ObjectNode
+     *
+     * @param obj 输入对象
+     * @return 包含 methods 数组的 ObjectNode
+     */
+    public static ObjectNode getMethodsInfo(Object obj) {
+        ObjectNode result = mapper.createObjectNode();
+        ArrayNode methodsArray = mapper.createArrayNode();
+        if (obj != null) {
+            for (Method method : obj.getClass()
+                .getDeclaredMethods()) {
+                methodsArray.add(methodToNode(method));
+            }
+        }
+        result.set("methods", methodsArray);
+        return result;
+    }
+
+    /**
+     * 获取对象完整的类信息（继承关系、接口、字段、方法）
+     *
+     * @param obj 输入对象
+     * @return 包含 class、fields、methods 的 ObjectNode
+     */
+    public static ObjectNode getFullClassInfo(Object obj) {
+        ObjectNode result = getClassInfo(obj);
+        ObjectNode fieldsInfo = getFieldsInfo(obj);
+        ObjectNode methodsInfo = getMethodsInfo(obj);
+        result.set("fields", fieldsInfo.get("fields"));
+        result.set("methods", methodsInfo.get("methods"));
+        return result;
     }
 
     /**

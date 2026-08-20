@@ -9,6 +9,8 @@ public class Init {
     public static void i() {
         RouteRegistry.register(new FurnaceRecipesHandler());
         RouteRegistry.register(CraftingRecipesHandler.INSTANCE);
+        RouteRegistry.register(new GTmaps());
+        RouteRegistry.register(new GTRecipesHandler());
         if (Config.indexCraftingRecipes) {
             new Thread(() -> {
                 IndexedCraftingRecipesHandler r = new IndexedCraftingRecipesHandler(

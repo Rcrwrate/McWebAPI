@@ -11,6 +11,8 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
@@ -31,6 +33,8 @@ public final class Recipes {
     private static final ObjectMapper mapper = Constant.mapper;
 
     private Recipes() {}
+
+    // region 物品匹配
 
     /**
      * 工作台合成语义的物品比较（与 {@link codechicken.nei.NEIServerUtils#areStacksSameTypeCrafting} 一致）。
@@ -60,6 +64,8 @@ public final class Recipes {
             && (!b.getHasSubtypes() || b.getItemDamage() == a.getItemDamage())
             && ItemStack.areItemStackTagsEqual(b, a);
     }
+
+    // region 重建输入
 
     /**
      * 从 URL 参数重建{@link ItemStack}
@@ -104,7 +110,30 @@ public final class Recipes {
         return ItemStack.loadItemStackFromNBT(nbt);
     }
 
-    // ==================== 配方输入展开 ====================
+    /**
+     * 从 URL 参数重建{@link Fluid}
+     * 
+     * @param params 支持流体名称或数字
+     * @return
+     */
+    public static Fluid parseFluid(Map<String, String> params) {
+        String fluidStr = params.get("fluid");
+        if (fluidStr == null || fluidStr.isEmpty()) {
+            return null;
+        }
+        Fluid fluid = FluidRegistry.getFluid(fluidStr);
+        if (fluid == null) {
+            // 尝试按数字 id
+            try {
+                fluid = FluidRegistry.getFluid(Integer.parseInt(fluidStr));
+            } catch (NumberFormatException ignored) {
+                // 保持 null
+            }
+        }
+        return fluid;
+    }
+
+    // region 配方输入展开
 
     /** 一个配方输入槽位的解析结果：候选物品列表 + 矿辞名称（如有） */
     public static class InputSpec {
@@ -391,7 +420,7 @@ public final class Recipes {
         return false;
     }
 
-    // ==================== ShapedOreRecipe 宽高反射 ====================
+    // region ShapedOreRecipe 宽高反射
 
     private static int shapedOreWidth(ShapedOreRecipe recipe) {
         return getIntField(recipe, "width");

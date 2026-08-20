@@ -2,10 +2,10 @@
 
 本项目旨在为[GTNH](https://www.gtnewhorizons.com/)/[GTNH CN WIKI](https://gtnh.huijiwiki.com/wiki/%E9%A6%96%E9%A1%B5)添加一个简单的HTTP API接口
 
-这样你就能在不启动游戏的前提进行快乐的下单了和一些别的操作
+这样你就能在服务端运行时不启动游戏客户端的情况下进行快乐的操作
 
 > [!TIP]
-> 仅推荐服务端使用本mod，你不应该在客户端安装它！
+> 仅推荐服务端使用本mod，你正常情况下不应该在客户端安装它！
 
 ## 使用说明
 
@@ -31,7 +31,7 @@
 | GTNH版本    | 状态     | 最后版本            |
 | ----------- | -------- | ------------------- |
 | 2.8.4       | 停止维护 | 2.8.4-0.5-pre       |
-| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.7-pre |
+| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.8-pre |
 
 ## Lib下载(可选)
 
@@ -49,7 +49,7 @@
 ### brotli4j
 
 > [!IMPORTANT]
-> brotli4j 自 v1.10+ 拆分为多个模块，使用 Brotli 压缩需要同时下载以下三个 jar，否则会因 `com.aayushatharva.brotli4j.service.BrotliNativeProvider` 缺失而抛出 `NoClassDefFoundError`
+> brotli4j 自 v1.10+ 拆分为多个模块，使用 Brotli 压缩需要同时下载以下三个 jar，否则会出错
 
 > [!CAUTION]
 > br压缩率较高，但是延迟**极大**，不推荐使用
@@ -103,7 +103,7 @@ README更新不一定即时，可以在下方两个仓库中寻找预导出的�
 ### missing 模式说明
 
 1. 启动游戏**服务端**，运行 WebAPI
-2. 使用 TS SDK 中的检测脚本扫描缺失图标的物品：
+2. 使用 TS SDK 中的检测脚本(或者你自行编写脚本)扫描缺失图标的物品：
    - `tool.allitems.ts` — 扫描全物品，不检查是否存在图标
    - `tool.checkicon.ts` — 扫描全物品（含子物品）
    - `tool.checkaeicon.ts` — 扫描你 AE 网络存储中的物品
