@@ -107,7 +107,7 @@ public class CraftingRecipesHandler implements RouteHandler {
                 continue;
             }
 
-            data.add(Recipes.dumpCraftingRecipe(recipe));
+            data.add(Recipes.dumpCraftingRecipeCached(recipe));
 
             if (data.size() >= limit) {
                 break;

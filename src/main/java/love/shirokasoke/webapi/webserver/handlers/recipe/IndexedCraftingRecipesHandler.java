@@ -111,7 +111,7 @@ public class IndexedCraftingRecipesHandler implements RouteHandler {
             int start = Math.min(offset, total);
             int end = Math.min(start + limit, total);
             for (int i = start; i < end; i++) {
-                data.add(Recipes.dumpCraftingRecipe(recipes.get(i)));
+                data.add(Recipes.dumpCraftingRecipeCached(recipes.get(i)));
             }
         } else if (query.getItem() == null) {
             total = 0;
@@ -122,7 +122,7 @@ public class IndexedCraftingRecipesHandler implements RouteHandler {
             int start = Math.min(offset, total);
             int end = Math.min(start + limit, total);
             for (int i = start; i < end; i++) {
-                data.add(Recipes.dumpCraftingRecipe(recipes.get(matched.getInt(i))));
+                data.add(Recipes.dumpCraftingRecipeCached(recipes.get(matched.getInt(i))));
             }
         }
 

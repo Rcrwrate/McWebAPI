@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 
 /**
@@ -63,6 +65,83 @@ public final class Recipes {
             && a.getItem() == b.getItem()
             && (!b.getHasSubtypes() || b.getItemDamage() == a.getItemDamage())
             && ItemStack.areItemStackTagsEqual(b, a);
+    }
+
+    /**
+     * 判断工作台配方是否使用了指定物品作为原料。
+     * 匹配输入槽位的全部候选项（矿辞输入会展开后匹配）。
+     */
+    public static boolean recipeUses(IRecipe recipe, ItemStack query) {
+        if (recipe == null || query == null) {
+            return false;
+        }
+        if (recipe instanceof ShapedOreRecipe) {
+            return inputsContain(((ShapedOreRecipe) recipe).getInput(), query);
+        } else if (recipe instanceof ShapelessOreRecipe) {
+            return inputsContain(((ShapelessOreRecipe) recipe).getInput(), query);
+        } else if (recipe instanceof ShapedRecipes) {
+            return inputsContain(((ShapedRecipes) recipe).recipeItems, query);
+        } else if (recipe instanceof ShapelessRecipes) {
+            return inputsContain(((ShapelessRecipes) recipe).recipeItems, query);
+        }
+        return false;
+    }
+
+    private static boolean inputsContain(Object[] inputs, ItemStack query) {
+        if (inputs == null) {
+            return false;
+        }
+        for (Object o : inputs) {
+            if (inputMatches(o, query)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean inputsContain(List<?> inputs, ItemStack query) {
+        if (inputs == null) {
+            return false;
+        }
+        for (Object o : inputs) {
+            if (inputMatches(o, query)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean inputMatches(Object o, ItemStack query) {
+        if (o instanceof ItemStack) {
+            return areStacksSameTypeCrafting((ItemStack) o, query);
+        }
+        if (o instanceof ItemStack[]) {
+            for (ItemStack s : (ItemStack[]) o) {
+                if (s != null && areStacksSameTypeCrafting(s, query)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (o instanceof List) {
+            for (Object e : (List<?>) o) {
+                if (e instanceof String) {
+                    // 矿辞输入：展开后匹配具体物品
+                    List<ItemStack> ores = OreDictionary.getOres((String) e);
+                    if (ores != null) {
+                        for (ItemStack s : ores) {
+                            if (s != null && areStacksSameTypeCrafting(s, query)) {
+                                return true;
+                            }
+                        }
+                    }
+                } else if (inputMatches(e, query)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
     }
 
     // region 重建输入
@@ -237,6 +316,29 @@ public final class Recipes {
         return node;
     }
 
+    /** 工作台配方序列化结果缓存（按 {@link IRecipe} 对象身份缓存，常见实现未实现 equals/hashCode） */
+    private static final Map<IRecipe, ObjectNode> CRAFTING_RECIPE_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * 将工作台配方序列化为 JSON DTO（带缓存，可用 {@code server.recipe.cacheRecipes} 关闭）。
+     * <p>
+     * {@link IRecipe} 的常见实现均未实现 equals/hashCode，因此按对象身份缓存；
+     * 缓存的 {@link ObjectNode} 为跨请求共享的只读对象，仅用于 JSON 输出，不得原地修改。
+     * 序列化抛异常时不缓存，下次调用重新尝试，行为与无缓存一致。
+     */
+    public static ObjectNode dumpCraftingRecipeCached(IRecipe recipe) {
+        if (!Config.cacheRecipes) {
+            return dumpCraftingRecipe(recipe);
+        }
+        ObjectNode cached = CRAFTING_RECIPE_CACHE.get(recipe);
+        if (cached != null) {
+            return cached;
+        }
+        ObjectNode node = dumpCraftingRecipe(recipe);
+        CRAFTING_RECIPE_CACHE.put(recipe, node);
+        return node;
+    }
+
     private static void dumpShaped(int width, int height, Object[] items, ObjectNode node) {
         node.put("type", "shaped");
         node.put("shapeless", false);
@@ -341,83 +443,6 @@ public final class Recipes {
         ObjectNode out = safeDumpItemStack(output);
         out.put("stackSize", output.stackSize);
         node.set("output", out);
-    }
-
-    /**
-     * 判断工作台配方是否使用了指定物品作为原料。
-     * 匹配输入槽位的全部候选项（矿辞输入会展开后匹配）。
-     */
-    public static boolean recipeUses(IRecipe recipe, ItemStack query) {
-        if (recipe == null || query == null) {
-            return false;
-        }
-        if (recipe instanceof ShapedOreRecipe) {
-            return inputsContain(((ShapedOreRecipe) recipe).getInput(), query);
-        } else if (recipe instanceof ShapelessOreRecipe) {
-            return inputsContain(((ShapelessOreRecipe) recipe).getInput(), query);
-        } else if (recipe instanceof ShapedRecipes) {
-            return inputsContain(((ShapedRecipes) recipe).recipeItems, query);
-        } else if (recipe instanceof ShapelessRecipes) {
-            return inputsContain(((ShapelessRecipes) recipe).recipeItems, query);
-        }
-        return false;
-    }
-
-    private static boolean inputsContain(Object[] inputs, ItemStack query) {
-        if (inputs == null) {
-            return false;
-        }
-        for (Object o : inputs) {
-            if (inputMatches(o, query)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean inputsContain(List<?> inputs, ItemStack query) {
-        if (inputs == null) {
-            return false;
-        }
-        for (Object o : inputs) {
-            if (inputMatches(o, query)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean inputMatches(Object o, ItemStack query) {
-        if (o instanceof ItemStack) {
-            return areStacksSameTypeCrafting((ItemStack) o, query);
-        }
-        if (o instanceof ItemStack[]) {
-            for (ItemStack s : (ItemStack[]) o) {
-                if (s != null && areStacksSameTypeCrafting(s, query)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        if (o instanceof List) {
-            for (Object e : (List<?>) o) {
-                if (e instanceof String) {
-                    // 矿辞输入：展开后匹配具体物品
-                    List<ItemStack> ores = OreDictionary.getOres((String) e);
-                    if (ores != null) {
-                        for (ItemStack s : ores) {
-                            if (s != null && areStacksSameTypeCrafting(s, query)) {
-                                return true;
-                            }
-                        }
-                    }
-                } else if (inputMatches(e, query)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return false;
     }
 
     // region ShapedOreRecipe 宽高反射

@@ -2,9 +2,12 @@ package love.shirokasoke.webapi.webserver.handlers.recipe;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
@@ -17,7 +20,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.util.GTRecipe;
-import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.utils.Recipes;
@@ -32,10 +35,14 @@ import love.shirokasoke.webapi.webserver.RouteHandler;
  * 与工作台/熔炉配方不同，GT 配方按机器（RecipeMap）组织，因此每条配方额外携带
  * 其所属配方表（机器）信息。产物匹配用严格比较（item+metadata+NBT），原料匹配用
  * 合成语义比较（含矿辞通配值）
- * <p>
- * 直接遍历全配方表快照（{@link RecipeMap#getAllRecipes}）。
  */
 public class GTRecipesHandler implements RouteHandler {
+
+    /** 配方表快照缓存：map unlocalizedName -> 配方列表（只读） */
+    private static final ConcurrentMap<String, List<GTRecipe>> RECIPES_CACHE = new ConcurrentHashMap<>();
+
+    /** 配方序列化结果缓存（按 {@link GTRecipe} 对象身份缓存，但是它未实现 equals/hashCode） */
+    private static final Map<GTRecipe, ObjectNode> SERIALIZED_CACHE = new ConcurrentHashMap<>();
 
     @Override
     public String getPath() {
@@ -44,9 +51,7 @@ public class GTRecipesHandler implements RouteHandler {
 
     @Override
     public String getDescription() {
-        return "查询 GT5 机器配方。参数：type=output|input（默认 output），id/damage/tag 指定查询物品，"
-            + "fluid 指定查询流体（名称或 id），map 限定配方表（机器）；仅当指定 map 时允许省略物品/流体查询返回全部，"
-            + "否则必须提供物品或流体查询。limit 限制数量，offset 分页偏移。";
+        return "查询 GT5 机器配方";
     }
 
     @Override
@@ -129,28 +134,15 @@ public class GTRecipesHandler implements RouteHandler {
         ArrayNode data = mapper.createArrayNode();
         int matched = 0;
         for (RecipeMap<?> map : maps) {
-            Collection<GTRecipe> recipes;
-            try {
-                recipes = map.getAllRecipes();
-            } catch (Throwable t) {
-                // 个别配方表在构造/遍历时可能抛异常，跳过不影响整体查询
-                MyMod.LOG.warn("GT recipe map '{}' getAllRecipes failed: {}", map.unlocalizedName, t.toString());
-                continue;
-            }
-            if (recipes == null) {
-                continue;
-            }
+            List<GTRecipe> recipes = getRecipesSnapshot(map);
             for (GTRecipe recipe : recipes) {
-                if (recipe == null) {
-                    continue;
-                }
                 if (!matches(recipe, isOutput, itemQuery, fluidQuery)) {
                     continue;
                 }
                 if (matched++ < offset) {
                     continue;
                 }
-                data.add(dumpRecipe(map, recipe));
+                data.add(dumpRecipeCached(map, recipe));
                 if (data.size() >= limit) {
                     break;
                 }
@@ -178,6 +170,35 @@ public class GTRecipesHandler implements RouteHandler {
 
         setCache(exchange, 3600);
         sendResponse(exchange, result);
+    }
+
+    /**
+     * 获取指定配方表的只读配方快照（已过滤 null 元素），带缓存，
+     * 可用 {@code server.recipe.cacheRecipes} 关闭。
+     * <p>
+     * {@link gregtech.api.recipe.RecipeMap#getAllRecipes()} 每次调用都会经 stream 重新分配集合，缓存以避免重复开销。
+     * <p>
+     * 快照基于首次访问时刻的配方表，之后运行时新增的配方不会出现。
+     */
+    private static List<GTRecipe> getRecipesSnapshot(RecipeMap<?> map) {
+        if (!Config.cacheRecipes) {
+            return snapshotOf(map);
+        }
+        return RECIPES_CACHE.computeIfAbsent(map.unlocalizedName, key -> snapshotOf(map));
+    }
+
+    private static List<GTRecipe> snapshotOf(RecipeMap<?> map) {
+        Collection<GTRecipe> all = map.getAllRecipes();
+        if (all == null || all.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<GTRecipe> snapshot = new ArrayList<>(all.size());
+        for (GTRecipe recipe : all) {
+            if (recipe != null) {
+                snapshot.add(recipe);
+            }
+        }
+        return snapshot;
     }
 
     /** 判断配方是否匹配查询条件。itemQuery 与 fluidQuery 均为空时视为“返回全部”。 */
@@ -214,6 +235,25 @@ public class GTRecipesHandler implements RouteHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * 序列化一条 GT 配方（带缓存，可用 {@code server.recipe.cacheRecipes} 关闭）。
+     * <p>
+     * {@link GTRecipe} 未实现 equals/hashCode，因此按对象身份缓存；
+     * 缓存的 {@link ObjectNode} 为跨请求共享的只读对象，仅用于 JSON 输出，不得原地修改。
+     */
+    private ObjectNode dumpRecipeCached(RecipeMap<?> map, GTRecipe recipe) {
+        if (!Config.cacheRecipes) {
+            return dumpRecipe(map, recipe);
+        }
+        ObjectNode cached = SERIALIZED_CACHE.get(recipe);
+        if (cached != null) {
+            return cached;
+        }
+        ObjectNode node = dumpRecipe(map, recipe);
+        SERIALIZED_CACHE.put(recipe, node);
+        return node;
     }
 
     /** 序列化一条 GT 配方 */

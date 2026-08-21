@@ -31,6 +31,7 @@ public class Config {
     public static int AEITEM_IDLE_TIMEOUT = 30;
 
     public static boolean indexCraftingRecipes = true;
+    public static boolean cacheRecipes = true;
 
     public static String[] langFiles = new String[] { "assets/minecraft/lang/zh_CN.lang", "dumps/export.lang" };
 
@@ -147,6 +148,11 @@ public class Config {
 
         indexCraftingRecipes = configuration
             .getBoolean("indexCraft", "server.recipe", indexCraftingRecipes, "enable index for crafting recipes");
+        cacheRecipes = configuration.getBoolean(
+            "cacheRecipes",
+            "server.recipe",
+            cacheRecipes,
+            "enable cache for recipes, it may increase memory use");
 
         MaxPerTick = configuration
             .getInt("MaxPerTick", "server.tick", MaxPerTick, 1, 10000, "Max Count of Slow Tasks can be run per Tick");
