@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
@@ -39,10 +41,14 @@ public final class NBT {
     private NBT() {}
 
     public static void dump(NBTTagCompound nbt, ObjectNode dataNode) {
+        dump(nbt, dataNode, "nbt");
+    }
+
+    public static void dump(NBTTagCompound nbt, ObjectNode dataNode, String key) {
         if (nbt != null) {
-            dataNode.put("nbtstr", nbt.toString());
-            dataNode.put("nbtWrite", writeToBase64(nbt));
-            ObjectNode data = dataNode.putObject("nbt");
+            ObjectNode data = dataNode.putObject(key);
+            data.put("nbtstr", nbt.toString());
+            data.put("nbtWrite", writeToBase64(nbt));
             single(nbt, data);
         }
     }
@@ -81,13 +87,6 @@ public final class NBT {
         } catch (Exception e) {
             Logs.e(e);
             return null;
-        }
-    }
-
-    public static void dump(NBTTagCompound nbt, ObjectNode dataNode, String key) {
-        if (nbt != null) {
-            ObjectNode data = dataNode.putObject(key);
-            single(nbt, data);
         }
     }
 
@@ -238,5 +237,57 @@ public final class NBT {
 
             default -> array.add(tag.toString());
         }
+    }
+
+    /**
+     * 对 NBT 复合标签的所有 key 做字典序递归排序，使 {@code toString()}/{@code writeToBase64} 与插入顺序无关
+     * <p>
+     * 从而保证客户端与服务端生成一致的输出（nbtstr / nbtWrite / icon 文件名 hash）。
+     *
+     * @param nbt 待排序的 NBT 复合标签，可为 null
+     * @return 排序后的新 NBTTagCompound（原始对象不被修改）
+     */
+    public static NBTTagCompound sort(NBTTagCompound nbt) {
+        if (nbt == null) {
+            return null;
+        }
+        NBTTagCompound out = new NBTTagCompound();
+        TreeMap<String, NBTBase> sorted = new TreeMap<>();
+        Iterator<String> it = nbt.func_150296_c()
+            .iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            NBTBase tag = nbt.getTag(key);
+            // 递归排序嵌套的复合标签
+            if (tag instanceof NBTTagCompound c) {
+                tag = sort(c);
+            } else if (tag instanceof NBTTagList l) {
+                tag = sortList(l);
+            }
+            sorted.put(key, tag);
+        }
+        for (Map.Entry<String, NBTBase> e : sorted.entrySet()) {
+            out.setTag(e.getKey(), e.getValue());
+        }
+        return out;
+    }
+
+    /**
+     * 递归排序 NBT 列表内的复合标签，使列表内容在序列化时保持稳定。
+     * 列表本身是有序结构，不改变元素顺序，仅对其中的复合标签内部做排序。
+     */
+    private static NBTTagList sortList(NBTTagList list) {
+        NBTTagList out = new NBTTagList();
+        List<NBTBase> tags = Accessor.NBTTagList_tagList(list);
+        for (NBTBase tag : tags) {
+            if (tag instanceof NBTTagCompound c) {
+                out.appendTag(sort(c));
+            } else if (tag instanceof NBTTagList l) {
+                out.appendTag(sortList(l));
+            } else {
+                out.appendTag(tag.copy());
+            }
+        }
+        return out;
     }
 }

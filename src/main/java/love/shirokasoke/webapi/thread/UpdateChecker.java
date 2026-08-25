@@ -15,15 +15,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 
 /**
@@ -33,12 +31,9 @@ import love.shirokasoke.webapi.MyMod;
  */
 public class UpdateChecker {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = Constant.mapper;
 
     private static final String GITHUB_API = "https://api.github.com/repos/Rcrwrate/McWebAPI/releases/latest";
-
-    /** 复用的虚拟线程执行器，避免每次检查都新建线程池（Java 21+） */
-    private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
 
     private static volatile Instant cachedLocalBuildTime;
 
@@ -80,14 +75,15 @@ public class UpdateChecker {
         return null;
     }
 
-    public CompletableFuture<Void> checkAsync() {
-        return CompletableFuture.runAsync(() -> {
+    public void checkAsync() {
+        new Thread(() -> {
             try {
                 checkForUpdate();
             } catch (Exception e) {
                 MyMod.LOG.warn("Update check failed: {}", e.getMessage());
             }
-        }, EXECUTOR);
+            return;
+        }, "UpdateCheck").start();
     }
 
     private void checkForUpdate() {

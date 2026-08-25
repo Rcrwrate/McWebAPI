@@ -11,6 +11,9 @@ public class Init {
         RouteRegistry.register(CraftingRecipesHandler.INSTANCE);
         RouteRegistry.register(new GTmaps());
         RouteRegistry.register(new GTRecipesHandler());
+    }
+
+    public static void after() {
         if (Config.indexCraftingRecipes) {
             new Thread(() -> {
                 IndexedCraftingRecipesHandler r = new IndexedCraftingRecipesHandler(

@@ -43,7 +43,7 @@ public class RouteRegistry {
                 "/favicon.ico"));
 
         register(new love.shirokasoke.webapi.webserver.handlers.TPSHandler());
-        register(new love.shirokasoke.webapi.webserver.handlers.TestHandler());
+        love.shirokasoke.webapi.webserver.handlers.test.Init.i();
         love.shirokasoke.webapi.webserver.handlers.block.Init.i();
         love.shirokasoke.webapi.webserver.handlers.item.Init.i();
         love.shirokasoke.webapi.webserver.handlers.chunk.Init.i();

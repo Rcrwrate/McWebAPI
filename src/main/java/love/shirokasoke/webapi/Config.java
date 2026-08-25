@@ -10,6 +10,7 @@ public class Config {
     public static int nThreads = 10;
 
     public static boolean classDump = false;
+    public static boolean test = false;
 
     public static String ItemFile = "dumps/items.json";
     public static String ItemIconFolder = "dumps/item_icons";
@@ -73,6 +74,7 @@ public class Config {
         nThreads = configuration.getInt("nThreads", "server", 10, 4, 36, "WebServer Threads");
 
         classDump = configuration.getBoolean("classDump", "debug", classDump, "allow class dump");
+        test = configuration.getBoolean("test", "debug", test, "allow test route register");
 
         ItemFile = configuration.getString(
             "ItemFile",

@@ -14,6 +14,10 @@ import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class ItemHandler implements RouteHandler {
 
+    public static ItemHandler INSTANCE = new ItemHandler();
+
+    private ItemHandler() {}
+
     @Override
     public String getPath() {
         return "/item";

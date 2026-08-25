@@ -6,7 +6,7 @@ public class Init {
 
     public static void i() {
         RouteRegistry.register(new AEHandler());
-        RouteRegistry.register(new ItemHandler());
+        RouteRegistry.register(ItemHandler.INSTANCE);
         RouteRegistry.register(new ItemsHandler());
         RouteRegistry.register(new ItemIconHandler());
     }

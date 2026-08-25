@@ -20,7 +20,7 @@ public class ItemStaticHandler implements RouteHandler {
 
     private String ItemFile;
     private ArrayNode data = mapper.createArrayNode();
-    private RouteHandler fallback = new ItemHandler();
+    private RouteHandler fallback = ItemHandler.INSTANCE;
 
     public ItemStaticHandler(String ItemFile) {
         this.ItemFile = ItemFile;

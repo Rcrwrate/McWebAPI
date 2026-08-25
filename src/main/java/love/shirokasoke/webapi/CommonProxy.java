@@ -68,6 +68,7 @@ public class CommonProxy {
 
     public void serverStarted(FMLServerStartedEvent event) {
         MyMod.LOG.info("Server Started");
+        love.shirokasoke.webapi.webserver.handlers.recipe.Init.after();
         ItemStaticHandler s = new ItemStaticHandler(Config.ItemFile);
         if (s.isValid()) {
             Config.itemThreadEnable = false;
