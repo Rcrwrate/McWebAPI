@@ -28,9 +28,7 @@ public class GT5BaseHandler implements RouteHandler {
     }
 
     protected Context GT5init(HttpExchange exchange) throws ApiException {
-        String query = exchange.getRequestURI()
-            .getQuery();
-        coordinates co = getCoordinates(query);
+        coordinates co = getCoordinates(exchange);
         return new Context(co).initServer()
             .initWorld()
             .checkblockExists()

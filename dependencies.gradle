@@ -50,6 +50,11 @@ dependencies {
     api('com.github.GTNewHorizons:NotEnoughItems:2.8.111-GTNH:dev')
     api('com.github.GTNewHorizons:Hodgepodge:2.7.166:dev')
 
+    // OC 自身类以及编译期依赖
+    api('com.github.GTNewHorizons:OpenComputers:1.12.48-GTNH:dev')
+    compileOnly("maven.modrinth:immibis-microblocks:59.1.2")
+    compileOnly("maven.modrinth:redlogic:59.1.13")
+
     // Jackson for JSON processing
     shadowImplementation rfg.deobf("com.fasterxml.jackson.core:jackson-databind:2.15.2")
     api("com.github.luben:zstd-jni:1.5.7-11")

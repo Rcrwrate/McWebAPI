@@ -21,9 +21,7 @@ public class FMPHandler implements RouteHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        String query = exchange.getRequestURI()
-            .getQuery();
-        Context con = new Context(getCoordinates(query)).initServer()
+        Context con = new Context(getCoordinates(exchange)).initServer()
             .initWorld()
             .checkblockExists();
 

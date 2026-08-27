@@ -42,7 +42,7 @@ public class Context {
 
     public Context initWorld() throws ApiException {
         if (world == null) {
-            world = McAccessor.getWorld(server, co.dimension);
+            world = McAccessor.getWorld(co.dimension);
         }
         return this;
     }

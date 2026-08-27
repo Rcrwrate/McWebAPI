@@ -31,9 +31,7 @@ public class SetBlockHandler implements RouteHandler {
             throw new ApiException(400, "Method must be POST");
         }
         JsonNode data = getBody(exchange);
-        String query = exchange.getRequestURI()
-            .getQuery();
-        coordinates co = getCoordinates(query);
+        coordinates co = getCoordinates(exchange);
         Context context = new Context(co).initServer()
             .initWorld()
             .checkblockExists();

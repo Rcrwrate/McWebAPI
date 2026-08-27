@@ -87,7 +87,7 @@ public class BatchSetBlockHandler implements RouteHandler {
             int flag = taskNode.path("flag")
                 .asInt(2);
 
-            WorldServer world = McAccessor.getWorld(server, dim);
+            WorldServer world = McAccessor.getWorld(dim);
             if (world == null) {
                 throw new ApiException(400, "Invalid dimension " + dim + " at tasks[" + i + "]");
             }

@@ -38,7 +38,7 @@ public class BlockHandler implements RouteHandler {
         if (query == null) {
             throw new ApiException(400, "Missing query parameters. Required: x, y, z");
         }
-        coordinates co = getCoordinates(query);
+        coordinates co = getCoordinates(exchange);
         Context context = new Context(co).initServer()
             .initWorld()
             .checkblockExists();

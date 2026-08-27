@@ -31,9 +31,7 @@ public class AEBaseHandler implements RouteHandler {
     }
 
     protected Context AEinit(HttpExchange exchange) throws ApiException {
-        String query = exchange.getRequestURI()
-            .getQuery();
-        Context context = new Context(getCoordinates(query)).initServer()
+        Context context = new Context(getCoordinates(exchange)).initServer()
             .initWorld()
             .checkblockExists()
             .initTileEntity()

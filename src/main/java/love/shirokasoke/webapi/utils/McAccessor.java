@@ -5,6 +5,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.DimensionManager;
 
 import com.mitchej123.hodgepodge.util.ServerThreadLongHashMap;
 
@@ -35,16 +36,12 @@ public final class McAccessor {
     /**
      * 涉及的堆栈: {@link net.minecraftforge.common.DimensionManager#worlds} 为 Hashtable 并发安全
      */
-    public static WorldServer getWorld(MinecraftServer server, int dim) throws ApiException {
-        WorldServer world = server.worldServerForDimension(dim);
+    public static WorldServer getWorld(int dim) throws ApiException {
+        WorldServer world = DimensionManager.getWorld(dim);;
         if (world == null) {
             throw new ApiException(404, "Invalid dimension: " + dim);
         }
         return world;
-    }
-
-    public static WorldServer getWorld(int dim) throws ApiException {
-        return getWorld(getServer(), dim);
     }
 
     /**

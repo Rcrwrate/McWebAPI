@@ -26,7 +26,7 @@ public class Config {
     public static String authToken = "";
     public static String[] authUrlPrefixes = new String[] { "/setblock|GET|POST", "/chunk/force|GET|POST" };
     public static String[] bannedPrefixes = new String[] {};
-    public static String[] disabledRoutes = new String[] { "/test" };
+    public static String[] disabledRoutes = new String[] {};
 
     public static int AEITEM_INTERVAL = 5;
     public static int AEITEM_IDLE_TIMEOUT = 30;

@@ -1,10 +1,15 @@
 package love.shirokasoke.webapi.webserver;
 
+import static java.net.URLDecoder.decode;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.util.ChunkCoordinates;
 
@@ -71,8 +76,7 @@ public interface RouteHandler extends HttpHandler {
             MyMod.LOG.info("[{}]\t{} - {}ms", method, uri, String.format("%.3f", duration)); // 缺一个来源IP地址
         } catch (Throwable e) {
             double duration = (System.nanoTime() - startTime) / 1_000_000.0;
-            if (e instanceof ApiException) {
-                ApiException e2 = (ApiException) e;
+            if (e instanceof ApiException e2) {
                 sendErrorResponse(exchange, e2.code, e2.getMessage(), null);
                 MyMod.LOG.error(
                     "[{}]\t{} - Error after {}ms\t{}",
@@ -141,7 +145,7 @@ public interface RouteHandler extends HttpHandler {
     default void sendResponse(HttpExchange exchange, int statusCode, String message) throws IOException {
         exchange.getResponseHeaders()
             .set("Content-Type", "application/json");
-        sendResponse(exchange, statusCode, message.getBytes(StandardCharsets.UTF_8));
+        sendResponse(exchange, statusCode, message.getBytes(UTF_8));
     }
 
     default void sendResponse(HttpExchange exchange, int statusCode, Object json, boolean direct) throws IOException {
@@ -206,6 +210,10 @@ public interface RouteHandler extends HttpHandler {
         }
     }
 
+    /**
+     * @deprecated 性能淘汰
+     */
+    @Deprecated
     default coordinates getCoordinates(String query) {
         int x = 0, y = 0, z = 0;
         int dimension = 0; // 默认主世界
@@ -236,14 +244,44 @@ public interface RouteHandler extends HttpHandler {
         return new coordinates(x, y, z, dimension);
     }
 
+    default coordinates getCoordinates(Map<String, String> query) throws ApiException {
+        int x = Integer.MIN_VALUE, y = Integer.MIN_VALUE, z = Integer.MIN_VALUE;
+        int dimension = 0; // 默认主世界
+        for (Map.Entry<String, String> i : query.entrySet()) {
+            switch (i.getKey()) {
+                case "x":
+                    x = Integer.parseInt(i.getValue());
+                    break;
+                case "y":
+                    y = Integer.parseInt(i.getValue());
+                    break;
+                case "z":
+                    z = Integer.parseInt(i.getValue());
+                    break;
+                case "dim":
+                case "dimension":
+                    dimension = Integer.parseInt(i.getValue());
+                    break;
+            }
+        }
+        if (Integer.MIN_VALUE == x || Integer.MIN_VALUE == y || Integer.MIN_VALUE == z) {
+            throw new ApiException(400, "Missing params");
+        }
+        return new coordinates(x, y, z, dimension);
+    }
+
+    default coordinates getCoordinates(HttpExchange exchange) throws ApiException {
+        return getCoordinates(parseQueryParams(exchange));
+    }
+
     /**
      * 解析 URL 查询参数为键值对
      * 
      * @param query 查询字符串 (例如: "id=1&name=test")
      * @return 包含所有参数的 Map
      */
-    default java.util.Map<String, String> parseQueryParams(String query) {
-        java.util.Map<String, String> params = new java.util.HashMap<>();
+    default Map<String, String> parseQueryParams(String query) {
+        Map<String, String> params = new HashMap<>();
         if (query == null || query.isEmpty()) {
             return params;
         }
@@ -252,11 +290,11 @@ public interface RouteHandler extends HttpHandler {
         for (String pair : pairs) {
             String[] keyValue = pair.split("=", 2);
             if (keyValue.length == 2) {
-                String key = java.net.URLDecoder.decode(keyValue[0], java.nio.charset.StandardCharsets.UTF_8);
-                String value = java.net.URLDecoder.decode(keyValue[1], java.nio.charset.StandardCharsets.UTF_8);
+                String key = decode(keyValue[0], UTF_8);
+                String value = decode(keyValue[1], UTF_8);
                 params.put(key, value);
             } else if (keyValue.length == 1) {
-                String key = java.net.URLDecoder.decode(keyValue[0], java.nio.charset.StandardCharsets.UTF_8);
+                String key = decode(keyValue[0], UTF_8);
                 params.put(key, "");
             }
         }
@@ -269,7 +307,7 @@ public interface RouteHandler extends HttpHandler {
      * @param exchange HTTP 交换对象
      * @return 包含所有参数的 Map
      */
-    default java.util.Map<String, String> parseQueryParams(HttpExchange exchange) {
+    default Map<String, String> parseQueryParams(HttpExchange exchange) {
         // 必须使用 getRawQuery(): getQuery() 已做过一次 percent-decode,
         // 再经 URLDecoder 二次解码会把 base64 中的 '+' 变成空格 (0x20)
         String query = exchange.getRequestURI()
@@ -279,11 +317,13 @@ public interface RouteHandler extends HttpHandler {
 
     public class ApiException extends IOException {
 
-        public int code;
+        public final int code;
+        public final String message;
 
         public ApiException(int code, String message) {
             super(message);
             this.code = code;
+            this.message = message;
         }
     }
 
@@ -295,7 +335,7 @@ public interface RouteHandler extends HttpHandler {
      * @throws IOException 如果读取或解析失败
      */
     default public JsonNode getBody(HttpExchange exchange) throws IOException {
-        try (java.io.InputStream is = exchange.getRequestBody()) {
+        try (InputStream is = exchange.getRequestBody()) {
             return mapper.readTree(is);
         }
     }
@@ -309,7 +349,7 @@ public interface RouteHandler extends HttpHandler {
      * @throws IOException 如果读取或解析失败
      */
     default public <T> T getBody(HttpExchange exchange, Class<T> clazz) throws IOException {
-        try (java.io.InputStream is = exchange.getRequestBody()) {
+        try (InputStream is = exchange.getRequestBody()) {
             return mapper.readValue(is, clazz);
         }
     }
