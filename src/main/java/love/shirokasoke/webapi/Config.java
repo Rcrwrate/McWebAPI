@@ -47,6 +47,12 @@ public class Config {
     public static boolean Compressor = true;
     public static int Compressor_THRESHOLD = 102400;
 
+    // region OC
+    public static int ALPHA_THRESHOLD = 220;
+    public static int TOLERANCE_R = 3;
+    public static int TOLERANCE_G = 2;
+    public static int TOLERANCE_B = 5;
+
     // update checker
     public static boolean enableUpdateCheck = true;
 
@@ -57,7 +63,7 @@ public class Config {
     // safe
     public static boolean chunkSafe = true;
 
-    // client
+    // region client
     public static int itemIconDelayMs = 10;
     public static int itemIconSize = 256;
 
@@ -190,6 +196,36 @@ public class Config {
             Integer.MAX_VALUE,
             "Byte threshold for web server adaptive compression");
 
+        // region OC
+        ALPHA_THRESHOLD = configuration.getInt(
+            "ALPHA_THRESHOLD",
+            "server.oc.print",
+            ALPHA_THRESHOLD,
+            0,
+            255,
+            "Alpha threshold for 3D print pixel opacity (pixels with alpha <= this are treated as transparent)");
+        TOLERANCE_R = configuration.getInt(
+            "TOLERANCE_R",
+            "server.oc.print",
+            TOLERANCE_R,
+            0,
+            255,
+            "Red channel tolerance for merging adjacent pixels into one 3D print shape");
+        TOLERANCE_G = configuration.getInt(
+            "TOLERANCE_G",
+            "server.oc.print",
+            TOLERANCE_G,
+            0,
+            255,
+            "Green channel tolerance for merging adjacent pixels into one 3D print shape");
+        TOLERANCE_B = configuration.getInt(
+            "TOLERANCE_B",
+            "server.oc.print",
+            TOLERANCE_B,
+            0,
+            255,
+            "Blue channel tolerance for merging adjacent pixels into one 3D print shape");
+
         // update checker
         enableUpdateCheck = configuration
             .getBoolean("enableUpdateCheck", "update", enableUpdateCheck, "Enable update checking on server start");
@@ -209,7 +245,7 @@ public class Config {
         // safe
         chunkSafe = configuration.getBoolean("chunk", "server.safe", chunkSafe, "enable chunk thread safe mode");
 
-        // client
+        // region client
         itemIconDelayMs = configuration.getInt(
             "DelayMs",
             "client.item",

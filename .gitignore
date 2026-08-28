@@ -46,4 +46,4 @@ jbrsdk_jcef-25.0.2-linux-x64-b300.57.tar.gz
 # tools/*
 !tools/*.sh
 
-.codebuddy/models.json
+.codebuddy/

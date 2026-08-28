@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -77,7 +76,6 @@ public class WorldPrintHandler implements RouteHandler {
         int dim = co.dimension;
         ForgeDirection facing = parseFacing(params.getOrDefault("facing", "south"));
 
-        MinecraftServer server = McAccessor.getServer();
         WorldServer world = McAccessor.getWorld(dim);
 
         byte[] imageData;
@@ -91,20 +89,21 @@ public class WorldPrintHandler implements RouteHandler {
             throw new ApiException(400, "Image too large: " + imageData.length + " bytes");
         }
 
+        int[] checked = PrintUtils.checkImage(imageData);
+        if (checked[1] > y * 16) {
+            throw new ApiException(400, "Image's height is to large: " + checked[1]);
+        }
+
         String label = params.getOrDefault("label", "3d-print %d,%d");
         String tooltip = params.getOrDefault("tooltip", "created by webapi");
 
         // 图片解码与形状/NBT 生成为纯 CPU 操作，在 HTTP 线程完成；慢队列任务只做 setBlock
-        final BufferedImage img;
-        try {
-            img = ImageUtils.padToBlocks(ImageUtils.loadImage(imageData));
-        } catch (IOException e) {
-            throw new ApiException(400, "Cannot decode image: " + e.getMessage());
-        }
+        final BufferedImage img = PrintUtils.padToBlocks(PrintUtils.loadImage(imageData));
+
         int cols = img.getWidth() / 16;
         int rows = img.getHeight() / 16;
-        if ((long) cols * rows > MAX_BLOCKS) {
-            throw new ApiException(400, "Too many blocks: " + cols + "x" + rows + " (max " + MAX_BLOCKS + ")");
+        if ((long) cols * rows > MAX_BLOCKS || rows > y) {
+            throw new ApiException(400, "Too many blocks: " + cols + "x" + rows);
         }
 
         // 图片列在水平面内的延展方向（与 ExtendedAABB.rotateTowards(facing) 的块内旋转保持一致，
@@ -136,7 +135,7 @@ public class WorldPrintHandler implements RouteHandler {
         int skipped = 0;
         for (int j = 0; j < rows; j++) {
             for (int i = 0; i < cols; i++) {
-                ItemStack stack = ImageUtils.createPrint(
+                ItemStack stack = PrintUtils.createPrint(
                     img,
                     i * 16,
                     j * 16,

@@ -17,7 +17,6 @@ import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
- * PUT /3d/player?id=entityId
  * 请求体为一张图片（png/jpg 等），转换为 OC 3D 打印件后投递到玩家背包，
  * 背包放不下的部分掉落在玩家附近。可选 Query 参数: label/tooltip（支持 %d,%d 块坐标占位）。
  */
@@ -33,7 +32,7 @@ public class PlayerPrintHandler implements RouteHandler {
 
     @Override
     public String getDescription() {
-        return "PUT 上传图片 → OC 3D 打印件，投递到玩家背包（多余掉落在玩家附近）。Query 参数: id=entityId, 可选 label/tooltip";
+        return "PUT 上传图片 → OC 3D 打印件，投递到玩家背包（多余掉落在玩家附近）";
     }
 
     @Override
@@ -73,14 +72,15 @@ public class PlayerPrintHandler implements RouteHandler {
             throw new ApiException(400, "Image too large: " + imageData.length + " bytes");
         }
 
+        PrintUtils.checkImage(imageData);
+
         String label = params.getOrDefault("label", "3d-print %d,%d");
         String tooltip = params.getOrDefault("tooltip", "created by love.shirokasoke.webapi");
 
         // 图片解码与形状生成为纯 CPU 操作，在 HTTP 线程完成，不占用主线程 tick。
-        // OC 未安装时 IllegalStateException 直接上抛为 500
-        final List<ItemStack> prints = ImageUtils.createPrints(imageData, label, tooltip);
+        final List<ItemStack> prints = PrintUtils.createPrints(imageData, label, tooltip);
 
-        // 实体查找与背包操作必须在服务器主线程执行
+        // 背包操作必须在服务器主线程执行
         int[] counts = ServerThreadDispatcher.callOnServerThread(() -> {
             int added = 0;
             int dropped = 0;
