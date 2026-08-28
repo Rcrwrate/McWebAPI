@@ -171,8 +171,8 @@ public final class PrintUtils {
      * <li>每个 16×16 像素块 = 一个打印件（一个游戏方块）；
      * <li>每个不透明像素 = 方块内一个 1/16³ 体素，贴北面（z ∈ [0, 1/16]）；
      * <li>贴图固定为 {@code opencomputers:White}，颜色由 24 位 tint 染色还原；
-     * <li>同一列中颜色相近（容差见 {@link Config#TOLERANCE_R}/{@link Config#TOLERANCE_G}/{@link Config#TOLERANCE_B}）
-     * 的连续像素合并为一个竖条形状，alpha &le; {@link Config#ALPHA_THRESHOLD} 视为透明不生成形状。
+     * <li>颜色相近（容差见 {@link Config#TOLERANCE_R}/{@link Config#TOLERANCE_G}/{@link Config#TOLERANCE_B}）
+     * 的相邻像素按二维贪心合并为矩形形状，alpha &le; {@link Config#ALPHA_THRESHOLD} 视为透明不生成形状。
      * </ul>
      *
      * @param label   打印件自定义名称（OC setLabel，最长 24），可为 null
@@ -225,33 +225,65 @@ public final class PrintUtils {
     }
 
     /**
-     * 逐列扫描收集形状：竖直方向合并相近颜色，透明像素跳过。
-     * 图片 y 轴向下、方块 y 轴向上，行 j 起长 len 的竖条对应方块 y ∈ [16-j-len, 16-j]。
+     * 二维贪心合并（greedy meshing）收集形状：对每个未覆盖的不透明像素，
+     * 先沿行内横向扩展到最大宽度，再逐行向下扩展（整行宽度内像素都与基准色相近），
+     * 得到以该像素为左上角的最大矩形。透明像素跳过。
+     * <p>
+     * 颜色判定以矩形左上角为基准色（不允许链式漂移），保证单个形状内颜色均匀。
+     * 图片 y 轴向下、方块 y 轴向上：行区间 [j, j+h) 对应方块 y ∈ [16-j-h, 16-j]。
+     * <p>
+     * 注：最优矩形覆盖为 NP-hard，贪心结果与之差距通常仅几个形状，足够使用。
      */
     static List<Shape> collectShapes(BufferedImage img, int sx, int sy) {
+        int[] pixels = new int[256];
+        for (int j = 0; j < 16; j++) {
+            for (int i = 0; i < 16; i++) {
+                pixels[j * 16 + i] = img.getRGB(sx + i, sy + j);
+            }
+        }
+
+        boolean[] used = new boolean[256];
         List<Shape> shapes = new ArrayList<>();
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16;) {
-                int color = img.getRGB(sx + i, sy + j);
-                if (isOpaque(color)) {
-                    int len = 1;
-                    while (j + len < 16 && sameColor(color, img.getRGB(sx + i, sy + j + len))) {
-                        len++;
-                    }
-                    shapes.add(
-                        new Shape(
-                            (byte) i,
-                            (byte) (16 - j - len),
-                            (byte) 0,
-                            (byte) (i + 1),
-                            (byte) (16 - j),
-                            (byte) 1,
-                            SHAPE_TEXTURE,
-                            color & 0xFFFFFF));
-                    j += len;
-                } else {
-                    j++;
+        for (int j = 0; j < 16; j++) {
+            for (int i = 0; i < 16; i++) {
+                int idx = j * 16 + i;
+                if (used[idx] || !isOpaque(pixels[idx])) {
+                    continue;
                 }
+                int color = pixels[idx];
+
+                // 行内横向扩展
+                int w = 1;
+                while (i + w < 16 && !used[idx + w] && sameColor(color, pixels[idx + w])) {
+                    w++;
+                }
+                // 逐行向下扩展（整行 w 宽均匹配才算）
+                int h = 1;
+                expand: while (j + h < 16) {
+                    for (int k = 0; k < w; k++) {
+                        int p = (j + h) * 16 + i + k;
+                        if (used[p] || !sameColor(color, pixels[p])) {
+                            break expand;
+                        }
+                    }
+                    h++;
+                }
+
+                for (int dj = 0; dj < h; dj++) {
+                    for (int di = 0; di < w; di++) {
+                        used[(j + dj) * 16 + i + di] = true;
+                    }
+                }
+                shapes.add(
+                    new Shape(
+                        (byte) i,
+                        (byte) (16 - j - h),
+                        (byte) 0,
+                        (byte) (i + w),
+                        (byte) (16 - j),
+                        (byte) 1,
+                        SHAPE_TEXTURE,
+                        color & 0xFFFFFF));
             }
         }
         return shapes;
@@ -350,9 +382,10 @@ public final class PrintUtils {
         return a(rgb) > ALPHA_THRESHOLD;
     }
 
-    /** c1 为当前段起始色，c2 为候选延续色；同色判定含透明度门槛与 RGB 容差 */
+    /** 同色判定：两侧均需不透明（防止透明像素 RGB 巧合匹配被并入形状），且 RGB 在容差内 */
     static boolean sameColor(int c1, int c2) {
-        return a(c1) > ALPHA_THRESHOLD && abs(r(c1) - r(c2)) < TOLERANCE_R
+        return a(c1) > ALPHA_THRESHOLD && a(c2) > ALPHA_THRESHOLD
+            && abs(r(c1) - r(c2)) < TOLERANCE_R
             && abs(g(c1) - g(c2)) < TOLERANCE_G
             && abs(b(c1) - b(c2)) < TOLERANCE_B;
     }
