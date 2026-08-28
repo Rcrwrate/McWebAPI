@@ -27,8 +27,8 @@ public final class MixinConfig {
 
     // ========== Early Mixin 开关 (操作 vanilla/forge 类) ==========
 
-    // 预留：后续添加的 early mixin 开关在此处声明
-    // public static boolean enableSomeEarlyMixin = true;
+    /** OversizedChunkMixin: Hodgepodge 超大区块写入警告每个 offset 仅提示一次，之后拦截 */
+    public static boolean enableOversizedChunkWarnOnce = true;
 
     // ========== Late Mixin 开关 (操作其他 mod 的类) ==========
 
@@ -65,6 +65,10 @@ public final class MixinConfig {
         }
 
         // 读取各开关值
+        enableOversizedChunkWarnOnce = parseBoolean(
+            props,
+            "mixin.early.OversizedChunkWarnOnce",
+            enableOversizedChunkWarnOnce);
         enableMTELapotronicSuperCapacitorGetInfoMap = parseBoolean(
             props,
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
@@ -127,7 +131,7 @@ public final class MixinConfig {
         target.getParentFile()
             .mkdirs();
         Properties defaultProps = new Properties();
-        // defaultProps.setProperty("mixin.early.SomeEarly", String.valueOf(enableSomeEarlyMixin));
+        defaultProps.setProperty("mixin.early.OversizedChunkWarnOnce", String.valueOf(enableOversizedChunkWarnOnce));
         defaultProps.setProperty(
             "mixin.late.MTELapotronicSuperCapacitor.getInfoMap",
             String.valueOf(enableMTELapotronicSuperCapacitorGetInfoMap));
@@ -157,6 +161,7 @@ public final class MixinConfig {
 
     private static void logCurrentState() {
         LOG.info("Mixin config loaded:");
+        LOG.info("  mixin.early.OversizedChunkWarnOnce = {}", enableOversizedChunkWarnOnce);
         LOG.info(
             "  mixin.late.MTELapotronicSuperCapacitor.getInfoMap = {}",
             enableMTELapotronicSuperCapacitorGetInfoMap);

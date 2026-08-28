@@ -66,6 +66,11 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
             mixins.add("NBTAccess");
         }
 
+        if (MixinConfig.enableOversizedChunkWarnOnce
+            && com.mitchej123.hodgepodge.config.FixesConfig.remove2MBChunkLimit) {
+            mixins.add("OversizedChunkMixin");
+        }
+
         if (!mixins.isEmpty()) {
             LOG.info("Enabled early mixins: {}", mixins);
         }
