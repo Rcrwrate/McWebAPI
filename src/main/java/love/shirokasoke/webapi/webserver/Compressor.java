@@ -20,8 +20,8 @@ public class Compressor {
 
     /** 低于此字节数不压缩（压缩头开销大于收益） */
     public static final int THRESHOLD = Config.Compressor_THRESHOLD;
-    public static volatile boolean br = false;
-    public static volatile boolean zstd = false;
+    public static boolean br = false;
+    public static boolean zstd = false;
 
     /**
      * Accept-Encoding 按 RFC 7231 解析 q 值，选择 q 最高的可用算法。

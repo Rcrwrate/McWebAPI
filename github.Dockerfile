@@ -1,5 +1,9 @@
 FROM docker.cnb.cool/shirokasoke/env/pure
 
+RUN /root/.vscode-server/bin/$VSCODE_COMMIT_ID/bin/code-server --server-data-dir /root/.vscode-server --telemetry-level all \
+    --install-extension vscjava.vscode-gradle \
+    --install-extension vscjava.vscode-java-pack 
+    
 ENV maven_TOKEN=""
 
 RUN apt install -y gnupg ca-certificates curl && \
