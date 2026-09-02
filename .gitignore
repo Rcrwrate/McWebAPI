@@ -47,3 +47,6 @@ jbrsdk_jcef-25.0.2-linux-x64-b300.57.tar.gz
 !tools/*.sh
 
 .codebuddy/
+tools/sync-maven/*.tsv*
+tools/sync-maven/*.txt
+tools/sync-maven/*.json

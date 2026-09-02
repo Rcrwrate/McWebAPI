@@ -1,0 +1,52 @@
+// Init script: 导出本项目（含 buildscript classpath）解析到的所有外部模块 GAV。
+// 用法: DEPS_OUT=/path/deps.tsv ./gradlew --init-script tools/sync-maven/export-deps.gradle help
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+
+def outPath = System.getenv("DEPS_OUT") ?: "/workspace/tools/sync-maven/deps.tsv"
+def outFile = new File(outPath)
+outFile.parentFile.mkdirs()
+
+def gavs = Collections.synchronizedSet(new LinkedHashSet())
+def skipped = Collections.synchronizedList(new ArrayList())
+
+def handleCfg = { cfg ->
+    try {
+        if (!cfg.canBeResolved) return
+        cfg.incoming.artifacts.artifacts.each { art ->
+            def cid = art.id?.componentIdentifier
+            if (cid instanceof ModuleComponentIdentifier) {
+                gavs.add([cid.group, cid.module, cid.version].join("\t"))
+            }
+        }
+    } catch (Throwable t) {
+        def root = t
+        while (root.cause != null) root = root.cause
+        skipped.add("[${cfg.name}] " + root.toString().take(200))
+    }
+}
+
+def dumpAll = {
+    try {
+        gradle.settings?.buildscript?.configurations?.each { handleCfg(it) }
+    } catch (Throwable t) {
+        skipped.add("[settings.buildscript] " + t.toString().take(200))
+    }
+    gradle.rootProject.allprojects { p ->
+        try {
+            p.buildscript.configurations.each { handleCfg(it) }
+        } catch (Throwable t) {
+            skipped.add("[${p.path}:buildscript] " + t.toString().take(200))
+        }
+        p.configurations.each { handleCfg(it) }
+    }
+}
+
+// 任务图就绪后再解析，确保 afterEvaluate 中注册的仓库/配置都已生效
+gradle.taskGraph.whenReady { dumpAll() }
+
+gradle.buildFinished {
+    outFile.text = gavs.sort().join("\n") + "\n"
+    new File(outPath + ".skipped").text = skipped.join("\n") + "\n"
+    println "EXPORTED ${gavs.size()} modules -> ${outFile}"
+    println "SKIPPED ${skipped.size()} configurations (see ${outPath}.skipped)"
+}

@@ -1,0 +1,38 @@
+name: Build and test
+
+on:
+  pull_request:
+    branches: [ master, main ]
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'web/'
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v6.4.0
+
+    - name: Setup Bun environment
+      uses: oven-sh/setup-bun@v2
+
+    - name: Install deps
+      run: |
+        cd web
+        bun i
+
+    - name: Build
+      run: |
+        cd web
+        bun run build
+        zip -r web.zip ./out/
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: web
+        path: web/web.zip
