@@ -69,11 +69,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 {@link NBTTagCompound#write } 的私有 write 方法 */
+    /** 缓存 {@link NBTTagCompound#write } */
     private static Method nbtWrite = null;
 
     /**
-     * 访问 {@link NBTTagCompound#write } 的私有 read 方法
+     * 访问 {@link NBTTagCompound#write }
      * 
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_write}
      */
@@ -92,11 +92,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 {@link NBTTagCompound#func_152446_a } 的私有 read 方法 */
+    /** 缓存 {@link NBTTagCompound#func_152446_a } */
     private static Method nbtRead = null;
 
     /**
-     * 访问 {@link NBTTagCompound#func_152446_a } 的私有 read 方法
+     * 访问 {@link NBTTagCompound#func_152446_a }
      * 
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_read}
      */

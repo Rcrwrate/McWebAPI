@@ -22,9 +22,14 @@
 
 ## 下载
 
-[![最新构建(测试)](https://img.shields.io/github/actions/workflow/status/Rcrwrate/McWebAPI/build-and-test.yml?logo=github&label=Build%20and%20test&link=https%3A%2F%2Fgithub.com%2FRcrwrate%2FMcWebAPI%2Factions%2Fworkflows%2Fbuild-and-test.yml)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
-
+[![最新构建(java)](https://img.shields.io/github/actions/workflow/status/Rcrwrate/McWebAPI/build-and-test.yml?logo=github&label=Build%20and%20test)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-and-test.yml)
+[![最新构建(web)](https://img.shields.io/github/actions/workflow/status/Rcrwrate/McWebAPI/build-web.yml?logo=github&label=Build%20web)](https://github.com/Rcrwrate/McWebAPI/actions/workflows/build-web.yml)
 [![最新发布](https://img.shields.io/github/v/release/Rcrwrate/MCWebAPI)](https://github.com/Rcrwrate/McWebAPI/releases/latest)
+[![npm](https://img.shields.io/npm/v/%40shirokasoke%2Fwebapi-sdk)](https://www.npmjs.com/package/@shirokasoke/webapi-sdk)
+
+![Docker Last Updated](https://img.shields.io/docker/last-updated/shirokasoke/mcwebapi?logo=docker&label=Env%20Last%20Updated)
+![Docker size](https://img.shields.io/docker/image-size/shirokasoke/mcwebapi)
+![Repo size](https://img.shields.io/github/repo-size/Rcrwrate/McWebAPI)
 
 目前状态：
 
