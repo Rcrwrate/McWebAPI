@@ -20,7 +20,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import gregtech.api.recipe.RecipeMap;
 import gregtech.api.util.GTRecipe;
-import love.shirokasoke.webapi.Config;
+import love.shirokasoke.webapi.config.RecipeConfig;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.utils.Recipes;
@@ -181,7 +181,7 @@ public class GTRecipesHandler implements RouteHandler {
      * 快照基于首次访问时刻的配方表，之后运行时新增的配方不会出现。
      */
     private static List<GTRecipe> getRecipesSnapshot(RecipeMap<?> map) {
-        if (!Config.cacheRecipes) {
+        if (!RecipeConfig.cacheRecipes) {
             return snapshotOf(map);
         }
         return RECIPES_CACHE.computeIfAbsent(map.unlocalizedName, key -> snapshotOf(map));
@@ -244,7 +244,7 @@ public class GTRecipesHandler implements RouteHandler {
      * 缓存的 {@link ObjectNode} 为跨请求共享的只读对象，仅用于 JSON 输出，不得原地修改。
      */
     private ObjectNode dumpRecipeCached(RecipeMap<?> map, GTRecipe recipe) {
-        if (!Config.cacheRecipes) {
+        if (!RecipeConfig.cacheRecipes) {
             return dumpRecipe(map, recipe);
         }
         ObjectNode cached = SERIALIZED_CACHE.get(recipe);

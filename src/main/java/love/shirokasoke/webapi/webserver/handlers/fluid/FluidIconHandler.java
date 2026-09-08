@@ -9,8 +9,8 @@ import net.minecraftforge.fluids.FluidRegistry;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.StaticResourceConfig;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
@@ -28,7 +28,7 @@ public class FluidIconHandler implements RouteHandler {
             throw new ApiException(400, "missing query param 'id' or 'name'");
         }
 
-        if (Config.FluidIconFolder == null || Config.FluidIconFolder.isEmpty()) {
+        if (StaticResourceConfig.fluidIconFolder == null || StaticResourceConfig.fluidIconFolder.isEmpty()) {
             throw new ApiException(500, "FluidIconFolder not configured");
         }
 
@@ -44,7 +44,7 @@ public class FluidIconHandler implements RouteHandler {
         }
 
         String fileName = Fluids.getFileName(fluid) + ".png";
-        File iconFile = new File(Config.FluidIconFolder, fileName);
+        File iconFile = new File(StaticResourceConfig.fluidIconFolder, fileName);
 
         if (!iconFile.exists() || !iconFile.isFile()) {
             MyMod.LOG.warn("[FluidIconHandler] Icon not found: {}", iconFile.getAbsolutePath());

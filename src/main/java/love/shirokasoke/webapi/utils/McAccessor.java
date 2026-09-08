@@ -10,8 +10,8 @@ import net.minecraftforge.common.DimensionManager;
 import com.mitchej123.hodgepodge.util.ServerThreadLongHashMap;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.SafeConfig;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.webserver.RouteHandler.ApiException;
 
@@ -62,7 +62,7 @@ public final class McAccessor {
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap chunkMap) {
             MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             chunk = (Chunk) chunkMap.getValueByKey(k);
-        } else if (Config.chunkSafe) {
+        } else if (SafeConfig.chunkSafe) {
             try {
                 chunk = (Chunk) ServerThreadDispatcher
                     .callOnServerThread(() -> world.theChunkProviderServer.loadedChunkHashMap.getValueByKey(k));
@@ -104,7 +104,7 @@ public final class McAccessor {
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap) {
             MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             te = world.getTileEntity(x, y, z);
-        } else if (Config.chunkSafe) {
+        } else if (SafeConfig.chunkSafe) {
             try {
                 te = ServerThreadDispatcher.callOnServerThread(() -> world.getTileEntity(x, y, z));
             } catch (Exception e) {
@@ -127,7 +127,7 @@ public final class McAccessor {
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap) {
             MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             return world.blockExists(x, y, z);
-        } else if (Config.chunkSafe) {
+        } else if (SafeConfig.chunkSafe) {
             try {
                 return ServerThreadDispatcher.callOnServerThread(() -> world.blockExists(x, y, z));
             } catch (Exception e) {

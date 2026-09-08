@@ -14,4 +14,4 @@ DEPS_OUT="$PWD/tools/sync-maven/deps.tsv" \
   --no-configuration-cache --console=plain -q | grep -E "EXPORTED|SKIPPED" || true
 
 echo "==> 2/2 同步到目标仓库"
-exec python3 tools/sync-maven/sync.py --extra tools/sync-maven/extras.tsv "$@"
+exec python3 tools/sync-maven/sync.py --extra tools/sync-maven/deps.tsv "$@"

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import love.shirokasoke.webapi.Config;
+import love.shirokasoke.webapi.config.SecurityConfig;
 
 /**
  * 基于 Token 的认证提供者，兼容原有 authToken + authUrlPrefixes 配置
@@ -49,7 +49,7 @@ public class TokenAuthProvider implements AuthProvider {
 
     @Override
     public AuthResult authenticate(String uri, String method, List<String> authorization) {
-        if (Config.authToken == null || Config.authToken.isEmpty() || urlCache.isEmpty()) {
+        if (SecurityConfig.authToken == null || SecurityConfig.authToken.isEmpty() || urlCache.isEmpty()) {
             return AuthResult.skip();
         }
         if (!needAuth(uri, method)) {
@@ -61,7 +61,7 @@ public class TokenAuthProvider implements AuthProvider {
         for (String auth : authorization) {
             if (auth != null) {
                 String token = auth.startsWith("Bearer ") ? auth.substring(7) : auth;
-                if (Config.authToken.equals(token)) {
+                if (SecurityConfig.authToken.equals(token)) {
                     return AuthResult.pass();
                 }
             }

@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.CloudflaredConfig;
+import love.shirokasoke.webapi.config.ServerConfig;
 import love.shirokasoke.webapi.utils.Logs;
 
 public class CloudflaredTunnel {
@@ -31,7 +32,7 @@ public class CloudflaredTunnel {
     public static synchronized void start() {
         // A new server session: allow the tunnel to be started again after a stop.
         stopping = false;
-        if (Config.cfPath == null || Config.cfPath.trim()
+        if (CloudflaredConfig.path == null || CloudflaredConfig.path.trim()
             .isEmpty()) {
             MyMod.LOG.info("[CloudFlared] server.cf.path is empty, tunnel disabled");
             return;
@@ -52,7 +53,7 @@ public class CloudflaredTunnel {
             return;
         }
 
-        MyMod.LOG.info("[CloudFlared] binary not found at {}, downloading in background", Config.cfPath);
+        MyMod.LOG.info("[CloudFlared] binary not found at {}, downloading in background", CloudflaredConfig.path);
         downloaderThread = new Thread(CloudflaredTunnel::downloadAndStart, "CloudflaredTunnel-Downloader");
         downloaderThread.setDaemon(true);
         downloaderThread.start();
@@ -118,11 +119,11 @@ public class CloudflaredTunnel {
      * Fast path: returns the configured binary if it already exists at the
      * configured path, without performing any network I/O. Never blocks the caller.
      *
-     * @return the existing cloudflared binary at {@link Config#cfPath}, or
+     * @return the existing cloudflared binary at {@link CloudflaredConfig.path}, or
      *         {@code null} if the file does not exist (yet).
      */
     private static File configuredBinary() {
-        String configured = Config.cfPath.trim();
+        String configured = CloudflaredConfig.path.trim();
         File binary = new File(configured);
         if (binary.isFile()) {
             MyMod.LOG.debug("[CloudFlared] using configured binary: {}", binary.getAbsolutePath());
@@ -132,7 +133,7 @@ public class CloudflaredTunnel {
     }
 
     /**
-     * Ensures the cloudflared binary is available at {@link Config#cfPath},
+     * Ensures the cloudflared binary is available at {@link CloudflaredConfig.path},
      * downloading / extracting it if necessary. Performs blocking network I/O
      * and therefore MUST be called on a background thread, never on the main
      * thread. The configured path is treated as the exact binary file location.
@@ -158,7 +159,7 @@ public class CloudflaredTunnel {
             return null;
         }
 
-        File binaryTarget = new File(Config.cfPath.trim()).getAbsoluteFile();
+        File binaryTarget = new File(CloudflaredConfig.path.trim()).getAbsoluteFile();
         File parent = binaryTarget.getParentFile();
         if (parent != null && !parent.exists() && !parent.mkdirs()) {
             MyMod.LOG.error("[CloudFlared] cannot create directory {}", parent.getAbsolutePath());
@@ -229,13 +230,13 @@ public class CloudflaredTunnel {
 
     /** Builds the cloudflared command line. */
     private static List<String> buildCommand(File binary) {
-        String token = Config.cfToken == null ? "" : Config.cfToken.trim();
-        String url = "http://localhost:" + Config.httpPort;
+        String token = CloudflaredConfig.token == null ? "" : CloudflaredConfig.token.trim();
+        String url = "http://localhost:" + ServerConfig.httpPort;
         if (!token.isEmpty()) {
-            MyMod.LOG.info("[CloudFlared] starting named tunnel with token (port {})", Config.httpPort);
+            MyMod.LOG.info("[CloudFlared] starting named tunnel with token (port {})", ServerConfig.httpPort);
             return Arrays.asList(binary.getAbsolutePath(), "tunnel", "run", "--token", token, "--url", url);
         }
-        MyMod.LOG.info("[CloudFlared] starting trycloudflare quick tunnel for port {}", Config.httpPort);
+        MyMod.LOG.info("[CloudFlared] starting trycloudflare quick tunnel for port {}", ServerConfig.httpPort);
         return Arrays.asList(binary.getAbsolutePath(), "tunnel", "--url", url);
     }
 

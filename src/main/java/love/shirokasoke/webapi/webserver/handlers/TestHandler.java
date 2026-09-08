@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 
 import com.sun.net.httpserver.HttpExchange;
 
-import love.shirokasoke.webapi.Config;
+import love.shirokasoke.webapi.config.StaticResourceConfig;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.NBT;
 import love.shirokasoke.webapi.webserver.RouteHandler;
@@ -25,7 +25,7 @@ public class TestHandler implements RouteHandler {
             throw new ApiException(400, "missing query param 'id'");
         }
 
-        if (Config.ItemIconFolder == null || Config.ItemIconFolder.isEmpty()) {
+        if (StaticResourceConfig.itemIconFolder == null || StaticResourceConfig.itemIconFolder.isEmpty()) {
             throw new ApiException(500, "ItemIconFolder not configured");
         }
 

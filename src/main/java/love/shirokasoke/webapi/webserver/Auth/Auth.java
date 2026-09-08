@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.SecurityConfig;
 
 /**
  * 认证管理器
@@ -26,11 +26,11 @@ public class Auth {
      */
     public static void init() {
         providers.clear();
-        if (Config.authUrlPrefixes.length > 0 && !Config.authToken.isEmpty()) {
-            registerProvider(new TokenAuthProvider().setup(Config.authUrlPrefixes));
+        if (SecurityConfig.authUrlPrefixes.length > 0 && !SecurityConfig.authToken.isEmpty()) {
+            registerProvider(new TokenAuthProvider().setup(SecurityConfig.authUrlPrefixes));
         }
-        if (Config.bannedPrefixes.length > 0) {
-            registerProvider(new BannedPreProvider().setup(Config.bannedPrefixes));
+        if (SecurityConfig.bannedPrefixes.length > 0) {
+            registerProvider(new BannedPreProvider().setup(SecurityConfig.bannedPrefixes));
         }
     }
 

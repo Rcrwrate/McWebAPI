@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import codechicken.nei.ItemList;
 import codechicken.nei.guihook.GuiContainerManager;
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.utils.CItems;
+import love.shirokasoke.webapi.config.ClientItemConfig;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.NBT;
@@ -50,8 +50,8 @@ public class ItemIconDumperThread extends Thread {
 
     /** 输出目录：.minecraft/dumps/item_icons/ */
     private final File outputDir;
-    /** 输出图标尺寸（像素），由配置文件 {@link Config#itemIconSize} 决定。 */
-    private final int iconSize;
+    /** 输出图标尺寸（像素） */
+    private final int iconSize = ClientItemConfig.iconSize;
     private final Minecraft mc;
     /** 独立 Framebuffer，用于离屏渲染物品图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
@@ -62,7 +62,6 @@ public class ItemIconDumperThread extends Thread {
         super("ItemIcon-Dumper");
         setDaemon(true);
         this.mc = Minecraft.getMinecraft();
-        this.iconSize = Config.itemIconSize;
         this.outputDir = new File(mc.mcDataDir, "dumps/item_icons");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
@@ -246,9 +245,9 @@ public class ItemIconDumperThread extends Thread {
                 }
             }
             // 可配置的延迟，降低 CPU/GPU 占用
-            if (Config.itemIconDelayMs > 0) {
+            if (ClientItemConfig.delayMs > 0) {
                 try {
-                    Thread.sleep(Config.itemIconDelayMs);
+                    Thread.sleep(ClientItemConfig.delayMs);
                 } catch (InterruptedException ie) {
                     Thread.currentThread()
                         .interrupt();

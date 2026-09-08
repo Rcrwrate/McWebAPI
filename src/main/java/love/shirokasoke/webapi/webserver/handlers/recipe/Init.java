@@ -1,6 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers.recipe;
 
-import love.shirokasoke.webapi.Config;
+import love.shirokasoke.webapi.config.RecipeConfig;
 import love.shirokasoke.webapi.webserver.RouteRegistry;
 import love.shirokasoke.webapi.webserver.WebServer;
 
@@ -14,7 +14,7 @@ public class Init {
     }
 
     public static void after() {
-        if (Config.indexCraftingRecipes) {
+        if (RecipeConfig.indexCraftingRecipes) {
             new Thread(() -> {
                 IndexedCraftingRecipesHandler r = new IndexedCraftingRecipesHandler(
                     CraftingRecipesHandler.INSTANCE.getSortedRecipes());

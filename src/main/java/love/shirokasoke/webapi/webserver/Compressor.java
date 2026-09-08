@@ -9,8 +9,8 @@ import com.aayushatharva.brotli4j.encoder.Encoder;
 import com.github.luben.zstd.Zstd;
 import com.sun.net.httpserver.HttpExchange;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.CompressorConfig;
 import love.shirokasoke.webapi.utils.Logs;
 
 /**
@@ -19,7 +19,7 @@ import love.shirokasoke.webapi.utils.Logs;
 public class Compressor {
 
     /** 低于此字节数不压缩（压缩头开销大于收益） */
-    public static final int THRESHOLD = Config.Compressor_THRESHOLD;
+    public static final int THRESHOLD = CompressorConfig.threshold;
     public static boolean br = false;
     public static boolean zstd = false;
 
@@ -27,7 +27,7 @@ public class Compressor {
      * Accept-Encoding 按 RFC 7231 解析 q 值，选择 q 最高的可用算法。
      */
     public static String selectEncoding(HttpExchange exchange, int len) {
-        if (!Config.Compressor || len < THRESHOLD) return null;
+        if (!CompressorConfig.enable || len < THRESHOLD) return null;
         List<String> headers = exchange.getRequestHeaders()
             .get("Accept-Encoding");
         if (headers == null || headers.isEmpty()) return null;
@@ -64,7 +64,7 @@ public class Compressor {
     }
 
     public static String fastCheck(HttpExchange exchange, int len) {
-        if (!Config.Compressor || len < THRESHOLD) return null;
+        if (!CompressorConfig.enable || len < THRESHOLD) return null;
         List<String> headers = exchange.getRequestHeaders()
             .get("Accept-Encoding");
         if (headers == null || headers.isEmpty()) return null;
@@ -93,7 +93,7 @@ public class Compressor {
     }
 
     public static void checkLoader() {
-        if (!Config.Compressor) return;
+        if (!CompressorConfig.enable) return;
         try {
             com.aayushatharva.brotli4j.Brotli4jLoader.ensureAvailability();
             br = com.aayushatharva.brotli4j.Brotli4jLoader.isAvailable();

@@ -27,9 +27,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import cpw.mods.fml.common.registry.GameData;
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.ClientBlockConfig;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
 
@@ -43,7 +43,7 @@ import love.shirokasoke.webapi.utils.Logs;
 public class MapTileDumperThread extends Thread {
 
     private final File outputDir;
-    private final int iconSize;
+    private final int iconSize = ClientBlockConfig.tileSize;
     private final Minecraft mc;
     private Framebuffer framebuffer;
 
@@ -51,7 +51,6 @@ public class MapTileDumperThread extends Thread {
         super("MapTile-Dumper");
         setDaemon(true);
         this.mc = Minecraft.getMinecraft();
-        this.iconSize = Config.blockTileSize;
         this.outputDir = new File(mc.mcDataDir, "dumps/block_tiles");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
@@ -143,9 +142,9 @@ public class MapTileDumperThread extends Thread {
                     }
                 }
 
-                if (Config.blockTileDelayMs > 0) {
+                if (ClientBlockConfig.delayMs > 0) {
                     try {
-                        Thread.sleep(Config.blockTileDelayMs);
+                        Thread.sleep(ClientBlockConfig.delayMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread()
                             .interrupt();

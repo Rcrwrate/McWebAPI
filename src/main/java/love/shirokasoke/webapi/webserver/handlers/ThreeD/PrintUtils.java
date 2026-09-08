@@ -19,8 +19,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 import li.cil.oc.api.Items;
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.OCPrintConfig;
 import love.shirokasoke.webapi.webserver.RouteHandler.ApiException;
 
 /**
@@ -44,10 +44,10 @@ public final class PrintUtils {
     /** OC {@link li.cil.oc.Constants.BlockName.Printer} 的值 */
     public static final String PRINT_ITEM_NAME = "print";
 
-    static final int ALPHA_THRESHOLD = Config.ALPHA_THRESHOLD;
-    static final int TOLERANCE_R = Config.TOLERANCE_R;
-    static final int TOLERANCE_G = Config.TOLERANCE_G;
-    static final int TOLERANCE_B = Config.TOLERANCE_B;
+    static final int ALPHA_THRESHOLD = OCPrintConfig.alphaThreshold;
+    static final int TOLERANCE_R = OCPrintConfig.toleranceR;
+    static final int TOLERANCE_G = OCPrintConfig.toleranceG;
+    static final int TOLERANCE_B = OCPrintConfig.toleranceB;
 
     private PrintUtils() {}
 
@@ -171,8 +171,8 @@ public final class PrintUtils {
      * <li>每个 16×16 像素块 = 一个打印件（一个游戏方块）；
      * <li>每个不透明像素 = 方块内一个 1/16³ 体素，贴北面（z ∈ [0, 1/16]）；
      * <li>贴图固定为 {@code opencomputers:White}，颜色由 24 位 tint 染色还原；
-     * <li>颜色相近（容差见 {@link Config#TOLERANCE_R}/{@link Config#TOLERANCE_G}/{@link Config#TOLERANCE_B}）
-     * 的相邻像素按二维贪心合并为矩形形状，alpha &le; {@link Config#ALPHA_THRESHOLD} 视为透明不生成形状。
+     * <li>颜色相近（容差见 {@link OCPrintConfig.toleranceR}/{@link OCPrintConfig.toleranceG}/{@link OCPrintConfig.toleranceB}）
+     * 的相邻像素按二维贪心合并为矩形形状，alpha &le; {@link OCPrintConfig.alphaThreshold} 视为透明不生成形状。
      * </ul>
      *
      * @param label   打印件自定义名称（OC setLabel，最长 24），可为 null

@@ -14,8 +14,8 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.TPSRecordConfig;
 import love.shirokasoke.webapi.utils.Logs;
 
 /**
@@ -39,15 +39,15 @@ public class TPSRecorder extends Thread {
         super("TPS-Recorder");
         setDaemon(true);
         this.outputFile = outputFile;
-        this.sleepMs = Config.tpsRecordInterval * 1000L;
+        this.sleepMs = TPSRecordConfig.interval * 1000L;
         if (this.sleepMs <= 0) this.sleepMs = 5000L;
         this.targetDims = resolveTargetDims();
     }
 
     public static void _start_() {
-        if (!Config.tpsRecordEnable) return;
+        if (!TPSRecordConfig.enable) return;
         if (instance != null && instance.isAlive()) return;
-        instance = new TPSRecorder(new File(Config.tpsRecordFile));
+        instance = new TPSRecorder(new File(TPSRecordConfig.file));
         instance.start();
     }
 
@@ -81,7 +81,7 @@ public class TPSRecorder extends Thread {
 
             MyMod.LOG.info(
                 "开始记录TPS数据，间隔 {} 秒，输出文件: {} ，目标维度: {}",
-                Config.tpsRecordInterval,
+                TPSRecordConfig.interval,
                 outputFile.getAbsolutePath(),
                 targetDims.isEmpty() ? "全部" : targetDims.toString());
 
@@ -157,8 +157,8 @@ public class TPSRecorder extends Thread {
 
     private static Set<Integer> resolveTargetDims() {
         Set<Integer> set = new HashSet<>();
-        if (Config.tpsRecordDimIds != null) {
-            for (int id : Config.tpsRecordDimIds) {
+        if (TPSRecordConfig.dimIds != null) {
+            for (int id : TPSRecordConfig.dimIds) {
                 set.add(id);
             }
         }

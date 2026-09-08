@@ -1,7 +1,5 @@
 package love.shirokasoke.webapi;
 
-import java.io.File;
-
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
@@ -10,6 +8,14 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import love.shirokasoke.webapi.config.Configs;
+import love.shirokasoke.webapi.config.ItemThreadConfig;
+import love.shirokasoke.webapi.config.LocalizationConfig;
+import love.shirokasoke.webapi.config.SecurityConfig;
+import love.shirokasoke.webapi.config.ServerConfig;
+import love.shirokasoke.webapi.config.StaticResourceConfig;
+import love.shirokasoke.webapi.config.TickConfig;
+import love.shirokasoke.webapi.config.UpdateConfig;
 import love.shirokasoke.webapi.server.Lang;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.thread.CloudflaredTunnel;
@@ -23,16 +29,7 @@ public class CommonProxy {
     // etc, and register them with the
     // GameRegistry." (Remove if not needed)
     public void preInit(FMLPreInitializationEvent event) {
-        // Create custom config file path: config/shirokasoke/WebAPI.cfg
-        File configDir = new File(event.getModConfigurationDirectory(), "shirokasoke");
-        if (!configDir.exists()) {
-            configDir.mkdirs();
-            MyMod.LOG.info("Created config directory: " + configDir.getAbsolutePath());
-        }
-        File configFile = new File(configDir, "WebAPI.cfg");
-
-        Config.synchronizeConfiguration(configFile);
-        MyMod.LOG.info("Configuration loaded from: " + configFile.getAbsolutePath());
+        Configs.init();
         MyMod.LOG.info("WebAPI preInit at version " + Tags.VERSION);
     }
 
@@ -50,18 +47,18 @@ public class CommonProxy {
     public void serverStarting(FMLServerStartingEvent event) {
         MyMod.LOG.info("Server Starting");
         Auth.init();
-        WebServer.start(Config.httpPort, Config.nThreads);
-        for (String i : Config.disabledRoutes) {
+        WebServer.start(ServerConfig.httpPort, ServerConfig.nThreads);
+        for (String i : SecurityConfig.disabledRoutes) {
             WebServer.removeRoute(i);
         }
         CloudflaredTunnel.start();
         FMLCommonHandler.instance()
             .bus()
             .register(new ServerThreadDispatcher());
-        ServerThreadDispatcher.setSlowTasksPerTick(Config.MaxPerTick);
-        ServerThreadDispatcher.setBudgetMs(Config.budgetMs);
+        ServerThreadDispatcher.setSlowTasksPerTick(TickConfig.maxPerTick);
+        ServerThreadDispatcher.setBudgetMs(TickConfig.budgetMs);
 
-        if (Config.enableUpdateCheck) {
+        if (UpdateConfig.enableUpdateCheck) {
             new love.shirokasoke.webapi.thread.UpdateChecker().checkAsync();
         }
     }
@@ -69,16 +66,16 @@ public class CommonProxy {
     public void serverStarted(FMLServerStartedEvent event) {
         MyMod.LOG.info("Server Started");
         love.shirokasoke.webapi.webserver.handlers.recipe.Init.after();
-        ItemStaticHandler s = new ItemStaticHandler(Config.ItemFile);
+        ItemStaticHandler s = new ItemStaticHandler(StaticResourceConfig.itemFile);
         if (s.isValid()) {
-            Config.itemThreadEnable = false;
+            ItemThreadConfig.enable = false;
             MyMod.LOG.info("ItemFile is valid, itemThread forcibly disabled");
             s.inject();
         }
-        if (Config.itemThreadEnable) {
+        if (ItemThreadConfig.enable) {
             new love.shirokasoke.webapi.thread.ItemsThread().start();
         }
-        Lang.setup(Config.langFiles);
+        Lang.setup(LocalizationConfig.langFiles);
         love.shirokasoke.webapi.thread.TPSRecorder._start_();
     }
 

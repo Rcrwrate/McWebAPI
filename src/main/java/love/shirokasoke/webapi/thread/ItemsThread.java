@@ -2,8 +2,8 @@ package love.shirokasoke.webapi.thread;
 
 import net.minecraft.item.Item;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.ItemThreadConfig;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
 
@@ -28,9 +28,9 @@ public class ItemsThread extends Thread {
                         Items.getPermutations(item);
                         processedCount++;
 
-                        if (Config.itemThreadDelayMs > 0) {
+                        if (ItemThreadConfig.delayMs > 0) {
                             try {
-                                Thread.sleep(Config.itemThreadDelayMs);
+                                Thread.sleep(ItemThreadConfig.delayMs);
                             } catch (InterruptedException ie) {
                                 Thread.currentThread()
                                     .interrupt();
@@ -39,7 +39,7 @@ public class ItemsThread extends Thread {
                             }
                         }
 
-                        if (processedCount % Config.itemThreadBatchSize == 0) {
+                        if (processedCount % ItemThreadConfig.batchSize == 0) {
                             System.gc();
                         }
                     }

@@ -8,8 +8,9 @@ import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.ForgeChunkManager.LoadingCallback;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.ClientBlockConfig;
+import love.shirokasoke.webapi.config.StaticResourceConfig;
 import love.shirokasoke.webapi.webserver.RouteRegistry;
 import love.shirokasoke.webapi.webserver.handlers.block.BlockTileHandler;
 
@@ -21,14 +22,15 @@ public class Init {
         RouteRegistry.register(new ChunkForceHandler());
 
         // 检查 ChunkMapHandler 所需配置是否有效
-        File blocksJson = (Config.BlockFile != null && !Config.BlockFile.isEmpty()) ? new File(Config.BlockFile)
+        File blocksJson = (StaticResourceConfig.blockFile != null && !StaticResourceConfig.blockFile.isEmpty())
+            ? new File(StaticResourceConfig.blockFile)
             : new File("dumps/blocks.json");
-        File blockTileDir = (Config.BlockTileFolder != null && !Config.BlockTileFolder.isEmpty())
-            ? new File(Config.BlockTileFolder)
-            : new File("dumps/block_tiles");
+        File blockTileDir = (StaticResourceConfig.blockTileFolder != null
+            && !StaticResourceConfig.blockTileFolder.isEmpty()) ? new File(StaticResourceConfig.blockTileFolder)
+                : new File("dumps/block_tiles");
 
         if (blocksJson.exists() && blockTileDir.exists() && blockTileDir.isDirectory()) {
-            RouteRegistry.register(new ChunkMapHandler(blocksJson, blockTileDir, Config.blockTileSize));
+            RouteRegistry.register(new ChunkMapHandler(blocksJson, blockTileDir, ClientBlockConfig.tileSize));
             RouteRegistry.register(new BlockTileHandler(blocksJson, blockTileDir));
         } else {
             MyMod.LOG.warn(

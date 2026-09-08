@@ -23,9 +23,9 @@ import org.lwjgl.opengl.GL12;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.ClientFluidConfig;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.Logs;
 
@@ -40,8 +40,8 @@ public class FluidIconDumperThread extends Thread {
 
     /** 输出目录：.minecraft/dumps/fluid_icons/ */
     private final File outputDir;
-    /** 输出图标尺寸（像素），由配置文件 {@link Config#fluidIconSize} 决定。 */
-    private final int iconSize;
+    /** 输出图标尺寸（像素） */
+    private final int iconSize = ClientFluidConfig.iconSize;
     private final Minecraft mc;
     /** 独立 Framebuffer，用于离屏渲染流体图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
@@ -50,7 +50,6 @@ public class FluidIconDumperThread extends Thread {
         super("FluidIcon-Dumper");
         setDaemon(true);
         this.mc = Minecraft.getMinecraft();
-        this.iconSize = Config.fluidIconSize;
         this.outputDir = new File(mc.mcDataDir, "dumps/fluid_icons");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
@@ -141,9 +140,9 @@ public class FluidIconDumperThread extends Thread {
                     }
                 }
 
-                if (Config.fluidIconDelayMs > 0) {
+                if (ClientFluidConfig.delayMs > 0) {
                     try {
-                        Thread.sleep(Config.fluidIconDelayMs);
+                        Thread.sleep(ClientFluidConfig.delayMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread()
                             .interrupt();

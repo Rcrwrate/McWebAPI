@@ -5,7 +5,7 @@
 这样你就能在服务端运行时不启动游戏客户端的情况下进行快乐的操作：包括但不限于AE下单、快捷3D打印，具体请查阅[功能](#功能)
 
 > [!TIP]
-> 仅推荐服务端使用本mod，你正常情况下不应该在客户端安装它！
+> 仅推荐服务端使用本mod，必须使用Java 25，你正常情况下不应该在客户端安装它！
 
 ## 使用说明
 
@@ -49,7 +49,7 @@
 > [!TIP]
 > 推荐安装，速度和性能比Gzip优秀
 
-[zstd-jni-1.5.7-11.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-11/zstd-jni-1.5.7-11.jar)
+[zstd-jni-1.5.7-16.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-11/zstd-jni-1.5.7-16.jar)
 
 ### brotli4j
 
@@ -195,7 +195,9 @@ README更新不一定即时，可以在下方两个仓库中寻找预导出的�
 
 ## 修改兼容性
 
-[gradle.properties](./gradle.properties#L47-L60)
+强制要求Java 25，使用了不少Java 25特性，只修改兼容性设置无法正常运行
+
+~~[gradle.properties](./gradle.properties#L47-L60)~~
 
 ## vscode插件异常修复
 

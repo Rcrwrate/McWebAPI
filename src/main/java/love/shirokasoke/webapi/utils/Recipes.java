@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
+import love.shirokasoke.webapi.config.RecipeConfig;
 
 /**
  * 配方查询工具类。
@@ -327,7 +327,7 @@ public final class Recipes {
      * 序列化抛异常时不缓存，下次调用重新尝试，行为与无缓存一致。
      */
     public static ObjectNode dumpCraftingRecipeCached(IRecipe recipe) {
-        if (!Config.cacheRecipes) {
+        if (!RecipeConfig.cacheRecipes) {
             return dumpCraftingRecipe(recipe);
         }
         ObjectNode cached = CRAFTING_RECIPE_CACHE.get(recipe);

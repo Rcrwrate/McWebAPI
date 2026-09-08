@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.Constant;
+import love.shirokasoke.webapi.config.DebugConfig;
 
 public final class ClassUtils {
 
@@ -20,7 +20,7 @@ public final class ClassUtils {
     private ClassUtils() {}
 
     public static ObjectNode getClassInfo(Object obj, ObjectNode dataNode, String keyString) {
-        if (Config.classDump) {
+        if (DebugConfig.classDump) {
             dataNode.set(keyString, getClassInfo(obj));
         }
         return dataNode;

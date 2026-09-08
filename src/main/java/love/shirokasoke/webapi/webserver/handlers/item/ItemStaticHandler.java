@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
-import love.shirokasoke.webapi.Config;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.StaticResourceConfig;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 import love.shirokasoke.webapi.webserver.WebServer;
 
@@ -31,7 +31,7 @@ public class ItemStaticHandler implements RouteHandler {
             return false;
         }
 
-        File file = new File(Config.ItemFile);
+        File file = new File(StaticResourceConfig.itemFile);
         if (!file.exists() || !file.isFile() || !file.canRead()) {
             return false;
         }
@@ -39,16 +39,16 @@ public class ItemStaticHandler implements RouteHandler {
         try {
             JsonNode raw = mapper.readTree(file);
             if (!raw.isArray()) {
-                MyMod.LOG.warn("ItemFile is not a JSON array: {}", Config.ItemFile);
+                MyMod.LOG.warn("ItemFile is not a JSON array: {}", StaticResourceConfig.itemFile);
                 return false;
             }
             if (raw.size() == 0) {
-                MyMod.LOG.warn("ItemFile array is empty: {}", Config.ItemFile);
+                MyMod.LOG.warn("ItemFile array is empty: {}", StaticResourceConfig.itemFile);
                 return false;
             }
             if (!raw.get(0)
                 .has("registryName")) {
-                MyMod.LOG.warn("ItemFile missing 'registryName' field: {}", Config.ItemFile);
+                MyMod.LOG.warn("ItemFile missing 'registryName' field: {}", StaticResourceConfig.itemFile);
                 return false;
             }
             for (JsonNode node : raw) {
@@ -59,10 +59,11 @@ public class ItemStaticHandler implements RouteHandler {
                 ((ObjectNode) node).put("id", serverId);
                 data.add(node);
             }
-            MyMod.LOG.info("ItemFile validated successfully: {} ({} items)", Config.ItemFile, data.size());
+            MyMod.LOG
+                .info("ItemFile validated successfully: {} ({} items)", StaticResourceConfig.itemFile, data.size());
             return true;
         } catch (IOException e) {
-            MyMod.LOG.error("Failed to parse ItemFile: {}", Config.ItemFile);
+            MyMod.LOG.error("Failed to parse ItemFile: {}", StaticResourceConfig.itemFile);
             return false;
         }
     }
