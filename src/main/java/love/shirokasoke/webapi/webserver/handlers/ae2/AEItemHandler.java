@@ -25,7 +25,7 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.GridStorageCache;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.config.AE2ItemConfig;
+import love.shirokasoke.webapi.config.AE2Config;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.Items;
@@ -35,9 +35,9 @@ import love.shirokasoke.webapi.webserver.Context;
 public class AEItemHandler extends AEBaseHandler {
 
     /** 缓存刷新间隔（秒） */
-    private static final long REFRESH_INTERVAL_SECONDS = AE2ItemConfig.interval;
+    private static final long REFRESH_INTERVAL_SECONDS = AE2Config.item.interval;
     /** 缓存空闲超时（毫秒），超过此时间无访问则终止该 grid 的缓存 */
-    private static final long IDLE_TIMEOUT_MS = AE2ItemConfig.idleTimeout * 60L * 1000L;
+    private static final long IDLE_TIMEOUT_MS = AE2Config.item.idleTimeout * 60L * 1000L;
 
     /** 单线程定时调度器，负责触发各 grid 的缓存刷新 */
     private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor(r -> {

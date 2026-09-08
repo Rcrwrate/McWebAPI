@@ -119,7 +119,7 @@ public class CloudflaredTunnel {
      * Fast path: returns the configured binary if it already exists at the
      * configured path, without performing any network I/O. Never blocks the caller.
      *
-     * @return the existing cloudflared binary at {@link CloudflaredConfig.path}, or
+     * @return the existing cloudflared binary at {@link CloudflaredConfig#path}, or
      *         {@code null} if the file does not exist (yet).
      */
     private static File configuredBinary() {
@@ -133,7 +133,7 @@ public class CloudflaredTunnel {
     }
 
     /**
-     * Ensures the cloudflared binary is available at {@link CloudflaredConfig.path},
+     * Ensures the cloudflared binary is available at {@link CloudflaredConfig#path},
      * downloading / extracting it if necessary. Performs blocking network I/O
      * and therefore MUST be called on a background thread, never on the main
      * thread. The configured path is treated as the exact binary file location.

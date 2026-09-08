@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import cpw.mods.fml.common.registry.GameData;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.config.ClientBlockConfig;
+import love.shirokasoke.webapi.config.ClientConfig;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
 
@@ -43,7 +43,7 @@ import love.shirokasoke.webapi.utils.Logs;
 public class MapTileDumperThread extends Thread {
 
     private final File outputDir;
-    private final int iconSize = ClientBlockConfig.tileSize;
+    private final int iconSize = ClientConfig.block.tileSize;
     private final Minecraft mc;
     private Framebuffer framebuffer;
 
@@ -142,9 +142,9 @@ public class MapTileDumperThread extends Thread {
                     }
                 }
 
-                if (ClientBlockConfig.delayMs > 0) {
+                if (ClientConfig.block.delayMs > 0) {
                     try {
-                        Thread.sleep(ClientBlockConfig.delayMs);
+                        Thread.sleep(ClientConfig.block.delayMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread()
                             .interrupt();

@@ -9,7 +9,7 @@ import net.minecraftforge.common.ForgeChunkManager.LoadingCallback;
 import net.minecraftforge.common.ForgeChunkManager.Ticket;
 
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.config.ClientBlockConfig;
+import love.shirokasoke.webapi.config.ClientConfig;
 import love.shirokasoke.webapi.config.StaticResourceConfig;
 import love.shirokasoke.webapi.webserver.RouteRegistry;
 import love.shirokasoke.webapi.webserver.handlers.block.BlockTileHandler;
@@ -30,7 +30,7 @@ public class Init {
                 : new File("dumps/block_tiles");
 
         if (blocksJson.exists() && blockTileDir.exists() && blockTileDir.isDirectory()) {
-            RouteRegistry.register(new ChunkMapHandler(blocksJson, blockTileDir, ClientBlockConfig.tileSize));
+            RouteRegistry.register(new ChunkMapHandler(blocksJson, blockTileDir, ClientConfig.block.tileSize));
             RouteRegistry.register(new BlockTileHandler(blocksJson, blockTileDir));
         } else {
             MyMod.LOG.warn(

@@ -57,14 +57,14 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
         // during the CoreMod phase, before any mod initialization.
         //
         // Example:
-        // if (EarlyMixinConfig.enableSomeEarlyMixin) {
+        // if (MixinConfig.early.enableSomeEarlyMixin) {
         // mixins.add("SomeEarlyMixin");
         // }
-        if (EarlyMixinConfig.enableNBT) {
+        if (MixinConfig.nbt.enableNBT) {
             mixins.add("NBTAccess");
         }
 
-        if (EarlyMixinConfig.enableOversizedChunkWarnOnce
+        if (MixinConfig.early.enableOversizedChunkWarnOnce
             && com.mitchej123.hodgepodge.config.FixesConfig.remove2MBChunkLimit) {
             mixins.add("OversizedChunkMixin");
         }

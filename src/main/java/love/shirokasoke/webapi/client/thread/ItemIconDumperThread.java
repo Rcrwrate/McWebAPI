@@ -29,7 +29,7 @@ import codechicken.nei.guihook.GuiContainerManager;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.utils.CItems;
-import love.shirokasoke.webapi.config.ClientItemConfig;
+import love.shirokasoke.webapi.config.ClientConfig;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.NBT;
@@ -51,7 +51,7 @@ public class ItemIconDumperThread extends Thread {
     /** 输出目录：.minecraft/dumps/item_icons/ */
     private final File outputDir;
     /** 输出图标尺寸（像素） */
-    private final int iconSize = ClientItemConfig.iconSize;
+    private final int iconSize = ClientConfig.item.iconSize;
     private final Minecraft mc;
     /** 独立 Framebuffer，用于离屏渲染物品图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
@@ -245,9 +245,9 @@ public class ItemIconDumperThread extends Thread {
                 }
             }
             // 可配置的延迟，降低 CPU/GPU 占用
-            if (ClientItemConfig.delayMs > 0) {
+            if (ClientConfig.item.delayMs > 0) {
                 try {
-                    Thread.sleep(ClientItemConfig.delayMs);
+                    Thread.sleep(ClientConfig.item.delayMs);
                 } catch (InterruptedException ie) {
                     Thread.currentThread()
                         .interrupt();

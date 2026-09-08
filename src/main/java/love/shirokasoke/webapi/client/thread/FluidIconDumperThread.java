@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
-import love.shirokasoke.webapi.config.ClientFluidConfig;
+import love.shirokasoke.webapi.config.ClientConfig;
 import love.shirokasoke.webapi.utils.Fluids;
 import love.shirokasoke.webapi.utils.Logs;
 
@@ -41,7 +41,7 @@ public class FluidIconDumperThread extends Thread {
     /** 输出目录：.minecraft/dumps/fluid_icons/ */
     private final File outputDir;
     /** 输出图标尺寸（像素） */
-    private final int iconSize = ClientFluidConfig.iconSize;
+    private final int iconSize = ClientConfig.fluid.iconSize;
     private final Minecraft mc;
     /** 独立 Framebuffer，用于离屏渲染流体图标。延迟到第一次渲染时初始化。 */
     private Framebuffer framebuffer;
@@ -140,9 +140,9 @@ public class FluidIconDumperThread extends Thread {
                     }
                 }
 
-                if (ClientFluidConfig.delayMs > 0) {
+                if (ClientConfig.fluid.delayMs > 0) {
                     try {
-                        Thread.sleep(ClientFluidConfig.delayMs);
+                        Thread.sleep(ClientConfig.fluid.delayMs);
                     } catch (InterruptedException ie) {
                         Thread.currentThread()
                             .interrupt();

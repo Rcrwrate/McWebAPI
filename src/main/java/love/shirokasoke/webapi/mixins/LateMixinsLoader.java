@@ -35,24 +35,24 @@ public class LateMixinsLoader implements ILateMixinLoader {
         List<String> mixins = new ArrayList<>();
 
         // Example: conditionally enable a late mixin based on config + mod presence:
-        // if (LateMixinConfig.enableSomeModMixin && loadedMods.contains("some_modid")) {
+        // if (MixinConfig.late.enableSomeModMixin && loadedMods.contains("some_modid")) {
         // mixins.add("SomeModMixin");
         // }
-        if (LateMixinConfig.enableMTELapotronicSuperCapacitorGetInfoMap && loadedMods.contains("gregtech")) {
+        if (MixinConfig.late.enableMTELapotronicSuperCapacitorGetInfoMap && loadedMods.contains("gregtech")) {
             mixins.add("MTELapotronicSuperCapacitorGetInfoMapMixin");
         }
 
-        if (EarlyMixinConfig.enableNBT) {
+        if (MixinConfig.nbt.enableNBT) {
             mixins.add("NBTMixin");
         }
 
-        if (LateMixinConfig.enableAECPUAccessor && loadedMods.contains("appliedenergistics2")) {
+        if (MixinConfig.late.enableAECPUAccessor && loadedMods.contains("appliedenergistics2")) {
             mixins.add("CraftingCPUClusterAccess");
             mixins.add("TaskProgressAccess");
             mixins.add("AECPUMixin");
         }
 
-        if (LateMixinConfig.enableServerThreadLongHashMapBypass) {
+        if (MixinConfig.late.enableServerThreadLongHashMapBypass) {
             mixins.add("ServerThreadLongHashMapBypass");
         }
 
