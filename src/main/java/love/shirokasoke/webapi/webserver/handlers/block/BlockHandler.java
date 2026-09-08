@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
@@ -16,6 +17,7 @@ import love.shirokasoke.webapi.utils.Blocks;
 import love.shirokasoke.webapi.utils.ClassUtils;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.McAccessor;
+import love.shirokasoke.webapi.utils.NBT;
 import love.shirokasoke.webapi.webserver.Context;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
@@ -71,6 +73,10 @@ public class BlockHandler implements RouteHandler {
             if (tileEntity != null) {
                 ObjectNode tileEntityData = mapper.createObjectNode();
                 ClassUtils.getClassInfo(tileEntity, tileEntityData);
+
+                NBTTagCompound nbt = new NBTTagCompound();
+                tileEntity.writeToNBT(nbt);
+                NBT.dump(nbt, tileEntityData, "nbt");
 
                 // 如果是箱子或其他容器，读取物品内容
                 if (tileEntity instanceof IInventory) {

@@ -50,8 +50,6 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public List<String> getMixins(Set<String> loadedCoreMods) {
-        MixinConfig.load();
-
         List<String> mixins = new ArrayList<>();
 
         // Register your early mixins here by adding them to the list.
@@ -59,14 +57,14 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
         // during the CoreMod phase, before any mod initialization.
         //
         // Example:
-        // if (MixinConfig.enableSomeEarlyMixin) {
+        // if (EarlyMixinConfig.enableSomeEarlyMixin) {
         // mixins.add("SomeEarlyMixin");
         // }
-        if (MixinConfig.enableNBT) {
+        if (EarlyMixinConfig.enableNBT) {
             mixins.add("NBTAccess");
         }
 
-        if (MixinConfig.enableOversizedChunkWarnOnce
+        if (EarlyMixinConfig.enableOversizedChunkWarnOnce
             && com.mitchej123.hodgepodge.config.FixesConfig.remove2MBChunkLimit) {
             mixins.add("OversizedChunkMixin");
         }

@@ -41,7 +41,11 @@ public class CommonProxy {
     // this." (Remove if not needed)
     public void postInit(FMLPostInitializationEvent event) {}
 
-    public void loadComplete(FMLLoadCompleteEvent event) {}
+    public void loadComplete(FMLLoadCompleteEvent event) {
+        if (ItemThreadConfig.enable) {
+            new love.shirokasoke.webapi.thread.ItemsThread().start();
+        }
+    }
 
     // register server commands in this event handler (Remove if not needed)
     public void serverStarting(FMLServerStartingEvent event) {
@@ -71,9 +75,6 @@ public class CommonProxy {
             ItemThreadConfig.enable = false;
             MyMod.LOG.info("ItemFile is valid, itemThread forcibly disabled");
             s.inject();
-        }
-        if (ItemThreadConfig.enable) {
-            new love.shirokasoke.webapi.thread.ItemsThread().start();
         }
         Lang.setup(LocalizationConfig.langFiles);
         love.shirokasoke.webapi.thread.TPSRecorder._start_();
