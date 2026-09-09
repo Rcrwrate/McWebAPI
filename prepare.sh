@@ -30,7 +30,3 @@ mkdir -p ./build
 mv /tmp/repo/build/* ./build
 mkdir -p ./run/natives
 mv /tmp/repo/run/natives/* ./run/natives
-
-mkdir -p ~/.gradle/init.d/
-cp tools/sync-maven/cnb-mirror.gradle ~/.gradle/init.d/cnb-mirror.gradle
-
