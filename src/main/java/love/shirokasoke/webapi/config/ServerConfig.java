@@ -11,7 +11,10 @@ public class ServerConfig {
     @Config.RangeInt(min = 1024, max = 65535)
     public static int httpPort = 40002;
 
-    @Config.Comment("WebServer threads")
+    @Config.Comment("WebServer threads (ignored when useVirtualThreads is enabled)")
     @Config.RangeInt(min = 4, max = 36)
     public static int nThreads = 10;
+
+    @Config.Comment("Use virtual threads for WebServer (default requires Java 21+, but here need Java 25+)")
+    public static boolean useVirtualThreads = true;
 }

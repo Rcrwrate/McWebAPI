@@ -38,7 +38,7 @@ public class PlayerPrintHandler implements RouteHandler {
     @Override
     public void run(HttpExchange exchange) throws Exception {
         if (!"PUT".equals(exchange.getRequestMethod())) {
-            throw new ApiException(400, "Method must be PUT");
+            throw new ApiException(405, "Method must be PUT");
         }
         Map<String, String> params = parseQueryParams(exchange);
 

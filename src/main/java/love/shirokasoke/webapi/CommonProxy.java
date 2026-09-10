@@ -51,7 +51,7 @@ public class CommonProxy {
     public void serverStarting(FMLServerStartingEvent event) {
         MyMod.LOG.info("Server Starting");
         Auth.init();
-        WebServer.start(ServerConfig.httpPort, ServerConfig.nThreads);
+        WebServer.start(ServerConfig.httpPort, ServerConfig.nThreads, ServerConfig.useVirtualThreads);
         for (String i : SecurityConfig.disabledRoutes) {
             WebServer.removeRoute(i);
         }
