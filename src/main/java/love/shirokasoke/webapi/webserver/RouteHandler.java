@@ -73,7 +73,7 @@ public interface RouteHandler extends HttpHandler {
         try {
             run(exchange);
             double duration = (System.nanoTime() - startTime) / 1_000_000.0;
-            MyMod.LOG.info("[{}]\t{} - {}ms", method, uri, String.format("%.3f", duration)); // 缺一个来源IP地址
+            MyMod.LOG.info("[{}]\t{} - {}ms", method, uri, String.format("%.3f", duration)); // 缺一个来源IP地址,但这一般都是中间件处理
         } catch (Throwable e) {
             double duration = (System.nanoTime() - startTime) / 1_000_000.0;
             if (e instanceof ApiException e2) {

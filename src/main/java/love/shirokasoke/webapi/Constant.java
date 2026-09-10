@@ -7,7 +7,7 @@ public final class Constant {
 
     private Constant() {}
 
-    public static ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+    public static final ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
         .disable(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS)
         .enable(SerializationFeature.WRITE_SELF_REFERENCES_AS_NULL)
         .disable(SerializationFeature.INDENT_OUTPUT);

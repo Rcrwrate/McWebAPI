@@ -9,6 +9,7 @@ public class Init {
     public static void i() {
         if (DebugConfig.test) {
             RouteRegistry.register(new TestHandler());
+            RouteRegistry.register(new SSETestHandler());
             RouteRegistry.register(new NBTTestHandler());
         }
     }

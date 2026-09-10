@@ -29,19 +29,11 @@ public class ServerThreadLongHashMapBypass {
      * {@link ServerThreadLongHashMap#logOffThread}
      * 
      * @author shirokasoke
-     * @reason 本 mod 的非主线程读取不可避免，仅打印一行简短信息；其他线程保持原警告行为
+     * @reason 本 mod 的非主线程读取不可避免，其他线程保持原警告行为
      */
     @Inject(method = "logOffThread", at = @At("HEAD"), cancellable = true, remap = false)
     private void webapi$logOffThread(CallbackInfo ci) {
-        final String name = Thread.currentThread()
-            .getName();
-        if (loggedThreadNames.contains(name)) {
-            ci.cancel();
-            return;
-        }
         if (isModThread()) {
-            loggedThreadNames.add(name);
-            LOGGER.info("Off-thread chunk read from WebAPI thread '{}', serving from snapshot", name);
             ci.cancel();
         }
     }
