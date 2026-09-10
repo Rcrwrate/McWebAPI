@@ -46,14 +46,55 @@ public class SSEClient implements Closeable {
         return event(null, data, null);
     }
 
+    /** 推送无名事件（客户端按默认 message 类型接收），data 为已编码的 UTF-8 文本字节（如 JSON） */
+    public boolean send(byte[] data) {
+        return event(null, data, null);
+    }
+
     /** 推送命名事件，data 支持多行（每行自动补 {@code data: } 前缀） */
     public boolean event(String event, String data) {
+        return event(event, data, null);
+    }
+
+    /** 推送命名事件，data 为已编码的 UTF-8 文本字节（如 JSON），直接解码发送，零序列化开销 */
+    public boolean event(String event, byte[] data) {
         return event(event, data, null);
     }
 
     /** 推送命名事件，data 序列化为 JSON */
     public boolean eventJson(String event, Object data) throws IOException {
         return event(event, mapper.writeValueAsString(data), null);
+    }
+
+    /** 推送命名事件（data 为已编码的 UTF-8 文本字节），可携带事件 id */
+    public boolean event(String event, byte[] data, String id) {
+        StringBuilder sb = new StringBuilder();
+        if (event != null && !event.isEmpty()) {
+            sb.append("event: ")
+                .append(stripNewlines(event))
+                .append('\n');
+        }
+        if (id != null && !id.isEmpty()) {
+            sb.append("id: ")
+                .append(stripNewlines(id))
+                .append('\n');
+        }
+        sb.append("data: ");
+
+        byte[] head = sb.toString()
+            .getBytes(UTF_8);
+        byte[] end = new StringBuilder().append('\n')
+            .append('\n')
+            .toString()
+            .getBytes();
+
+        byte[] result = new byte[head.length + data.length + end.length];
+
+        System.arraycopy(head, 0, result, 0, head.length);
+        System.arraycopy(data, 0, result, head.length, data.length);
+        System.arraycopy(end, 0, result, head.length + data.length, end.length);
+        return writeFrame(result);
+
     }
 
     /** 推送命名事件，可携带事件 id（供客户端断线续传 Last-Event-ID 使用） */
@@ -85,10 +126,14 @@ public class SSEClient implements Closeable {
         } catch (Throwable ignored) {}
     }
 
-    private synchronized boolean writeFrame(String frame) {
+    private boolean writeFrame(String frame) {
+        return writeFrame(frame.getBytes(UTF_8));
+    }
+
+    private synchronized boolean writeFrame(byte[] frame) {
         if (!open || out == null) return false;
         try {
-            out.write(frame.getBytes(UTF_8));
+            out.write(frame);
             out.flush();
             return true;
         } catch (IOException e) {

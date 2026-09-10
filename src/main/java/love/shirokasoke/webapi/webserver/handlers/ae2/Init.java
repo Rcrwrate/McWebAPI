@@ -1,5 +1,6 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
+import love.shirokasoke.webapi.config.ServerConfig;
 import love.shirokasoke.webapi.webserver.RouteRegistry;
 
 public class Init {
@@ -14,5 +15,8 @@ public class Init {
         RouteRegistry.register(new AECPUTaskHandler());
         RouteRegistry.register(new AECPUCancelHandler());
         RouteRegistry.register(new AENodesHandler());
+        if (ServerConfig.useVirtualThreads) {
+            RouteRegistry.register(new AEItemSSEHandler());
+        }
     }
 }

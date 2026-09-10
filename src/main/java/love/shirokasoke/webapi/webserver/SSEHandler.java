@@ -112,6 +112,7 @@ public interface SSEHandler extends RouteHandler {
         exchange.setAttribute(SSE_CLIENT_ATTR, client);
         try {
             client.open();
+            MyMod.LOG.info("[{}]\t{} - {} - SSE opened", method, uri, remote);
             run(exchange, client);
             double duration = (System.nanoTime() - startTime) / 1_000_000.0;
             MyMod.LOG
