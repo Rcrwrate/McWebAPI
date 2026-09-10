@@ -29,12 +29,15 @@ public class AEItemSSEHandler implements SSEHandler {
         UUID gridId = context.grid.getId();
 
         while (client.isOpen()) {
-            CacheEntry data = AEItem.getOrCreateCacheEntry(gridId, context.grid);
-            client.event("aeitem", data.jsonBytes);
+            CacheEntry entry = AEItem.getOrCreateCacheEntry(gridId, context.grid);
+            client.event("aeitem", entry.jsonBytes);
             Thread.sleep(sleep);
             client.heartbeat();
             if (!client.isOpen()) {
-                data.future.cancel(false);
+                if (entry.future != null) {
+                    entry.future.cancel(false);
+                }
+                AEItem.CACHE.remove(gridId, entry);
             }
         }
 
