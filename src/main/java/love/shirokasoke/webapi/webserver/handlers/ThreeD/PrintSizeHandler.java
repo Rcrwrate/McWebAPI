@@ -20,7 +20,7 @@ public class PrintSizeHandler implements RouteHandler {
 
     @Override
     public String getPath() {
-        return "/test/3d";
+        return "/3d/size";
     }
 
     @Override

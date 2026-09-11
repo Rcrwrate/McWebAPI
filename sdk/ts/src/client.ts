@@ -890,7 +890,7 @@ export class WebApiClient {
      * @returns 使用 {@link PrintSizeResultSchema} 验证
      */
     getPrintSize(image: RequestInit["body"], params?: { label?: string; tooltip?: string }): Promise<PrintSizeResult> {
-        return this.request<PrintSizeResult>(`/test/3d${buildQuery(params ?? {})}`, {
+        return this.request<PrintSizeResult>(`/3d/size${buildQuery(params ?? {})}`, {
             method: "PUT",
             body: image,
         });

@@ -1,3 +1,11 @@
+<div align="center">
+  <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./web/public/block.png#gh-dark-mode-only">
+      <source media="(prefers-color-scheme: light)" srcset="./web/public/block.png#gh-light-mode-only">
+      <img alt="LOGO" width="256" height="256" style="display:block;margin:auto">
+  </picture>
+</div>
+
 # MC WebAPI
 
 本项目旨在为[GTNH](https://www.gtnewhorizons.com/)/[GTNH CN](https://gtnh.huijiwiki.com/wiki/%E9%A6%96%E9%A1%B5)添加一个简单的HTTP API接口
@@ -36,7 +44,7 @@
 | GTNH版本    | 状态     | 最后版本            |
 | ----------- | -------- | ------------------- |
 | 2.8.4       | 停止维护 | 2.8.4-0.5-pre       |
-| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.8-pre |
+| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.11-pre |
 
 ## Lib下载(可选)
 
@@ -188,6 +196,7 @@ README更新不一定即时，可以在下方两个仓库中寻找预导出的�
 | ------------ | ------------------------ | ------------------- |
 | `/3d/player` | 打印完投递到玩家背包     | 2.9.0-beta2-0.9-pre |
 | `/3d/world`  | 直接在世界中进行 3D 打印 | 2.9.0-beta2-0.9-pre |
+| `/3d/world`  | 直接在世界中进行 3D 打印 | 2.9.0-beta2-0.11-pre |
 
 ## BUG
 

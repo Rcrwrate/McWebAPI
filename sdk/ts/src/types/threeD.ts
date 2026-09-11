@@ -42,7 +42,7 @@ export interface WorldPrintJobResult {
     failuresTruncated?: number;
 }
 
-/** /test/3d 响应：打印件 NBT 大小（字节） */
+/** /3d/size 响应：打印件 NBT 大小（字节） */
 export interface PrintSizeResult {
     size: number;
 }
