@@ -17,7 +17,7 @@
     "@mui/x-data-grid": "^9.10.1",
     "@mui/x-data-grid-pro": "^9.10.1",
     "@mui/x-license": "^9.10.1",
-    "@shirokasoke/webapi-sdk": "2.9.0-bete2-0.6-test2",
+    "@shirokasoke/webapi-sdk": "2.9.0-bete2-0.10-pre",
     "next": "16.2.12",
     "notistack": "^3.0.2",
     "react": "19.2.8",

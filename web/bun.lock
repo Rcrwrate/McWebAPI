@@ -12,7 +12,7 @@
         "@mui/x-data-grid": "^9.10.1",
         "@mui/x-data-grid-pro": "^9.10.1",
         "@mui/x-license": "^9.10.1",
-        "@shirokasoke/webapi-sdk": "2.9.0-bete2-0.6-test2",
+        "@shirokasoke/webapi-sdk": "2.9.0-bete2-0.10-pre",
         "next": "16.2.12",
         "notistack": "^3.0.2",
         "react": "19.2.8",
@@ -25,7 +25,7 @@
         "@types/react-dom": "19.2.3",
         "eslint": "10.8.0",
         "eslint-config-next": "16.2.12",
-        "typescript": "^6",
+        "typescript": "6.0.3",
       },
     },
   },
@@ -206,6 +206,8 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, ""],
 
+    "@microsoft/fetch-event-source": ["@microsoft/fetch-event-source@2.0.1", "", {}, "sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA=="],
+
     "@mui/core-downloads-tracker": ["@mui/core-downloads-tracker@9.2.0", "", {}, "sha512-+XMav+ZaXkZKUFUgzjrfMEedfyJKxxviAske2q8N8CWDMeqZdDU2lWMkiUPiB388hGaDqhwvOAwkrsc/pUyp8g=="],
 
     "@mui/icons-material": ["@mui/icons-material@9.2.0", "", { "dependencies": { "@babel/runtime": "^7.29.2" }, "peerDependencies": { "@mui/material": "^9.2.0", "@types/react": "^17.0.0 || ^18.0.0 || ^19.0.0", "react": "^17.0.0 || ^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react"] }, "sha512-VgBd3z7Qc3vd/thcNSMC03nHRh/U4DzMUd+1dRyJTbm/hGo7+N6N4GDuJZDNHa6LZhhwG6Cu1X3DNvrVv8sNag=="],
@@ -268,7 +270,7 @@
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@rtsao/scc/-/scc-1.1.0.tgz", {}, ""],
 
-    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@2.9.0-bete2-0.6-test2", "", { "dependencies": { "joi": "^18.2.1" } }, "sha512-ORSIADH7UGY6+JdTwEVQRP8jzexGHK828bsBseLz+qDZw0emdlSqygMMMfv14N3+6L41PI3QoX5+NOkC6V3nxQ=="],
+    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@2.9.0-bete2-0.10-pre", "", { "dependencies": { "@microsoft/fetch-event-source": "^2.0.1", "joi": "^18.2.1" } }, "sha512-7CFiacQehf/+sIYbfpj1YgZnG2LW91lcMV4D19bNkr6Jtf9hT3ctGYjewTuKCMttyGNfNZDyhJ71Y/IW1xsZkw=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@standard-schema/spec/-/spec-1.1.0.tgz", {}, ""],
 
