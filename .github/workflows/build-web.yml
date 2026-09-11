@@ -1,12 +1,13 @@
-name: Build and test
+name: Build Web
 
 on:
+  workflow_call:
   pull_request:
     branches: [ master, main ]
   push:
     branches: [ master, main ]
     paths:
-      - 'web/'
+      - 'web/**'
 
 jobs:
   build-web:
