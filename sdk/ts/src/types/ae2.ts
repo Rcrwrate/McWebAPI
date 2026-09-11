@@ -41,6 +41,35 @@ export interface AE2Pattern extends ItemStack {
     patternParseError?: string;
 }
 
+/** `appeng.api.networking.crafting.CraftingAllowMode` 枚举名 */
+export type AECraftingAllowMode = "YES" | "NO" | "ONLY_PLAYERS" | string;
+
+/**
+ * `appeng.util.ScheduledReason` 枚举名，表示任务的调度原因。
+ * 类型侧保留开放联合
+ */
+export type AECPUScheduledReason =
+    | "UNDEFINED"
+    | "SOMETHING_STUCK"
+    | "BLOCKING_MODE"
+    | "LOCK_MODE"
+    | "NO_TARGET"
+    | "NOT_ENOUGH_INGREDIENTS"
+    | "SAME_NETWORK"
+    | "UNSUPPORTED_STACK"
+    | (string & {});
+
+/** 合成 CPU 中正在进行的单个并行合成任务 */
+export interface AECPUTask {
+    /** 剩余执行次数 */
+    remaining: number;
+    /** 任务调度原因（ScheduledReason 枚举名） */
+    scheduledReason: AECPUScheduledReason;
+    inputs: AEStack[];
+    pattern: AE2Pattern;
+    outputs: Array<AEStack & AEStackProviders>;
+}
+
 export interface AECPU {
     name: string;
     busy: boolean;
@@ -50,14 +79,18 @@ export interface AECPU {
     remainingItemCount: number;
     startItemCount: number;
     elapsedTime: number;
-    craftingAllowMode: string;
+    /** `CraftingAllowMode` 枚举名 */
+    craftingAllowMode: AECraftingAllowMode;
+    /** 是否有任务处于等待中 */
+    waiting: boolean;
+    /** 是否已挂起 */
+    suspended: boolean;
+    /** 是否处于缺少原料模式 */
+    missingMode: boolean;
     finalOutput?: AEStack;
-    tasks?: Array<{
-        remaining: number;
-        inputs: AEStack[];
-        pattern: AE2Pattern;
-        outputs: Array<AEStack & AEStackProviders>;
-    }>;
+    /** 等待缺失的原料（服务端仅在非空时输出） */
+    waitingForMissing?: AEStack[];
+    tasks?: AECPUTask[];
     tasking?: Array<AEStack & AEStackProviders>;
     tasksError?: string;
 }

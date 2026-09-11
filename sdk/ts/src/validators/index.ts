@@ -9,3 +9,5 @@ export * from "./item";
 export * from "./world";
 export * from "./gt5";
 export * from "./rawInfo";
+export * from "./recipe";
+export * from "./threeD";

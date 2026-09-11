@@ -63,6 +63,35 @@ export const AE2PatternSchema = ItemStackSchema.append({
     patternParseError: Joi.string().optional(),
 });
 
+/**
+ * `appeng.util.ScheduledReason` 枚举名。
+ * 采用严格枚举校验：取值必须是下方列表中的一项，未知值直接判非法。
+ * rv3-beta-1000-GTNH 已知取值：UNDEFINED / SOMETHING_STUCK / BLOCKING_MODE /
+ * LOCK_MODE / NO_TARGET / NOT_ENOUGH_INGREDIENTS / SAME_NETWORK / UNSUPPORTED_STACK
+ */
+export const AE_CPU_SCHEDULED_REASONS = [
+    "UNDEFINED",
+    "SOMETHING_STUCK",
+    "BLOCKING_MODE",
+    "LOCK_MODE",
+    "NO_TARGET",
+    "NOT_ENOUGH_INGREDIENTS",
+    "SAME_NETWORK",
+    "UNSUPPORTED_STACK",
+] as const;
+
+export const AECPUScheduledReasonSchema = Joi.string()
+    .valid(...AE_CPU_SCHEDULED_REASONS)
+    .required();
+
+export const AECPUTaskSchema = Joi.object({
+    remaining: Joi.number().required(),
+    scheduledReason: AECPUScheduledReasonSchema,
+    inputs: Joi.array().items(AEStackSchema).required(),
+    pattern: AE2PatternSchema.required(),
+    outputs: Joi.array().items(AEStackWithProvidersSchema).required(),
+});
+
 export const AECPUSchema = Joi.object<AECPU>({
     name: Joi.string().allow("").required(),
     busy: Joi.boolean().required(),
@@ -73,15 +102,12 @@ export const AECPUSchema = Joi.object<AECPU>({
     startItemCount: Joi.number().required(),
     elapsedTime: Joi.number().required(),
     craftingAllowMode: Joi.string().required(),
+    waiting: Joi.boolean().required(),
+    suspended: Joi.boolean().required(),
+    missingMode: Joi.boolean().required(),
     finalOutput: AEStackSchema.optional(),
-    tasks: Joi.array().items(
-        Joi.object({
-            remaining: Joi.number().required(),
-            inputs: Joi.array().items(AEStackSchema).required(),
-            pattern: AE2PatternSchema.required(),
-            outputs: Joi.array().items(AEStackWithProvidersSchema).required(),
-        })
-    ).optional(),
+    waitingForMissing: Joi.array().items(AEStackSchema).optional(),
+    tasks: Joi.array().items(AECPUTaskSchema).optional(),
     tasking: Joi.array().items(AEStackWithProvidersSchema).optional(),
     tasksError: Joi.string().optional(),
 });

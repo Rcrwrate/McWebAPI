@@ -1,3 +1,4 @@
+import { fetchEventSource } from "@microsoft/fetch-event-source";
 import type {
     AE2Pattern,
     AECPU,
@@ -43,6 +44,14 @@ import type {
     SetBlockResult,
     TPSInfo,
     WorldInfoData,
+    CraftingRecipesResult,
+    FurnaceRecipesResult,
+    GTRecipesResult,
+    GTRecipeMap,
+    PlayerPrintResult,
+    PrintSizeResult,
+    WorldPrintJobResult,
+    WorldPrintSubmitResult,
 } from "./types";
 
 import type {
@@ -86,7 +95,15 @@ import type {
     ProfilerDataSchema,
     RootInfoSchema,
     SetBlockBodySchema,
-    SetBlockResultSchema
+    SetBlockResultSchema,
+    CraftingRecipesResultSchema,
+    FurnaceRecipesResultSchema,
+    GTRecipesResultSchema,
+    GTRecipeMapSchema,
+    PlayerPrintResultSchema,
+    PrintSizeResultSchema,
+    WorldPrintJobResultSchema,
+    WorldPrintSubmitResultSchema
 } from "./validators";
 
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -105,6 +122,14 @@ function buildQuery(params: object): string {
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
         .join("&");
     return qs ? `?${qs}` : "";
+}
+
+/** 解包 `ApiResponse<T>`（如 SSE 事件帧），业务失败（success=false）时抛 {@link WebApiError} */
+function unwrapApiResponse<T>(body: ApiResponse<T>): T {
+    if (!body.success) {
+        throw new WebApiError(body.message, 200, body);
+    }
+    return body.data;
 }
 
 export class WebApiClient {
@@ -160,7 +185,68 @@ export class WebApiClient {
         return res.arrayBuffer() as unknown as T;
     }
 
-    // ========== Root / Status ==========
+    /**
+     * SSE 订阅模板：统一处理鉴权头、响应校验、事件过滤与错误上报（基于 fetchEventSource，可携带
+     * Authorization 头，原生 EventSource 不支持）。服务端推送的 `error` 事件（纯文本消息）会转为
+     * {@link Error} 上报；连接建立后发生异常时同样上报并停止库内自动重连，由调用方决定是否重新订阅。
+     * @param url 完整订阅地址（含 query）
+     * @param eventName 业务事件名，其余事件将被忽略
+     * @param callback 业务数据回调
+     * @param errorCallback 出错回调，接收模板抛出或 `parse` 抛出的异常（如 {@link WebApiError}）
+     * @param parse 解析事件的 data 文本为业务数据，抛出异常表示该帧无效
+     * @returns AbortController，调用 `abort()` 可停止订阅
+     */
+    private subscribeSse<T>(
+        url: string,
+        eventName: string,
+        callback: (data: T) => void,
+        errorCallback: (error: Error) => void,
+        parse: (data: string) => T
+    ): AbortController {
+        const controller = new AbortController();
+        const headers: Record<string, string> = {};
+        if (this.authToken) {
+            headers["Authorization"] = this.authToken;
+        }
+
+        fetchEventSource(url, {
+            signal: controller.signal,
+            headers,
+            openWhenHidden: true,
+            fetch: this.fetchImpl,
+            onopen: async (response) => {
+                if (!response.ok) {
+                    const body = (await response.json().catch(() => null)) as { message?: string } | null;
+                    throw new WebApiError(body?.message || response.statusText, response.status, body);
+                }
+                const contentType = response.headers.get("content-type") || "";
+                if (!contentType.includes("text/event-stream")) {
+                    throw new WebApiError(`Expected content-type to be text/event-stream, actual: ${contentType}`, response.status);
+                }
+            },
+            onmessage: (event) => {
+                if (event.event === "error") {
+                    errorCallback(new Error(event.data));
+                    return;
+                }
+                if (event.event !== eventName) return;
+                try {
+                    callback(parse(event.data));
+                } catch (err) {
+                    errorCallback(err instanceof Error ? err : new Error(String(err)));
+                }
+            },
+            onerror: (err) => {
+                errorCallback(err instanceof Error ? err : new Error(String(err)));
+                // 停止库内自动重连，由调用方决定是否重新订阅
+                throw err;
+            },
+        }).catch(() => { /* 已通过 errorCallback 上报 */ });
+
+        return controller;
+    }
+
+    // region Root / Status
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/RootHandler.java)
@@ -170,7 +256,7 @@ export class WebApiClient {
         return this.request<RootInfo>("/version");
     }
 
-    // ========== TPS / Performance ==========
+    // region TPS / Performance
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/TPSHandler.java)
@@ -196,7 +282,7 @@ export class WebApiClient {
         return this.request<LagAnalyzerData>("/lag-analyzer");
     }
 
-    // ========== World ==========
+    // region World
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/WorldInfoHandler.java)
@@ -206,7 +292,7 @@ export class WebApiClient {
         return this.request<Record<string, WorldInfoData>>("/WorldInfo");
     }
 
-    // ========== Blocks ==========
+    // region Blocks
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/block/BlocksHandler.java)
@@ -291,7 +377,7 @@ export class WebApiClient {
         return this.request<ArrayBuffer>(`/block/tile${buildQuery(params)}`);
     }
 
-    // ========== Items ==========
+    // region Items
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/item/ItemsHandler.java)
@@ -329,7 +415,7 @@ export class WebApiClient {
         return this.request<AEItemDefinitions>("/items/ae");
     }
 
-    // ========== Fluids ==========
+    // region Fluids
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/fluid/FluidsHandler.java)
@@ -357,7 +443,7 @@ export class WebApiClient {
         return this.request<ArrayBuffer>(`/fluid/icon${buildQuery(params)}`);
     }
 
-    // ========== Entities ==========
+    // region Entities
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/entity/EntitiesHandler.java)
@@ -377,7 +463,7 @@ export class WebApiClient {
         return this.request<Entity>(`/entity${buildQuery(params)}`);
     }
 
-    // ========== Chunks ==========
+    // region Chunks
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/chunk/ChunksHandler.java)
@@ -440,7 +526,7 @@ export class WebApiClient {
         });
     }
 
-    // ========== GT5 ==========
+    // region GT5
 
     /**
      * 查询单个 GT5 机器信息。
@@ -537,7 +623,7 @@ export class WebApiClient {
         }
     }
 
-    // ========== AE2 ==========
+    // region AE2
 
     /**
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEBaseHandler.java)
@@ -625,6 +711,191 @@ export class WebApiClient {
             body: JSON.stringify(body),
         });
     }
+
+    /**
+     * 构建 AE 库存 SSE（Server-Sent Events）订阅地址。
+     * 注意：仅当服务端启用虚拟线程（useVirtualThreads）时该路由才会注册。
+     * 返回 EventSource 可直接使用的完整 URL。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEItemSSEHandler.java)
+     */
+    aeItemsSseUrl(params: { x: number; y: number; z: number; dimension?: number }): string {
+        return `${this.baseUrl}/ae/item/sse${buildQuery(params)}`;
+    }
+
+    /**
+     * 以回调方式订阅 AE 库存 SSE 推送（基于 fetchEventSource，可携带 Authorization 头，原生 EventSource 不支持）。
+     * 服务端周期性推送 `aeitem` 事件（`ApiResponse<{@link AEItemsResult}>` JSON，间隔由服务端 AE2Config.item.interval 决定），
+     * 回调收到解包后的 {@link AEItemsResult}，业务失败（success=false）时以 {@link WebApiError} 上报；
+     * 连接建立后发生异常时推送 `error` 事件（纯文本消息）并关闭连接。
+     * @param params 目标方块坐标
+     * @param callback 每次收到库存快照时调用
+     * @param errorCallback 出错（网络错误、鉴权失败、服务端 error 事件、业务失败、数据解析失败）时调用，库内自动重连会随之停止
+     * @returns AbortController，调用 `abort()` 可停止订阅
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AEItemSSEHandler.java)
+     */
+    aeItemSseCallback(
+        params: { x: number; y: number; z: number; dimension?: number },
+        callback: (data: AEItemsResult) => void,
+        errorCallback: (error: Error) => void
+    ): AbortController {
+        return this.subscribeSse<AEItemsResult>(
+            `${this.baseUrl}/ae/item/sse${buildQuery(params)}`,
+            "aeitem",
+            callback,
+            errorCallback,
+            raw => unwrapApiResponse(JSON.parse(raw) as ApiResponse<AEItemsResult>)
+        );
+    }
+
+    /**
+     * 构建 AE 合成 CPU 状态 SSE（Server-Sent Events）订阅地址。
+     * 注意：仅当服务端启用虚拟线程（useVirtualThreads）时该路由才会注册。
+     * 返回 EventSource 可直接使用的完整 URL。
+     * @param params 目标方块坐标；interval 为推送间隔（秒），省略时由服务端取默认值 5
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUSSEHandler.java)
+     */
+    aeCpuSseUrl(params: { x: number; y: number; z: number; dimension?: number; interval?: number }): string {
+        return `${this.baseUrl}/ae/cpu/sse${buildQuery(params)}`;
+    }
+
+    /**
+     * 以回调方式订阅 AE 合成 CPU 状态 SSE 推送（基于 fetchEventSource，可携带 Authorization 头，原生 EventSource 不支持）。
+     * 服务端周期性推送 `aecpu` 事件（{@link AECPU} 数组 JSON，间隔由 interval 参数（秒）决定，服务端默认 5），
+     * 回调收到 CPU 状态列表；连接建立后发生异常时推送 `error` 事件（纯文本消息）并关闭连接。
+     * @param params 目标方块坐标；interval 为推送间隔（秒），省略时由服务端取默认值
+     * @param callback 每次收到 CPU 状态快照时调用
+     * @param errorCallback 出错（网络错误、鉴权失败、服务端 error 事件、业务失败、数据解析失败）时调用，库内自动重连会随之停止
+     * @returns AbortController，调用 `abort()` 可停止订阅
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUSSEHandler.java)
+     */
+    aeCpuSseCallback(
+        params: { x: number; y: number; z: number; dimension?: number; interval?: number },
+        callback: (data: AECPU[]) => void,
+        errorCallback: (error: Error) => void
+    ): AbortController {
+        return this.subscribeSse<AECPU[]>(
+            `${this.baseUrl}/ae/cpu/sse${buildQuery(params)}`,
+            "aecpu",
+            callback,
+            errorCallback,
+            raw => {
+                const body = JSON.parse(raw) as AECPU[] | ApiResponse<AECPU[]>;
+                // 服务端当前推送裸数组，同时兼容 ApiResponse 包装形式
+                return Array.isArray(body) ? body : unwrapApiResponse(body);
+            }
+        );
+    }
+
+    // region Recipes
+
+    /**
+     * 查询工作台合成配方（有序/无序）。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/recipe/CraftingRecipesHandler.java)
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/recipe/IndexedCraftingRecipesHandler.java)
+     * @returns 使用 {@link CraftingRecipesResultSchema} 验证
+     */
+    getCraftingRecipes(params?: { type?: "output" | "input"; id?: number; damage?: number; tag?: string; limit?: number; offset?: number }): Promise<CraftingRecipesResult> {
+        return this.request<CraftingRecipesResult>(`/recipes/crafting${buildQuery(params ?? {})}`);
+    }
+
+    /**
+     * 查询熔炉熔炼配方。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/recipe/FurnaceRecipesHandler.java)
+     * @returns 使用 {@link FurnaceRecipesResultSchema} 验证
+     */
+    getFurnaceRecipes(params?: { type?: "output" | "input"; id?: number; damage?: number; tag?: string; limit?: number; offset?: number }): Promise<FurnaceRecipesResult> {
+        return this.request<FurnaceRecipesResult>(`/recipes/furnace${buildQuery(params ?? {})}`);
+    }
+
+    /**
+     * 查询 GT5 配方表的映射表（unlocalizedName → 显示名）。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/recipe/GTmaps.java)
+     * @returns 使用 `Joi.array().items(`{@link GTRecipeMapSchema}`)` 验证
+     */
+    getGTRecipeMaps(): Promise<GTRecipeMap[]> {
+        return this.request<GTRecipeMap[]>("/recipes/gt/maps");
+    }
+
+    /**
+     * 查询 GT5 机器配方。
+     * 注意：必须至少提供 id/damage（物品）、fluid（流体）或 map（单个配方表）之一。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/recipe/GTRecipesHandler.java)
+     * @returns 使用 {@link GTRecipesResultSchema} 验证
+     */
+    getGTRecipes(params: { type?: "output" | "input"; id?: number; damage?: number; tag?: string; fluid?: string | number; map?: string; limit?: number; offset?: number }): Promise<GTRecipesResult> {
+        return this.request<GTRecipesResult>(`/recipes/gt${buildQuery(params)}`);
+    }
+
+    // region 3D Print
+
+    /**
+     * 上传图片 → OC 3D 打印件，投递到玩家背包（多余掉落在玩家附近）。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ThreeD/PlayerPrintHandler.java)
+     * @param params 二选一：id（实体 ID）或 name（玩家名）
+     * @param image 图片二进制数据（png/jpg 等）
+     * @returns 使用 {@link PlayerPrintResultSchema} 验证
+     */
+    printToPlayer(
+        params: { id: number; label?: string; tooltip?: string } | { name: string; label?: string; tooltip?: string },
+        image: RequestInit["body"]
+    ): Promise<PlayerPrintResult> {
+        return this.request<PlayerPrintResult>(`/3d/player${buildQuery(params)}`, {
+            method: "PUT",
+            body: image,
+        });
+    }
+
+    /**
+     * 上传图片 → 在世界中铺设 OC 3D 打印像素画（慢队列逐块执行）。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ThreeD/WorldPrintHandler.java)
+     * @returns 使用 {@link WorldPrintSubmitResultSchema} 验证
+     */
+    submitWorldPrint(
+        params: { x: number; y: number; z: number; dim?: number; facing?: "north" | "south" | "east" | "west"; label?: string; tooltip?: string },
+        image: RequestInit["body"]
+    ): Promise<WorldPrintSubmitResult> {
+        return this.request<WorldPrintSubmitResult>(`/3d/world${buildQuery(params)}`, {
+            method: "PUT",
+            body: image,
+        });
+    }
+
+    /**
+     * 查询世界 3D 打印任务进度。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ThreeD/WorldPrintHandler.java)
+     * @returns 使用 {@link WorldPrintJobResultSchema} 验证
+     */
+    getWorldPrintJob(params: { id: string }): Promise<WorldPrintJobResult> {
+        return this.request<WorldPrintJobResult>(`/3d/world${buildQuery(params)}`);
+    }
+
+    /**
+     * 轮询等待世界 3D 打印任务完成。
+     * @param jobId 任务 ID（由 submitWorldPrint 返回）
+     * @param intervalMs 轮询间隔 (ms)，默认 100
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ThreeD/WorldPrintHandler.java)
+     * @returns 使用 {@link WorldPrintJobResultSchema} 验证
+     */
+    async waitForWorldPrintJob(jobId: string, intervalMs = 100): Promise<WorldPrintJobResult> {
+        while (true) {
+            const job = await this.getWorldPrintJob({ id: jobId });
+            if (job.status === "completed") return job;
+            await new Promise(r => setTimeout(r, intervalMs));
+        }
+    }
+
+    /**
+     * 上传图片，估算生成的 3D 打印件 NBT 大小（不实际打印）。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ThreeD/PrintSizeHandler.java)
+     * @returns 使用 {@link PrintSizeResultSchema} 验证
+     */
+    getPrintSize(image: RequestInit["body"], params?: { label?: string; tooltip?: string }): Promise<PrintSizeResult> {
+        return this.request<PrintSizeResult>(`/test/3d${buildQuery(params ?? {})}`, {
+            method: "PUT",
+            body: image,
+        });
+    }
+
 }
 
 export class WebApiError extends Error {

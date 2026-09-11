@@ -1,6 +1,6 @@
 {
     "name": "@shirokasoke/webapi-sdk",
-    "version": "2.9.0-bete2-0.6-test2",
+    "version": "2.9.0-bete2-0.10-pre",
     "private": false,
     "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod",
     "main": "./dist/index.js",
@@ -43,6 +43,7 @@
         "typescript": "^5.4.0"
     },
     "dependencies": {
+        "@microsoft/fetch-event-source": "^2.0.1",
         "joi": "^18.2.1"
     }
 }
