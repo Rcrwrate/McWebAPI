@@ -78,8 +78,24 @@ public class AECPUHandler extends AEBaseHandler {
             .put(
                 "craftingAllowMode",
                 cpu.getCraftingAllowMode()
-                    .name());
+                    .name())
+            .put("waiting", Accessor.CraftingCPUCluster_waiting(cpu))
+            .put("suspended", cpu.isSuspended())
+            .put("missingMode", cpu.isMissingMode());
         ClassUtils.getClassInfo(cpu, cpuNode);
+
+        // 导出等待缺失的原料（无法从网络中取得、也无法通过合成补充的原料）
+        IItemList<IAEStack<?>> waitingForMissing = Accessor.CraftingCPUCluster_waitingForMissing(cpu);
+        if (waitingForMissing != null && !waitingForMissing.isEmpty()) {
+            ArrayNode missingArray = cpuNode.putArray("waitingForMissing");
+            for (IAEStack<?> stack : waitingForMissing) {
+                if (stack == null) continue;
+                ObjectNode itemNode = Pattern.dumpAEStack(stack);
+                if (itemNode != null) {
+                    missingArray.add(itemNode);
+                }
+            }
+        }
 
         // 若 CPU 正在合成，导出最终产物信息
         IAEStack<?> finalOutput = cpu.getFinalMultiOutput();
@@ -117,6 +133,13 @@ public class AECPUHandler extends AEBaseHandler {
                     ObjectNode taskNode = tasksArray.addObject();
 
                     taskNode.put("remaining", Accessor.TaskProgress_value(taskProgress));
+                    // 任务状态：已计划但尚未执行完，处于等待中
+                    // taskNode.put("status", "waiting");
+                    // 任务调度原因：原料不足/阻挡模式/目标已满等（ScheduledReason 枚举名）
+                    taskNode.put(
+                        "scheduledReason",
+                        Accessor.CraftingCPUCluster_getReason(cluster, details)
+                            .name());
 
                     ArrayNode inputsArray = taskNode.putArray("inputs");
                     for (IAEStack<?> input : details.getCondensedAEInputs()) {
@@ -164,6 +187,9 @@ public class AECPUHandler extends AEBaseHandler {
                     if (stack == null) continue;
                     ObjectNode itemNode = Pattern.dumpAEStack(stack);
                     if (itemNode == null) continue;
+
+                    // waitingFor 中的物品已提交到合成台/机器，处于运行中状态
+                    // itemNode.put("status", "running");
 
                     ArrayNode providersArray = itemNode.putArray("providers");
                     try {

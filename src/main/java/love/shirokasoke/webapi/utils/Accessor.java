@@ -22,6 +22,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.api.util.NamedDimensionalCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.cluster.implementations.CraftingCPUCluster.TaskProgress;
+import appeng.util.ScheduledReason;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
 import gregtech.common.tileentities.machines.ISmartInputHatch;
@@ -69,11 +70,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 {@link NBTTagCompound#write } */
+    /** 缓存 {@link NBTTagCompound#write } 的私有 write 方法 */
     private static Method nbtWrite = null;
 
     /**
-     * 访问 {@link NBTTagCompound#write }
+     * 访问 {@link NBTTagCompound#write } 的私有 read 方法
      * 
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_write}
      */
@@ -92,11 +93,11 @@ public final class Accessor {
         }
     }
 
-    /** 缓存 {@link NBTTagCompound#func_152446_a } */
+    /** 缓存 {@link NBTTagCompound#func_152446_a } 的私有 read 方法 */
     private static Method nbtRead = null;
 
     /**
-     * 访问 {@link NBTTagCompound#func_152446_a }
+     * 访问 {@link NBTTagCompound#func_152446_a } 的私有 read 方法
      * 
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagCompound_read}
      */
@@ -119,7 +120,7 @@ public final class Accessor {
     /**
      * 访问私有字段 {@link CraftingCPUCluster#tasks} 类型 {@link java.util.TreeMap} (fail-fast，无需关心)
      *
-     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_tasks}
      */
     public static Map<ICraftingPatternDetails, TaskProgress> CraftingCPUCluster_tasks(CraftingCPUCluster cluster) {
         try {
@@ -140,7 +141,7 @@ public final class Accessor {
     /**
      * 访问私有字段 {@link TaskProgress#value} 访问安全
      *
-     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#TaskProgress_value}
      */
     public static long TaskProgress_value(TaskProgress taskProgress) {
         try {
@@ -163,7 +164,7 @@ public final class Accessor {
      * <p>
      * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
      *
-     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_waitingFor}
      */
     public static IItemList<IAEStack<?>> CraftingCPUCluster_waitingFor(CraftingCPUCluster cluster) {
         try {
@@ -185,7 +186,7 @@ public final class Accessor {
      * <p>
      * 直接调用{@link CraftingCPUCluster#getProviders(IAEStack)}存在跨线程写入的风险，采用反射绕过
      *
-     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_getProviders}
      */
     public static List<NamedDimensionalCoord> CraftingCPUCluster_getProviders(CraftingCPUCluster cluster,
         IAEStack<?> is) {
@@ -201,5 +202,119 @@ public final class Accessor {
             return Collections.EMPTY_LIST;
         }
         return providers.getOrDefault(is, Collections.EMPTY_LIST);
+    }
+
+    /** 缓存私有字段 {@link CraftingCPUCluster#reasonProvider} */
+    private static Field craftingCPUClusterReasonProvider = null;
+
+    /**
+     * 访问私有字段 {@link CraftingCPUCluster#reasonProvider}，获取某图案的调度原因
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_getReason}
+     */
+    public static ScheduledReason CraftingCPUCluster_getReason(CraftingCPUCluster cluster,
+        ICraftingPatternDetails details) {
+        try {
+            if (craftingCPUClusterReasonProvider == null) {
+                craftingCPUClusterReasonProvider = CraftingCPUCluster.class.getDeclaredField("reasonProvider");
+                craftingCPUClusterReasonProvider.setAccessible(true);
+            }
+            Map<ICraftingPatternDetails, ScheduledReason> reasonProvider = (Map<ICraftingPatternDetails, ScheduledReason>) craftingCPUClusterReasonProvider
+                .get(cluster);
+            return reasonProvider.getOrDefault(details, ScheduledReason.UNDEFINED);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return ScheduledReason.UNDEFINED;
+        }
+    }
+
+    /** 缓存私有字段 {@link CraftingCPUCluster#waitingForMissing} */
+    private static Field craftingCPUClusterWaitingForMissing = null;
+
+    /**
+     * 访问私有字段 {@link CraftingCPUCluster#waitingForMissing}（等待缺失的原料）
+     * <p>
+     * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_waitingForMissing}
+     */
+    public static IItemList<IAEStack<?>> CraftingCPUCluster_waitingForMissing(CraftingCPUCluster cluster) {
+        try {
+            if (craftingCPUClusterWaitingForMissing == null) {
+                craftingCPUClusterWaitingForMissing = CraftingCPUCluster.class.getDeclaredField("waitingForMissing");
+                craftingCPUClusterWaitingForMissing.setAccessible(true);
+            }
+            return (IItemList<IAEStack<?>>) craftingCPUClusterWaitingForMissing.get(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return null;
+        }
+    }
+
+    /** 缓存私有字段 {@link CraftingCPUCluster#waiting} */
+    private static Field craftingCPUClusterWaiting = null;
+
+    /**
+     * 访问私有字段 {@link CraftingCPUCluster#waiting}（本 tick 内 CPU 是否仍在等待推进）
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_waiting}
+     */
+    public static boolean CraftingCPUCluster_waiting(CraftingCPUCluster cluster) {
+        try {
+            if (craftingCPUClusterWaiting == null) {
+                craftingCPUClusterWaiting = CraftingCPUCluster.class.getDeclaredField("waiting");
+                craftingCPUClusterWaiting.setAccessible(true);
+            }
+            return craftingCPUClusterWaiting.getBoolean(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return false;
+        }
+    }
+
+    /** 缓存私有字段 {@link CraftingCPUCluster#suspended} */
+    private static Field craftingCPUClusterSuspended = null;
+
+    /**
+     * 访问私有字段 {@link CraftingCPUCluster#suspended}（CPU 是否被暂停）
+     * 
+     * @deprecated {@link CraftingCPUCluster#isSuspended()}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_suspended}
+     */
+    @Deprecated
+    public static boolean CraftingCPUCluster_suspended(CraftingCPUCluster cluster) {
+        try {
+            if (craftingCPUClusterSuspended == null) {
+                craftingCPUClusterSuspended = CraftingCPUCluster.class.getDeclaredField("suspended");
+                craftingCPUClusterSuspended.setAccessible(true);
+            }
+            return craftingCPUClusterSuspended.getBoolean(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return false;
+        }
+    }
+
+    /** 缓存私有字段 {@link CraftingCPUCluster#isMissingMode} */
+    private static Field craftingCPUClusterIsMissingMode = null;
+
+    /**
+     * 访问私有字段 {@link CraftingCPUCluster#isMissingMode}（材料缺失模式）
+     * 
+     * @deprecated {@link CraftingCPUCluster#isMissingMode()}
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_isMissingMode}
+     */
+    @Deprecated
+    public static boolean CraftingCPUCluster_isMissingMode(CraftingCPUCluster cluster) {
+        try {
+            if (craftingCPUClusterIsMissingMode == null) {
+                craftingCPUClusterIsMissingMode = CraftingCPUCluster.class.getDeclaredField("isMissingMode");
+                craftingCPUClusterIsMissingMode.setAccessible(true);
+            }
+            return craftingCPUClusterIsMissingMode.getBoolean(cluster);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return false;
+        }
     }
 }

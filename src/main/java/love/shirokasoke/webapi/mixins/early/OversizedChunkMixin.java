@@ -43,7 +43,7 @@ public abstract class OversizedChunkMixin {
         at = @At(
             value = "INVOKE",
             target = "Lorg/apache/logging/log4j/Logger;warn(Ljava/lang/String;[Ljava/lang/Object;)V",
-            remap = true),
+            remap = false),
         require = 0)
     private void webapi$warnOversizedChunkOnce(Logger logger, String message, Object[] params, int x, int z,
         byte[] data, int length) {
