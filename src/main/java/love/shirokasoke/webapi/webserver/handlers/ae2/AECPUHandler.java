@@ -66,7 +66,7 @@ public class AECPUHandler extends AEBaseHandler {
     /**
      * 导出 CPU 的基础信息，类型访问安全
      */
-    private ObjectNode dumpBasicInfo(CraftingCPUCluster cpu, ObjectNode cpuNode) {
+    public static ObjectNode dumpBasicInfo(CraftingCPUCluster cpu, ObjectNode cpuNode) {
         cpuNode.put("name", cpu.getName())
             // .put("busy", cpu.isBusy()) isBusy会对task进行写入，规避，已移至dumpCraftingTasks
             .put("availableStorage", cpu.getAvailableStorage())
@@ -118,7 +118,7 @@ public class AECPUHandler extends AEBaseHandler {
      * 
      * {@link ICraftingPatternDetails} 实现于 {@link appeng.helpers.PatternHelper} 一次性构建完成后不会修改
      */
-    private void dumpCraftingTasks(CraftingCPUCluster cluster, ObjectNode cpuNode) {
+    public static void dumpCraftingTasks(CraftingCPUCluster cluster, ObjectNode cpuNode) {
         try {
             Map<ICraftingPatternDetails, TaskProgress> tasks = Accessor.CraftingCPUCluster_tasks(cluster);
             boolean isBusy = false;

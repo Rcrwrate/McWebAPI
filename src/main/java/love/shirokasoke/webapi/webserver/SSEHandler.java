@@ -61,8 +61,9 @@ public interface SSEHandler extends RouteHandler {
     void run(HttpExchange exchange, SSEClient client) throws Exception;
 
     /**
-     * 兼容 {@link RouteHandler} 单参签名的桥接方法，请勿覆写；实现双参版本即可
+     * @deprecated 兼容 {@link RouteHandler} 单参签名的桥接方法，请勿覆写
      */
+    @Deprecated
     @Override
     default void run(HttpExchange exchange) throws Exception {
         SSEClient client = exchange.getAttribute(SSE_CLIENT_ATTR) instanceof SSEClient c ? c : null;

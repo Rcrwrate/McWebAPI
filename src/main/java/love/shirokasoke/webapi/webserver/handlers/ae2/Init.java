@@ -16,6 +16,7 @@ public class Init {
         RouteRegistry.register(new AECPUCancelHandler());
         RouteRegistry.register(new AENodesHandler());
         if (ServerConfig.useVirtualThreads) {
+            RouteRegistry.register(new AECPUSSEHandler());
             RouteRegistry.register(new AEItemSSEHandler());
         }
     }

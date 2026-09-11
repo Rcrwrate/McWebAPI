@@ -35,7 +35,7 @@ public final class Blocks {
 
     private static void material(Material material, ObjectNode data) {
         ObjectNode materialData = mapper.createObjectNode();
-        ClassUtils.getClassInfo(material, data);
+        ClassUtils.getClassInfo(material, materialData);
         materialData.put("isLiquid", material.isLiquid());
         materialData.put("isSolid", material.isSolid());
         materialData.put("blocksMovement", material.blocksMovement());
