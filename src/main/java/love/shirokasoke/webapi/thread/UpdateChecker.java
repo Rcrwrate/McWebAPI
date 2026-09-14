@@ -1,5 +1,7 @@
 package love.shirokasoke.webapi.thread;
 
+import static love.shirokasoke.webapi.Constant.mapper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +21,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 
 /**
@@ -30,8 +30,6 @@ import love.shirokasoke.webapi.MyMod;
  * https://github.com/Rcrwrate/McWebAPI
  */
 public class UpdateChecker {
-
-    private static final ObjectMapper MAPPER = Constant.mapper;
 
     private static final String GITHUB_API = "https://api.github.com/repos/Rcrwrate/McWebAPI/releases/latest";
 
@@ -61,7 +59,7 @@ public class UpdateChecker {
         try (InputStream is = UpdateChecker.class.getResourceAsStream("/assets/build.json")) {
             if (is != null) {
                 String json = IOUtils.toString(is, StandardCharsets.UTF_8);
-                JsonNode node = MAPPER.readTree(json);
+                JsonNode node = mapper.readTree(json);
                 long ts = node.path("buildTime")
                     .asLong(0);
                 if (ts > 0) {
@@ -137,7 +135,7 @@ public class UpdateChecker {
             }
 
             String body = readResponse(conn);
-            JsonNode root = MAPPER.readTree(body);
+            JsonNode root = mapper.readTree(body);
 
             String version = root.path("tag_name")
                 .asText("");
@@ -153,7 +151,8 @@ public class UpdateChecker {
                 try {
                     // GitHub 返回 UTC ISO-8601 时间戳
                     publishedAt = OffsetDateTime.parse(publishedAtStr)
-                        .toInstant();
+                        .toInstant()
+                        .plusSeconds(60);
                 } catch (DateTimeParseException e) {
                     MyMod.LOG.debug("Failed to parse published_at '{}': {}", publishedAtStr, e.getMessage());
                 }

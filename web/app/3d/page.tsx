@@ -519,7 +519,7 @@ export default function ThreeDPrintPage() {
                                 </Alert>
                                 <Alert severity="warning" variant="outlined">
                                     如果大小过大会影响服务器MSPT/TPS，
-                                    如果一定要这么做可以使用我制作的补丁以降低影响：
+                                    如果一定要这么做可以使用额外补丁以降低影响：
                                     <Link href="https://github.com/Rcrwrate/AggressivePatch">AggressivePatch</Link>
                                 </Alert>
                             </Stack>
@@ -679,11 +679,7 @@ export default function ThreeDPrintPage() {
                                             ))}
                                         </Select>
                                     </FormControl>
-                                    <IconButton
-                                        onClick={() => { void loadPlayers() }}
-                                        disabled={playersLoading}
-                                        title="刷新在线玩家"
-                                    >
+                                    <IconButton onClick={() => { void loadPlayers() }} disabled={playersLoading} title="刷新在线玩家"                                    >
                                         {playersLoading ? <CircularProgress size={22} /> : <RefreshIcon />}
                                     </IconButton>
                                 </Stack>
@@ -694,7 +690,7 @@ export default function ThreeDPrintPage() {
                                 )}
                                 {players.length > 0 && (
                                     <Typography variant="body2" color="text.secondary">
-                                        在线玩家 {players.length} 人（来自 /entities 筛选）
+                                        在线玩家 {players.length} 人
                                     </Typography>
                                 )}
 
