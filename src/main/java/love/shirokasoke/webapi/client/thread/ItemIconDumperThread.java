@@ -1,5 +1,7 @@
 package love.shirokasoke.webapi.client.thread;
 
+import static love.shirokasoke.webapi.Constant.mapper;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +28,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import codechicken.nei.ItemList;
 import codechicken.nei.guihook.GuiContainerManager;
-import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.client.utils.CItems;
 import love.shirokasoke.webapi.config.ClientConfig;
@@ -95,7 +96,7 @@ public class ItemIconDumperThread extends Thread {
 
         JsonNode root;
         try {
-            root = Constant.mapper.readTree(missingFile);
+            root = mapper.readTree(missingFile);
         } catch (IOException e) {
             MyMod.LOG.error("读取 missing-icons.json 失败");
             Logs.e(e);
@@ -152,7 +153,7 @@ public class ItemIconDumperThread extends Thread {
 
         if (dumpsFile.exists()) {
             try {
-                JsonNode existing = Constant.mapper.readTree(dumpsFile);
+                JsonNode existing = mapper.readTree(dumpsFile);
                 if (existing.isArray()) {
                     for (JsonNode node : existing) {
                         if (node.isObject()) {
@@ -175,12 +176,12 @@ public class ItemIconDumperThread extends Thread {
                 MyMod.LOG.error("导出物品数据失败: {}", stack, t);
             }
         }
-        ArrayNode dumps = Constant.mapper.createArrayNode();
+        ArrayNode dumps = mapper.createArrayNode();
         for (ObjectNode data : merged.values()) {
             dumps.add(data);
         }
         try {
-            Constant.mapper.writeValue(dumpsFile, dumps);
+            mapper.writeValue(dumpsFile, dumps);
             MyMod.LOG.info("items.json 导出完成，共 {} 条记录", dumps.size());
         } catch (IOException e) {
             MyMod.LOG.error("写入 items.json 失败");

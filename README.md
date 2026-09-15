@@ -57,7 +57,7 @@
 > [!TIP]
 > 推荐安装，速度和性能比Gzip优秀
 
-[zstd-jni-1.5.7-16.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-11/zstd-jni-1.5.7-16.jar)
+[zstd-jni-1.5.7-16.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-16/zstd-jni-1.5.7-16.jar)
 
 ### brotli4j
 

@@ -1,5 +1,7 @@
 package love.shirokasoke.webapi.client;
 
+import java.util.List;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
@@ -25,6 +27,14 @@ public class ExportCommand extends CommandBase {
     @Override
     public String getCommandUsage(ICommandSender sender) {
         return "/export <items|nei|missing|blocks|fluids|lang>";
+    }
+
+    @Override
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args) {
+        if (args.length == 1) {
+            return getListOfStringsMatchingLastWord(args, "items", "nei", "missing", "blocks", "fluids", "lang");
+        }
+        return null;
     }
 
     @Override

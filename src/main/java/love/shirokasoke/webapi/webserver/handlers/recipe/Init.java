@@ -1,17 +1,17 @@
 package love.shirokasoke.webapi.webserver.handlers.recipe;
 
+import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import cpw.mods.fml.common.Loader;
+import net.minecraft.item.crafting.IRecipe;
+
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.config.RecipeConfig;
 import love.shirokasoke.webapi.webserver.RouteRegistry;
 import love.shirokasoke.webapi.webserver.WebServer;
 
 public class Init {
-
-    private static final String MODID = "programmablehatches";
-    private static final long DELAY = 60L;
 
     public static void i() {
         RouteRegistry.register(new FurnaceRecipesHandler());
@@ -21,19 +21,26 @@ public class Init {
     }
 
     public static void after() {
-        final boolean NeedDelay = Loader.isModLoaded(MODID);
-        MyMod.LOG.info("Detected {} , delay recipe indexing for {} seconds", MODID, DELAY);
         if (RecipeConfig.indexCraftingRecipes) {
             new Thread(() -> {
-                if (NeedDelay) {
+                try {
+                    // 延迟加载
+                    TimeUnit.SECONDS.sleep(60);
+                } catch (InterruptedException e) {}
+                List<IRecipe> recipes = null;
+                int count = 0;
+                while (recipes == null && count < 3) {
+                    count++;
                     try {
-                        TimeUnit.SECONDS.sleep(DELAY);
-                    } catch (InterruptedException e) {
-                        return;
+                        recipes = CraftingRecipesHandler.INSTANCE.getSortedRecipes();
+                    } catch (ConcurrentModificationException e) {
+                        MyMod.LOG.warn("CME when index the recipes, try 60s later {} times", count);
+                        try {
+                            TimeUnit.SECONDS.sleep(60);
+                        } catch (InterruptedException _) {}
                     }
                 }
-                IndexedCraftingRecipesHandler r = new IndexedCraftingRecipesHandler(
-                    CraftingRecipesHandler.INSTANCE.getSortedRecipes());
+                IndexedCraftingRecipesHandler r = new IndexedCraftingRecipesHandler(recipes);
                 WebServer.removeRoute(r.getPath());
                 WebServer.addRoute(r);
             }, "RecipeIndexer").start();

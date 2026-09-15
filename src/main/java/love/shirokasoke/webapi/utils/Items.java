@@ -152,10 +152,11 @@ public final class Items {
      * 示例：{@code minecraft_stone_0_Stone}
      *
      * <p>
-     * 会对显示名称进行以下处理：
+     * 会进行以下处理：
      * <ol>
      * <li>去除 Minecraft 格式化代码（§ 颜色代码）</li>
      * <li>替换文件系统非法字符为下划线</li>
+     * <li>NBT 整理</li>
      * </ol>
      *
      * @param stack 物品栈
@@ -173,7 +174,7 @@ public final class Items {
             .append(stack.getItemDamage())
             .append("_")
             .append(name);
-        net.minecraft.nbt.NBTTagCompound nbt = stack.getTagCompound();
+        net.minecraft.nbt.NBTTagCompound nbt = NBT.sort(stack.getTagCompound());
         if (nbt != null) {
             sb.append("_")
                 .append(sha256Hex(nbt.toString(), 16));
