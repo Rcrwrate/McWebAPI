@@ -34,30 +34,28 @@
  * For more details, see https://docs.gradle.org/8.0.1/userguide/java_library_plugin.html#sec:java_library_configurations_graph
  */
 dependencies {
-    //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
-    
     // 临时屏蔽cofh-core-69162,由于该maven不可用
-    api("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-1000-GTNH:dev") {
+    api("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-1050-GTNH:dev") {
         exclude(group: "curse.maven", module: "cofh-core-69162")
     }
     // 屏蔽CodeChickenLib,由于该pom不可用
-    api('com.github.GTNewHorizons:GT5-Unofficial:5.09.54.20:dev') {
+    api('com.github.GTNewHorizons:GT5-Unofficial:5.09.54.133:dev') {
         exclude(group: "com.github.GTNewHorizons", module: "Applied-Energistics-2-Unofficial")
         exclude(group: "com.github.GTNewHorizons", module: "CodeChickenLib")
     }
-    api('com.github.GTNewHorizons:ForgeMultipart:1.7.10:dev')
-    api('com.github.GTNewHorizons:CodeChickenCore:1.4.16:dev')
-    api('com.github.GTNewHorizons:NotEnoughItems:2.8.111-GTNH:dev')
-    api('com.github.GTNewHorizons:Hodgepodge:2.7.166:dev')
-    api("com.github.GTNewHorizons:GTNHLib:0.11.37:dev")
+    api('com.github.GTNewHorizons:ForgeMultipart:1.7.12:dev')
+    api('com.github.GTNewHorizons:CodeChickenCore:1.4.19:dev')
+    api('com.github.GTNewHorizons:NotEnoughItems:2.8.130-GTNH:dev')
+    api('com.github.GTNewHorizons:Hodgepodge:2.7.196:dev')
+    api("com.github.GTNewHorizons:GTNHLib:0.11.46:dev")
 
     // OC 自身类以及编译期依赖
-    api('com.github.GTNewHorizons:OpenComputers:1.12.48-GTNH:dev')
+    api('com.github.GTNewHorizons:OpenComputers:1.12.61-GTNH:dev')
     compileOnly("maven.modrinth:immibis-microblocks:59.1.2")
     compileOnly("maven.modrinth:redlogic:59.1.13")
 
     // Jackson for JSON processing
-    shadowImplementation rfg.deobf("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    shadowImplementation rfg.deobf("com.fasterxml.jackson.core:jackson-databind:2.22.2")
     api("com.github.luben:zstd-jni:1.5.7-16")
     runtimeOnly("com.github.luben:zstd-jni:1.5.7-16")
     api("com.aayushatharva.brotli4j:brotli4j:1.23.0")
