@@ -10,7 +10,7 @@ export default function ItemIcon({ api, item, size = 48 }: { api: NonNullable<Re
 
     useEffect(() => {
         let objectUrl: string | null = null
-        api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite })
+        api.getItemIcon({ id: item.id, damage: item.damageable ? undefined : item.damage, tag: item.nbt?.nbtWrite })
             .then((buf) => {
                 objectUrl = URL.createObjectURL(new Blob([buf], { type: "image/png" }))
                 setUrl(objectUrl)
@@ -20,7 +20,7 @@ export default function ItemIcon({ api, item, size = 48 }: { api: NonNullable<Re
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl)
         }
-    }, [item.id, item.damage, item.nbtstr])
+    }, [item.id, item.damage, item.nbt?.nbtstr])
 
     if (!url) return <Skeleton variant="rectangular" width={size} height={size} />
 

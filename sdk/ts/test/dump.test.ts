@@ -52,7 +52,7 @@ describe("dump", () => {
 
         const sub = yess.subs[Math.floor(Math.random() * yess.subs.length)]
         assert.ok(v.ItemStackSchema.validate(sub).error == undefined)
-        const icon2 = await api.getItemIcon({ id: sub.id, damage: sub.damage, tag: sub.nbtWrite })
+        const icon2 = await api.getItemIcon({ id: sub.id, damage: sub.damage, tag: sub.nbt?.nbtWrite })
         assert.ok(icon2 instanceof ArrayBuffer)
         assert.ok(icon2.byteLength > 0)
     })

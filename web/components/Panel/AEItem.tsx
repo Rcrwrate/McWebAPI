@@ -22,7 +22,7 @@ export function AEItemContent({ data, req }: { data: AEItemsResult, req?: AEItem
         matched = data.items.find(i => i.id === req.id && i.type == "fluid")
     } else {
         matched = data.items.find(
-            i => i.id === req.id && i.type == "item" && i.damage === req.damage && (i.nbtWrite ?? "") === (req.nbtWrite ?? "")
+            i => i.id === req.id && i.type == "item" && i.damage === req.damage && (i.nbt?.nbtWrite ?? "") === (req.nbtWrite ?? "")
         )
     }
 

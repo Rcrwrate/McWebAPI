@@ -1,11 +1,12 @@
-git clone --depth=1 https://cnb.cool/shirokasoke/GTNH /tmp/GTNH
+git clone --depth=1 "https://cnb:${CNB_TOKEN}@cnb.cool/shirokasoke/GTNH" /tmp/GTNH
+
 cd /tmp/GTNH
 git lfs pull
 
-mv /tmp/GTNH/2.9.0-beta2 /workspace/GTNH-server
+mv /tmp/GTNH/2.9.0-beta3 /workspace/GTNH-server
 
-wget https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.8.4-0.4-pre/2.9.0-beta2.dumps.7z
-7z x 2.9.0-beta2.dumps.7z -o/workspace/GTNH-server
+wget https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.9.0-beta2-0.11-pre/290beta2-915.dump.7z
+7z x 290beta2-915.dump.7z -o/workspace/GTNH-server
 
 rm -rf /tmp/GTNH
 

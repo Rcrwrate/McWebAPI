@@ -19,7 +19,7 @@ export default function ItemIcon({ api, item, badge }: { api: NonNullable<Return
             const fluidStack = item.nbt?.FluidStack as Record<string, unknown> | undefined
             icon = api.getFluidIcon({ name: fluidStack?.FluidName as string })
         } else {
-            icon = api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite })
+            icon = api.getItemIcon({ id: item.id, damage: item.damageable ? undefined : item.damage, tag: item.nbt?.nbtWrite })
         }
 
         icon.then((buf) => {

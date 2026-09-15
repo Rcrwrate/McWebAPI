@@ -2,10 +2,13 @@ import Joi from "joi";
 import type { AEItemDefinitions, Item, ItemDetail } from "../types/item";
 import { ClassInfoSchema } from "./common";
 
+export const NBTCompoundSchema = Joi.object({
+    nbtstr: Joi.string().required(),
+    nbtWrite: Joi.string().required(),
+}).unknown();
+
 export const NBTDataSchema = Joi.object({
-    nbtstr: Joi.string().optional(),
-    nbtWrite: Joi.string().optional(),
-    nbt: Joi.object().unknown().optional(),
+    nbt: NBTCompoundSchema.optional(),
 });
 
 export const ItemSchema = Joi.object<Item>({

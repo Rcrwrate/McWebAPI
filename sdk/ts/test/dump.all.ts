@@ -18,7 +18,7 @@ const api = new WebApiClient({ baseUrl: "http://localhost:40002" });
                     if (r.subs != undefined) {
                         for (const j of r.subs!) {
                             await it(`${i.id}-${j.id}`, async () => {
-                                const icon = await api.getItemIcon({ id: j.id, damage: j.damage, tag: j.nbtWrite })
+                                const icon = await api.getItemIcon({ id: j.id, damage: j.damage, tag: j.nbt?.nbtWrite })
                                 assert.ok(icon instanceof ArrayBuffer)
                                 assert.ok(icon.byteLength > 0)
                             })

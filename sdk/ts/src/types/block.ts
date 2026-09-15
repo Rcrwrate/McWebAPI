@@ -1,5 +1,5 @@
 import type { ClassInfo } from "./common";
-import type { ItemStack } from "./item";
+import type { ItemStack, NBTCompound } from "./item";
 
 export interface Material {
     isLiquid: boolean;
@@ -42,10 +42,11 @@ export interface BlockDetail {
     metadata: number;
     isAir: boolean;
     tileEntity?: {
+        nbt: NBTCompound;
         class?: ClassInfo;
         inventorySize?: number;
         items?: Array<ItemStack & { slot: number }>;
-    } & Record<string, unknown>;
+    };
 }
 
 export interface SetBlockBody {

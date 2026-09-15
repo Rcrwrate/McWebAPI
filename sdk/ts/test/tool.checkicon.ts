@@ -18,13 +18,13 @@ const api = new WebApiClient({ baseUrl: "http://localhost:40002" });
                     for (const sub of detail.subs) {
                         checked++;
                         try {
-                            await api.getItemIcon({ id: sub.id, damage: sub.damage, tag: sub.nbtWrite });
+                            await api.getItemIcon({ id: sub.id, damage: sub.damage, tag: sub.nbt?.nbtWrite });
                         } catch (e) {
                             if (e instanceof WebApiError && e.status === 404) {
                                 missing.push({
                                     id: sub.id,
                                     damage: sub.damage,
-                                    tag: sub.nbtWrite,
+                                    tag: sub.nbt?.nbtWrite,
                                     registryName: sub.registryName,
                                     localizedName: sub.localizedName,
                                 });

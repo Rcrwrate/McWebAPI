@@ -16,13 +16,13 @@ const AE_COORDS = { x: -25, y: 116, z: 63 };
         if (item.type !== "item") continue;
         checked++;
         try {
-            await api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbtWrite });
+            await api.getItemIcon({ id: item.id, damage: item.damage, tag: item.nbt?.nbtWrite });
         } catch (e) {
             if (e instanceof WebApiError && e.status === 404) {
                 missing.push({
                     id: item.id,
                     damage: item.damage,
-                    tag: item.nbtWrite,
+                    tag: item.nbt?.nbtWrite,
                     registryName: item.registryName,
                     localizedName: item.localizedName,
                     stackSize: item.stackSize,

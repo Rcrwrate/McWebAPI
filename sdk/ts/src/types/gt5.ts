@@ -1,5 +1,6 @@
 import type { ClassInfo } from "./common";
 import type { Fluid } from "./fluid";
+import type { NBTCompound } from "./item";
 
 // ========== GT5 Machine Base ==========
 
@@ -135,7 +136,7 @@ export type GT5MachineInfo = {
     owner: string;
     state: GT5MachineState;
     class?: ClassInfo;
-    nbt: Record<string, unknown>;
+    nbt: NBTCompound;
 } & GT5Machine;
 
 // ========== GT5 Batch ==========

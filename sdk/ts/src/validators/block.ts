@@ -1,7 +1,7 @@
 import Joi from "joi";
 import type { BatchSetBlockJobResult, Block, BlockDetail } from "../types/block";
 import { ClassInfoSchema, CoordinatesSchema } from "./common";
-import { ItemStackSchema } from "./item";
+import { ItemStackSchema, NBTCompoundSchema } from "./item";
 
 export const MaterialSchema = Joi.object({
     isLiquid: Joi.boolean().required(),
@@ -43,10 +43,11 @@ export const BlockDetailSchema = Joi.object<BlockDetail>({
     metadata: Joi.number().required(),
     isAir: Joi.boolean().required(),
     tileEntity: Joi.object({
+        nbt: NBTCompoundSchema.required(),
         class: ClassInfoSchema.optional(),
         inventorySize: Joi.number().optional(),
         items: Joi.array().items(ItemStackSchema.append({ slot: Joi.number().required() })).optional(),
-    }).unknown().optional(),
+    }).optional(),
 });
 
 export const SetBlockBodySchema = Joi.object({

@@ -12,11 +12,8 @@ const z = Math.floor(Math.random() * 40000) + 10000;
 const y = Math.floor(Math.random() * 50) + 50;
 
 describe("normal", () => {
-    it("subitems", async () => {
-        const r = await api.loadChunk({ x, z, dim: 0, duration: 120 })
-
-        console.log(v.ChunkLoadResultSchema.validate(r))
-        console.log(`http://localhost:40002/block?x=${x}&y=${y}&z=${z}&dim=0`)
-
+    it("block", async () => {
+        const r = await api.getBlock({ x: -41, y: 100, z: 50 })
+        assert.ok(v.BlockDetailSchema.validate(r).error == undefined)
     })
 })

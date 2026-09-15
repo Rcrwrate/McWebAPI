@@ -116,6 +116,7 @@ const columns: GridColDef<AEItemRow>[] = [
         headerName: "NBT",
         width: 300,
         filterable: true,
+        valueGetter: (_value, row) => row.type == "item" ? row.nbt?.nbtstr ?? "" : "",
     }
 ]
 
@@ -147,7 +148,7 @@ export default function AEItemPage() {
             .then((data) => {
                 const rows = data.items.map((it): AEItemRow => ({
                     ...it,
-                    uid: it.type == "item" ? `${it.id}-${it.damage}-${it.nbtstr ?? ""}` : `f-${it.id}`,
+                    uid: it.type == "item" ? `${it.id}-${it.damage}-${it.nbt?.nbtstr ?? ""}` : `f-${it.id}`,
                 }))
                 setItems(rows)
                 setDisplayRows(rows)
@@ -377,7 +378,7 @@ export default function AEItemPage() {
                                     Count: craftCount,
                                     Type: item.type,
                                     Damage: item.type == "item" ? item.damage : undefined,
-                                    tag: item.type == "item" ? item.nbtWrite : undefined,
+                                    tag: item.type == "item" ? item.nbt?.nbtWrite : undefined,
                                 }
                             );
                             enqueueSnackbar(`已提交合成任务，输出: ${result.output.localizedName} x${result.output.stackSize}，CPU: ${result.cpu}`, { variant: "success" });

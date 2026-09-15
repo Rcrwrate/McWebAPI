@@ -2,6 +2,7 @@ import Joi from "joi";
 import type { GT5BatchJobResult, GT5BatchMachineCoord, GT5BatchSubmitResult, GT5MachineInfo, GT5ScanJobResult } from "../types/gt5";
 import { ClassInfoSchema } from "./common";
 import { FluidSchema } from "./fluid";
+import { NBTCompoundSchema } from "./item";
 
 // ========== GT5 Machine Base ==========
 
@@ -126,7 +127,7 @@ export const GT5MachineInfoSchema = Joi.object<GT5MachineInfo>({
     owner: Joi.string().required(),
     state: GT5MachineStateSchema.required(),
     class: ClassInfoSchema.optional(),
-    nbt: Joi.object().unknown().required(),
+    nbt: NBTCompoundSchema.required(),
 }).concat(GT5MachineFieldsSchema);
 
 export const GT5BatchMachineCoordSchema = Joi.object<GT5BatchMachineCoord>({

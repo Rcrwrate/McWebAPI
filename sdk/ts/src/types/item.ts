@@ -1,9 +1,17 @@
 import type { ClassInfo } from "./common";
 
+export interface NBTCompound {
+    /** NBT 的 SNBT 字符串形式 */
+    nbtstr: string;
+    /** Base64 编码的 NBT 二进制数据 */
+    nbtWrite: string;
+    /** NBT 复合标签内的各键值 */
+    [key: string]: unknown;
+}
+
+/** 携带 NBT 的对象，NBT 为空时不输出 `nbt` */
 export interface NBTData {
-    nbtstr?: string;
-    nbtWrite?: string;
-    nbt?: Record<string, unknown>;
+    nbt?: NBTCompound;
 }
 
 export interface Item {

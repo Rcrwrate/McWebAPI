@@ -1,6 +1,6 @@
 {
     "name": "@shirokasoke/webapi-sdk",
-    "version": "2.9.0-beta2-0.11-pre",
+    "version": "2.9.0-beta2-0.11-test1",
     "private": false,
     "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod",
     "main": "./dist/index.js",
@@ -26,7 +26,8 @@
         "build": "npm run build:cjs && npm run build:esm",
         "build:cjs": "tsc -p tsconfig.json",
         "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json",
-        "test": "tsx --test test/*.test.ts"
+        "test": "tsx --test test/*.test.ts",
+        "web": "npm run build && cp -r /workspace/sdk/ts/dist/* /workspace/web/node_modules/@shirokasoke/webapi-sdk/dist/"
     },
     "keywords": [
         "gtnh",
