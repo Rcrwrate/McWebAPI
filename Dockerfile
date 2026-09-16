@@ -2,7 +2,8 @@ FROM docker.cnb.cool/shirokasoke/env/pure
 
 RUN /root/.vscode-server/bin/$VSCODE_COMMIT_ID/bin/code-server --server-data-dir /root/.vscode-server --telemetry-level all \
     --install-extension vscjava.vscode-gradle \
-    --install-extension vscjava.vscode-java-pack 
+    --install-extension vscjava.vscode-java-pack \
+    --install-extension mechatroner.rainbow-csv
 
 ARG CNB_REPO_SLUG
 ENV CNB_REPO_SLUG=${CNB_REPO_SLUG}

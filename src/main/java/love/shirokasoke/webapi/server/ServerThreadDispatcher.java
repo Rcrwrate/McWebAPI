@@ -65,7 +65,7 @@ public class ServerThreadDispatcher {
     }
 
     /**
-     * 将任务投递到服务器主线程的慢队列，每tick仅执行 {@code slowTasksPerTick} 个任务。
+     * 将任务投递到服务器主线程的慢队列，每tick仅执行 {@link #slowTasksPerTick} 个任务。
      * 此方法不阻塞，调用后立即返回。
      */
     public static void scheduleOnServerThread(Runnable task) {
