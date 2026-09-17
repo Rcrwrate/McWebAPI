@@ -232,7 +232,7 @@ export default function GT5Page() {
         if (machines.length > 0 && api) {
             let job
             if (batchID.current) {
-                await api.rerunGT5Batch({ id: batchID.current })
+                await api.rerunGT5Batch({ id: batchID.current }).catch((e) => enqueueSnackbar(`${e}`, { variant: "error" }))
                 job = await api.waitForGT5BatchJob(batchID.current)
             } else {
                 const req = machines.filter(i => ["MULTIBLOCK", "SINGLE", "GENERATOR"].includes(i.machineType)).map(i => ({ x: i.x, y: i.y, z: i.z, dimension: i.dimension }))
@@ -248,11 +248,32 @@ export default function GT5Page() {
         }
     }
 
-    useEffect(() => {
-        if (refreshSec > 0) {
-            let id = setInterval(() => fetchMachine().catch((e) => enqueueSnackbar(`${e}`, { variant: "error" })), refreshSec * 1000)
-            return () => clearInterval(id)
+    const fetchMachineSSE = async () => {
+        if (machines.length > 0 && api) {
+            const req = machines.filter(i => ["MULTIBLOCK", "SINGLE", "GENERATOR"].includes(i.machineType)).map(i => ({ x: i.x, y: i.y, z: i.z, dimension: i.dimension }))
+            const sse = api.gt5BatchSseCallback(req, (job) => {
+                batchID.current = job.id
+                setLiveMachines(job.machines?.map((i): GT5Row => ({
+                    ...i,
+                    id: `(${i.x}, ${i.y}, ${i.z}) [${i.dimension}]`,
+                    status: machineStatus(i)
+                })) ?? [])
+            }, (e) => { enqueueSnackbar(`${e}`, { variant: "error" }) }, { interval: refreshSec })
+            return () => sse.abort()
         }
+    }
+
+    useEffect(() => {
+        let cleanup: (() => void)[] = []
+        api?.getSSE().then((r) => {
+            if (r) {
+                fetchMachineSSE().then(r => { if (r) cleanup.push(r) })
+            } else {
+                let id = setInterval(() => fetchMachine().catch((e) => enqueueSnackbar(`${e}`, { variant: "error" })), refreshSec * 1000)
+                cleanup.push(() => clearInterval(id))
+            }
+        })
+        return () => { cleanup.map(i => i()) }
     }, [machines.length, refreshSec])
 
     if (!api) {

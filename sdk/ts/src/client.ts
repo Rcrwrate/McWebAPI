@@ -136,6 +136,7 @@ export class WebApiClient {
     private baseUrl: string;
     private authToken?: string;
     private fetchImpl: FetchLike;
+    public SSE: boolean = false;
 
     constructor(options: WebApiClientOptions) {
         this.baseUrl = options.baseUrl.replace(/\/$/, "");
@@ -194,6 +195,8 @@ export class WebApiClient {
      * @param callback 业务数据回调
      * @param errorCallback 出错回调，接收模板抛出或 `parse` 抛出的异常（如 {@link WebApiError}）
      * @param parse 解析事件的 data 文本为业务数据，抛出异常表示该帧无效
+     * @param init 可选的请求附加参数（如 GT5 批量 SSE 需 POST JSON body）；携带 body 时自动附加
+     *             `Content-Type: application/json`
      * @returns AbortController，调用 `abort()` 可停止订阅
      */
     private subscribeSse<T>(
@@ -201,16 +204,22 @@ export class WebApiClient {
         eventName: string,
         callback: (data: T) => void,
         errorCallback: (error: Error) => void,
-        parse: (data: string) => T
+        parse: (data: string) => T,
+        init?: { method?: string; body?: string }
     ): AbortController {
         const controller = new AbortController();
         const headers: Record<string, string> = {};
+        if (init?.body !== undefined) {
+            headers["Content-Type"] = "application/json";
+        }
         if (this.authToken) {
             headers["Authorization"] = this.authToken;
         }
 
         fetchEventSource(url, {
             signal: controller.signal,
+            method: init?.method,
+            body: init?.body,
             headers,
             openWhenHidden: true,
             fetch: this.fetchImpl,
@@ -254,6 +263,40 @@ export class WebApiClient {
      */
     getRoot(): Promise<RootInfo> {
         return this.request<RootInfo>("/version");
+    }
+
+    /**
+     * SSE 可用性探测：连接测试端点 `/test/sse`，确认服务端 SSE（Server-Sent Events）通道可用。
+     * 
+     * 注意：仅当服务端启用虚拟线程（useVirtualThreads）时该路由才会注册。
+     * @param timeoutMs 探测超时（ms）
+     * @returns 服务端 SSE 可用返回 `true`，否则返回 `false`
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/test/SSETestHandler.java)
+     */
+    getSSE(timeoutMs = 500): Promise<boolean> {
+        if (this.SSE) return Promise.resolve(this.SSE);
+        return new Promise<boolean>(resolve => {
+            let controller: AbortController | undefined;
+            let settled = false;
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            /** 首次结果生效，后续（含 abort 触发的 onerror）一律忽略 */
+            const finish = (ok: boolean) => {
+                if (settled) return;
+                settled = true;
+                if (timer !== undefined) clearTimeout(timer);
+                controller?.abort();
+                this.SSE = ok;
+                resolve(ok);
+            };
+            timer = setTimeout(() => finish(false), timeoutMs);
+            controller = this.subscribeSse<string>(
+                `${this.baseUrl}/test/sse`,
+                "success",
+                () => finish(true),
+                () => finish(false),
+                raw => raw
+            );
+        });
     }
 
     // region TPS / Performance
@@ -621,6 +664,40 @@ export class WebApiClient {
             if (job.status === "completed") return job;
             await new Promise(r => setTimeout(r, intervalMs));
         }
+    }
+
+    /**
+     * 以回调方式订阅批量 GT5 机器信息 SSE 推送（基于 fetchEventSource，可携带 Authorization 头，原生 EventSource 不支持）。
+     * 服务端以 `machines` 数组作为 POST body 提交批量查询，任务完成后推送一次 `gt5` 事件
+     * （{@link GT5BatchJobResult} JSON，含 machines 结果），随后每隔 interval 秒（默认 5）自动重跑并再次推送；
+     * 连接建立后发生异常时推送 `error` 事件（纯文本消息）并关闭连接。
+     * @param machines 目标机器坐标列表，作为 POST JSON body 提交
+     * @param callback 每次收到批量查询完整结果（任务完成，含 machines）时调用
+     * @param errorCallback 出错（网络错误、鉴权失败、服务端 error 事件、业务失败、数据解析失败）时调用，库内自动重连会随之停止
+     * @param params.interval 任务完成后自动重跑的间隔（秒），省略时由服务端取默认值
+     * @returns AbortController，调用 `abort()` 可停止订阅
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5BatchSSEHandler.java)
+     */
+    gt5BatchSseCallback(
+        machines: GT5BatchMachineCoord[],
+        callback: (data: GT5BatchJobResult) => void,
+        errorCallback: (error: Error) => void,
+        params?: { interval?: number }
+    ): AbortController {
+        return this.subscribeSse<GT5BatchJobResult>(
+            `${this.baseUrl}/gt5/batch/sse${buildQuery(params ?? {})}`,
+            "gt5",
+            callback,
+            errorCallback,
+            raw => {
+                const body = JSON.parse(raw) as GT5BatchJobResult | ApiResponse<GT5BatchJobResult>;
+                // 服务端当前推送裸对象（其 success 为数字计数），同时兼容 ApiResponse 包装形式（success 为布尔值）
+                return typeof (body as ApiResponse<GT5BatchJobResult>).success === "boolean"
+                    ? unwrapApiResponse(body as ApiResponse<GT5BatchJobResult>)
+                    : body as GT5BatchJobResult;
+            },
+            { method: "POST", body: JSON.stringify(machines) }
+        );
     }
 
     // region AE2

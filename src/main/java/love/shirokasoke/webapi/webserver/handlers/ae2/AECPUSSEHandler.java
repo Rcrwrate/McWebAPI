@@ -29,7 +29,7 @@ public class AECPUSSEHandler implements SSEHandler {
     @Override
     public void run(HttpExchange exchange, SSEClient client) throws Exception {
         final Map<String, String> params = parseQueryParams(exchange);
-        final int sleep = Integer.valueOf(params.getOrDefault("interval", "5"));
+        final int sleep = 1000 * Integer.valueOf(params.getOrDefault("interval", "5"));
 
         Context context = new Context(getCoordinates(params)).initServer()
             .initWorld()

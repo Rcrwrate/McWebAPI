@@ -28,7 +28,7 @@ public class GT5BatchSSEHandler implements SSEHandler {
             throw new ApiException(400, "method must be POST");
         }
         final Map<String, String> params = parseQueryParams(exchange);
-        final int sleep = Integer.valueOf(params.getOrDefault("interval", "5"));
+        final int sleep = 1000 * Integer.valueOf(params.getOrDefault("interval", "5"));
 
         JsonNode body = getBody(exchange);
         if (body == null || !body.isArray() || body.isEmpty()) {
@@ -36,18 +36,30 @@ public class GT5BatchSSEHandler implements SSEHandler {
                 400,
                 "Request body must contain a non-empty 'machines' array: [{\"x\":0,\"y\":0,\"z\":0,\"dim\":0}, ...]");
         }
-        BatchJob job = new BatchJob(GT5Batch.parseMachineCoords(body));
+        final BatchJob job = new BatchJob(GT5Batch.parseMachineCoords(body));
         GT5Batch.submitTasks(job);
-        while (true) {
+        client.retry(3000);
+
+        boolean isSended = false;
+        long lastSubmit = System.currentTimeMillis();
+        while (client.isOpen()) {
+            long check = System.currentTimeMillis() - lastSubmit;
             if (job.getStatus()
                 .equals("completed")) {
-
+                if (!isSended) {
+                    isSended = true;
+                    client.eventJson("gt5", job.getObjectNode());
+                }
+                if (check > sleep) {
+                    lastSubmit = System.currentTimeMillis();
+                    isSended = false;
+                    job.resetForRerun();
+                    GT5Batch.submitTasks(job);
+                }
             }
-            if (!client.isOpen()) {
-                GT5Batch.cleanupExpiredJobs();
-                break;
-            }
-            Thread.sleep(sleep);
+            client.heartbeat();
+            Thread.sleep(1000);
         }
+        GT5Batch.cleanupExpiredJobs();
     }
 }

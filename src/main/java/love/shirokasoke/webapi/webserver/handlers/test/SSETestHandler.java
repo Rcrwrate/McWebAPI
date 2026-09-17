@@ -15,8 +15,8 @@ public class SSETestHandler implements SSEHandler {
     @Override
     public void run(HttpExchange exchange, SSEClient client) throws Exception {
         for (int i = 1; i < 50 && client.isOpen(); i++) {
-            Thread.sleep(500);
             client.send(String.valueOf(i));
         }
+        client.event("success", "success");
     }
 }
