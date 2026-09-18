@@ -136,7 +136,7 @@ export class WebApiClient {
     private baseUrl: string;
     private authToken?: string;
     private fetchImpl: FetchLike;
-    public SSE: boolean = false;
+    public SSE: boolean | undefined = undefined;
 
     constructor(options: WebApiClientOptions) {
         this.baseUrl = options.baseUrl.replace(/\/$/, "");
@@ -273,8 +273,8 @@ export class WebApiClient {
      * @returns 服务端 SSE 可用返回 `true`，否则返回 `false`
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/test/SSETestHandler.java)
      */
-    getSSE(timeoutMs = 500): Promise<boolean> {
-        if (this.SSE) return Promise.resolve(this.SSE);
+    checkSSE(timeoutMs = 500): Promise<boolean> {
+        if (this.SSE != undefined) return Promise.resolve(this.SSE);
         return new Promise<boolean>(resolve => {
             let controller: AbortController | undefined;
             let settled = false;

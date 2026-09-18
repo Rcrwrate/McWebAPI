@@ -168,13 +168,32 @@ export default function AECPUPage() {
             .catch((e) => setError(e instanceof Error ? e.message : "加载 CPU 失败"))
     }
 
+    const fetchCPUSSE = async () => {
+        if (!api || !x) return
+        const sse = api?.aeCpuSseCallback({ x, y, z, dimension, interval: refreshSec }, (data) => {
+            const rows = data.map((c, i): AECPURow => ({
+                ...c,
+                id: i,
+                storage: c.availableStorage > 0 ? c.usedStorage / c.availableStorage : 0,
+            }))
+            setCpus(rows)
+            setDisplayRows(rows)
+        }, (e) => { enqueueSnackbar(`${e}`, { variant: "error" }) })
+        return () => sse.abort()
+    }
+
+    let cleanup: (() => void)[] = []
     useEffect(() => {
-        loadCPUs()
-        if (refreshSec <= 0) return
-        const interval = setInterval(() => {
-            loadCPUs()
-        }, refreshSec * 1000)
-        return () => clearInterval(interval)
+        if (refreshSec <= 0) return loadCPUs()
+        api?.checkSSE().then((r) => {
+            if (r) {
+                fetchCPUSSE().then(r => { if (r) cleanup.push(r) })
+            } else {
+                const interval = setInterval(() => loadCPUs(), refreshSec * 1000)
+                cleanup.push(() => clearInterval(interval))
+            }
+        })
+        return () => { while (cleanup.length > 0) { cleanup.pop()?.() } }
     }, [refreshSec, api != undefined, x, y, z, dimension])
 
     useEffect(() => {

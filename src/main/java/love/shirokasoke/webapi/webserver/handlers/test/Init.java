@@ -8,7 +8,7 @@ import love.shirokasoke.webapi.webserver.handlers.TestHandler;
 public class Init {
 
     public static void i() {
-        if (ServerConfig.useVirtualThreads) {
+        if (ServerConfig.useVirtualThreads && ServerConfig.useServerSideEvent) {
             RouteRegistry.register(new SSETestHandler());
         }
 

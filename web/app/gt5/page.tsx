@@ -262,10 +262,9 @@ export default function GT5Page() {
             return () => sse.abort()
         }
     }
-
+    let cleanup: (() => void)[] = []
     useEffect(() => {
-        let cleanup: (() => void)[] = []
-        api?.getSSE().then((r) => {
+        api?.checkSSE().then((r) => {
             if (r) {
                 fetchMachineSSE().then(r => { if (r) cleanup.push(r) })
             } else {
@@ -273,7 +272,7 @@ export default function GT5Page() {
                 cleanup.push(() => clearInterval(id))
             }
         })
-        return () => { cleanup.map(i => i()) }
+        return () => { while (cleanup.length > 0) { cleanup.pop()?.() } }
     }, [machines.length, refreshSec])
 
     if (!api) {
