@@ -51,6 +51,10 @@ public class MixinConfig {
         @Config.DefaultBoolean(true)
         public boolean enableMTELapotronicSuperCapacitorGetInfoMap;
 
+        @Config.Comment("MTEMultiBlockBase.mSmartInputHatches: replace reflection with Mixin accessors")
+        @Config.DefaultBoolean(true)
+        public boolean enableMTEMultiBlockBaseAccess;
+
         @Config.Comment("AE2 crafting CPU internal state: replace reflection with Mixin accessors")
         @Config.DefaultBoolean(true)
         public boolean enableAECPUAccessor;

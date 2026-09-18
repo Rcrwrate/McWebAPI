@@ -28,18 +28,15 @@ public class LateMixinsLoader implements ILateMixinLoader {
     @Nonnull
     @Override
     public List<String> getMixins(Set<String> loadedMods) {
-        // Register your late mixins here by adding them to the list.
-        // The late mixins target classes from other mods.
-        // The loadedMods contains the mod ID of currently loaded mods,
-        // you can check this Set to conditionally load certain mixins.
         List<String> mixins = new ArrayList<>();
 
-        // Example: conditionally enable a late mixin based on config + mod presence:
-        // if (MixinConfig.late.enableSomeModMixin && loadedMods.contains("some_modid")) {
-        // mixins.add("SomeModMixin");
-        // }
         if (MixinConfig.late.enableMTELapotronicSuperCapacitorGetInfoMap && loadedMods.contains("gregtech")) {
             mixins.add("MTELapotronicSuperCapacitorGetInfoMapMixin");
+        }
+
+        if (MixinConfig.late.enableMTEMultiBlockBaseAccess && loadedMods.contains("gregtech")) {
+            mixins.add("MTEAccess");
+            mixins.add("MTEMixin");
         }
 
         if (MixinConfig.nbt.enableNBT) {

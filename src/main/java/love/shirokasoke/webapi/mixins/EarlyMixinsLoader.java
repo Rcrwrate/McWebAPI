@@ -62,6 +62,7 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
         // }
         if (MixinConfig.nbt.enableNBT) {
             mixins.add("NBTAccess");
+            mixins.add("NBTListAccess");
         }
 
         if (MixinConfig.early.enableOversizedChunkWarnOnce

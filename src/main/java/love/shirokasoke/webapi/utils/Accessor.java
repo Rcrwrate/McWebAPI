@@ -57,7 +57,11 @@ public final class Accessor {
     /** 缓存 {@link NBTTagList#tagList } 混淆之后是field_74747_a */
     private static Field field_74747_a = null;
 
-    /** 访问 {@link NBTTagList#tagList } 混淆之后是field_74747_a */
+    /**
+     * 访问 {@link NBTTagList#tagList } 混淆之后是field_74747_a
+     * 
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.NBTMixin#NBTTagList_tagList}
+     */
     public static List<NBTBase> NBTTagList_tagList(NBTTagList tagList) {
         try {
             if (field_74747_a == null) {
