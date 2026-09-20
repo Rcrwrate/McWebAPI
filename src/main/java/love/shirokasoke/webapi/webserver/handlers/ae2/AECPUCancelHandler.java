@@ -12,6 +12,7 @@ import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
+import love.shirokasoke.webapi.utils.Accessor;
 
 /**
  * 取消 AE 合成 CPU 上正在执行的合成任务
@@ -85,8 +86,12 @@ public class AECPUCancelHandler extends AEBaseHandler {
         }
 
         // 取消任务。ICraftingCPU 接口没有 cancel()，实际实现类 CraftingCPUCluster 才有
-        boolean wasBusy = targetCpu.isBusy();
+        // .put("busy", cpu.isBusy()) isBusy会对task进行写入，规避
+        // boolean wasBusy = targetCpu.isBusy();
+        boolean wasBusy = false;
         if (targetCpu instanceof CraftingCPUCluster cluster) {
+            wasBusy = Accessor.CraftingCPUCluster_tasks(cluster)
+                .isEmpty();
             try {
                 ServerThreadDispatcher.runOnServerThread(cluster::cancel);
             } catch (Exception e) {
