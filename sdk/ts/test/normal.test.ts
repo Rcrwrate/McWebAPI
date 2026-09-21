@@ -18,6 +18,10 @@ describe("normal", () => {
         const r = await api.getTPS()
         assert.ok(Joi.object().pattern(Joi.string(), v.TPSInfoSchema).validate(r).error == undefined)
     })
+    it("block", async () => {
+        const r = await api.getBlock({ x: -41, y: 100, z: 50 })
+        assert.ok(v.BlockDetailSchema.validate(r).error == undefined)
+    })
     it("blocks", async () => {
         const r = await api.getBlocks()
         assert.ok(r.length > 100)

@@ -55,7 +55,6 @@ public class LateMixinsLoader implements ILateMixinLoader {
             // all
             mixins.add("AEStack.IAEStackSafeMixin");
             mixins.add("AEStack.IAEStackItemListSafeMixin");
-
         }
 
         if (MixinConfig.late.enableServerThreadLongHashMapBypass) {

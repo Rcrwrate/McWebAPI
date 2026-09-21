@@ -27,7 +27,7 @@ public class AEStackSafeSetTransformer implements IClassTransformer {
     /** 被替换的 fastutil 集合（AE2 源码里的原始类型） */
     private static final String FASTUTIL_SET = "it/unimi/dsi/fastutil/objects/ObjectOpenHashSet";
 
-    /** 替换目标 {@link love.shirokasoke.webapi.utils.SafeObjectOpenHashSet}；只以字符串出现，变压器自身不引用它 */
+    /** 替换目标 {@link love.shirokasoke.webapi.utils.SafeObjectOpenHashSet}；只以字符串出现 */
     private static final String SAFE_SET = "love/shirokasoke/webapi/utils/SafeObjectOpenHashSet";
 
     private static final String INIT = "<init>";

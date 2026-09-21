@@ -19,5 +19,5 @@ public class ServerConfig {
     public static boolean useVirtualThreads = true;
 
     @Config.Comment("Use SSE instead of polling (requires virtual threads; the payload cannot be compressed, so it costs more bandwidth)")
-    public static boolean useServerSideEvent = false;
+    public static boolean useServerSideEvent = true;
 }
