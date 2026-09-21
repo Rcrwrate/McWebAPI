@@ -36,6 +36,14 @@ public class MixinConfig {
             "Requires Hodgepodge's 'remove2MBChunkLimit' to be enabled" })
         @Config.DefaultBoolean(true)
         public boolean enableOversizedChunkWarnOnce;
+
+        @Config.Comment({
+            "AEStackSafeSetTransformer: rewrite 'new ObjectOpenHashSet<>()' in AE2's 'appeng.util.item' package into "
+                + "SafeObjectOpenHashSet at bytecode level, so web threads can traverse AE2 item/fluid lists without "
+                + "hitting fastutil's iterator NPE (ObjectOpenHashSet$SetIterator: 'this.wrapped' is null)",
+            "Recommended to keep enabled; if disabled, the conversion is done at runtime instead" })
+        @Config.DefaultBoolean(true)
+        public boolean enableAEStackSafeSetTransformer;
     }
 
     public static class NBT {

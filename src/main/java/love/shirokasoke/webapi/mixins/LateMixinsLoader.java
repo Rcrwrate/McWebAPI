@@ -49,6 +49,15 @@ public class LateMixinsLoader implements ILateMixinLoader {
             mixins.add("AECPUMixin");
         }
 
+        if (loadedMods.contains("appliedenergistics2")) {
+            // main
+            mixins.add("AEStack.IAEStackMainSafeMixin");
+            // all
+            mixins.add("AEStack.IAEStackSafeMixin");
+            mixins.add("AEStack.IAEStackItemListSafeMixin");
+
+        }
+
         if (MixinConfig.late.enableServerThreadLongHashMapBypass) {
             mixins.add("ServerThreadLongHashMapBypass");
         }

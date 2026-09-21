@@ -10,6 +10,7 @@
 | [API.md](./API.md) | API 参考：网格访问、存储读写、合成操作、接口遍历、常用枚举 |
 | [ME.md](./ME.md) | ME 接口：接口体系、获取机器名称、多方块传播机制、坐标直取样板 |
 | [FMP.md](./FMP.md) | ForgeMultipart 集成：CableBusPart、PartRegistry、解析 FMP 方块 |
+| [IAEStack.md](./IAEStack.md) | IAEStack 设计层次解析 |
 
 ## 快速开始
 

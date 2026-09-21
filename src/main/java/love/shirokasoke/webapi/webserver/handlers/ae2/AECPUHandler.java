@@ -17,6 +17,7 @@ import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.cluster.implementations.CraftingCPUCluster.TaskProgress;
 import love.shirokasoke.webapi.utils.Accessor;
 import love.shirokasoke.webapi.utils.ClassUtils;
+import love.shirokasoke.webapi.utils.IAEStackSafe;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.Pattern;
 import love.shirokasoke.webapi.webserver.Context;
@@ -180,13 +181,13 @@ public class AECPUHandler extends AEBaseHandler {
             }
 
             IItemList<IAEStack<?>> waitingFor = Accessor.CraftingCPUCluster_waitingFor(cluster);
-            if (waitingFor != null && !waitingFor.isEmpty()) {
+            if (IAEStackSafe.hasAny(waitingFor)) {
                 isBusy = true;
                 ArrayNode taskingArray = cpuNode.putArray("tasking");
-                for (IAEStack<?> stack : waitingFor) {
-                    if (stack == null) continue;
+                IAEStackSafe.forEach(waitingFor, stack -> {
+                    if (stack == null) return;
                     ObjectNode itemNode = Pattern.dumpAEStack(stack);
-                    if (itemNode == null) continue;
+                    if (itemNode == null) return;
 
                     // waitingFor 中的物品已提交到合成台/机器，处于运行中状态
                     // itemNode.put("status", "running");
@@ -205,7 +206,7 @@ public class AECPUHandler extends AEBaseHandler {
                         Logs.e(e);
                     }
                     taskingArray.add(itemNode);
-                }
+                });
             }
             cpuNode.put("busy", isBusy);
         } catch (Exception e) {

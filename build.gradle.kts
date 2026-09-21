@@ -25,7 +25,7 @@ sourceSets {
 
     patchedMc {
         resources {
-            // srcDir("tools/Applied-Energistics-2-Unofficial-rv3-beta-1000-GTNH/src/main/java")
+            // srcDir("tools/Applied-Energistics-2-Unofficial-rv3-beta-1050-GTNH/src/main/java")
             // srcDir("tools/GT5-Unofficial-5.09.54.20/src/main/java")
             // srcDir("tools/NotEnoughItems/src/main/java")
             // srcDir("tools/Hodgepodge/src/main/java")
