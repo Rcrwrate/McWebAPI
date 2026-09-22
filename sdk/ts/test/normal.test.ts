@@ -18,8 +18,14 @@ describe("normal", () => {
         const r = await api.getTPS()
         assert.ok(Joi.object().pattern(Joi.string(), v.TPSInfoSchema).validate(r).error == undefined)
     })
+    // 箱子测试
     it("block", async () => {
-        const r = await api.getBlock({ x: -41, y: 100, z: 50 })
+        const r = await api.getBlock({ x: -17, y: 116, z: 58 })
+        assert.ok(v.BlockDetailSchema.validate(r).error == undefined)
+    })
+    // 流体储罐
+    it("fluidTank", async () => {
+        const r = await api.getBlock({ x: -30, y: 119, z: 99 })
         assert.ok(v.BlockDetailSchema.validate(r).error == undefined)
     })
     it("blocks", async () => {

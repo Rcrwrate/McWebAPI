@@ -23,15 +23,15 @@ public final class Entitys {
     private Entitys() {}
 
     public static ObjectNode dump(Object object, ObjectNode dataNode, boolean all) {
-        if (object instanceof Entity) {
-            dumpEntity((Entity) object, dataNode, all);
+        if (object instanceof Entity e) {
+            dumpEntity(e, dataNode, all);
         }
         if (!all) return dataNode;
-        if (object instanceof EntityLivingBase) {
-            dumpEntityLivingBase((EntityLivingBase) object, dataNode);
+        if (object instanceof EntityLivingBase elb) {
+            dumpEntityLivingBase(elb, dataNode);
         }
-        if (object instanceof EntityPlayer) {
-            dumpEntityPlayer((EntityPlayer) object, dataNode);
+        if (object instanceof EntityPlayer ep) {
+            dumpEntityPlayer(ep, dataNode);
         }
         ClassUtils.getClassInfo(object, dataNode);
         return dataNode;
@@ -236,7 +236,7 @@ public final class Entitys {
         // 能力/游戏模式
         NBTTagCompound nbt = new NBTTagCompound();
         player.capabilities.writeCapabilitiesToNBT(nbt);
-        NBT.dump(nbt, dataNode);
+        NBT.single(nbt, dataNode);
 
         // 睡眠状态
         dataNode.put("isSleeping", player.isPlayerSleeping());

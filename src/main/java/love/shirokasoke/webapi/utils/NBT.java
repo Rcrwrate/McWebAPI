@@ -107,9 +107,8 @@ public final class NBT {
         return ItemStack.loadItemStackFromNBT(nbt);
     }
 
-    private static void single(NBTBase nbtbase, ObjectNode data) {
-        if (nbtbase instanceof NBTTagCompound) {
-            NBTTagCompound nbt = (NBTTagCompound) nbtbase;
+    public static void single(NBTBase nbtbase, ObjectNode data) {
+        if (nbtbase instanceof NBTTagCompound nbt) {
             Iterator<String> iterator = nbt.func_150296_c()
                 .iterator();
 

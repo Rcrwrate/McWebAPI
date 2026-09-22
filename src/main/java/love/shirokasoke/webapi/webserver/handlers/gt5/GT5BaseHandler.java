@@ -37,12 +37,7 @@ public class GT5BaseHandler implements RouteHandler {
     }
 
     protected ObjectNode buildMachineInfo(Context context) {
-        ObjectNode data = mapper.createObjectNode();
-
-        data.put("x", context.co.posX)
-            .put("y", context.co.posY)
-            .put("z", context.co.posZ)
-            .put("dimension", context.co.dimension);
+        ObjectNode data = context.co.tObjectNode();
 
         GT5Utils.writeBasicMachineInfo(context.igte, context.mte, data);
         GT5Utils.write(context.mte, data);

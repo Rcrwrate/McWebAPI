@@ -58,8 +58,7 @@ public final class GT5Utils {
      * 若不是合法 GT5 机器则返回 null。
      */
     public static MetaTileEntity extractValidMTE(TileEntity te) {
-        if (!(te instanceof IGregTechTileEntity)) return null;
-        IGregTechTileEntity igte = (IGregTechTileEntity) te;
+        if (!(te instanceof IGregTechTileEntity igte)) return null;
         if (!igte.canAccessData()) return null;
         Object rawMte = igte.getMetaTileEntity();
         // 排除GT线缆

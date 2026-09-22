@@ -17,6 +17,18 @@ export interface Fluid {
     block?: number;
 }
 
+export interface FluidTank extends Fluid {
+    /** 
+     * 储罐索引
+     * @example 从 0-5 分别对应 下上北南西东
+     */
+    index: number;
+    /** 当前存储量（mB） */
+    amount: number;
+    /** 储罐容量（mB） */
+    capacity: number;
+}
+
 export interface FluidContainer {
     fluid?: Fluid;
     amount?: number;

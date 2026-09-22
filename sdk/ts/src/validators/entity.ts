@@ -87,10 +87,21 @@ export const EntityLivingBaseInfoSchema = Joi.object({
     activePotionEffects: Joi.object().pattern(Joi.string(), PotionEffectSchema).optional(),
 });
 
+export const PlayerAbilitiesSchema = Joi.object({
+    walkSpeed: Joi.number().required(),
+    flySpeed: Joi.number().required(),
+    flying: Joi.number().required(),
+    instabuild: Joi.number().required(),
+    mayfly: Joi.number().required(),
+    invulnerable: Joi.number().required(),
+    mayBuild: Joi.number().required(),
+});
+
 export const PlayerInfoSchema = Joi.object({
     experienceLevel: Joi.number().required(),
     experience: Joi.number().required(),
     experienceTotal: Joi.number().required(),
+    abilities: PlayerAbilitiesSchema.required(),
     isSleeping: Joi.boolean().required(),
     isBlocking: Joi.boolean().required(),
     score: Joi.number().required(),
@@ -99,8 +110,8 @@ export const PlayerInfoSchema = Joi.object({
         saturationLevel: Joi.number().required(),
     }).required(),
     heldItem: ItemStackSchema.optional(),
-    armor: Joi.array().items(Joi.alternatives(ItemStackSchema, Joi.valid(null))).optional(),
-    items: Joi.array().items(ItemStackSchema.append({ slot: Joi.number().required() })).optional(),
+    armor: Joi.array().items(Joi.alternatives(ItemStackSchema, Joi.valid(null))).required(),
+    items: Joi.array().items(ItemStackSchema.append({ slot: Joi.number().required() })).required(),
 });
 
 export const EntitySchema = Joi.object<Entity>({

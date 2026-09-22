@@ -8,6 +8,7 @@ import love.shirokasoke.webapi.webserver.handlers.TestHandler;
 public class Init {
 
     public static void i() {
+        RouteRegistry.register(new JsonTestHandler());
         if (ServerConfig.useVirtualThreads && ServerConfig.useServerSideEvent) {
             RouteRegistry.register(new SSETestHandler());
         }

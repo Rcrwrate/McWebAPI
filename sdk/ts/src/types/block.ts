@@ -1,4 +1,5 @@
 import type { ClassInfo } from "./common";
+import type { FluidTank } from "./fluid";
 import type { ItemStack, NBTCompound } from "./item";
 
 export interface Material {
@@ -46,6 +47,7 @@ export interface BlockDetail {
         class?: ClassInfo;
         inventorySize?: number;
         items?: Array<ItemStack & { slot: number }>;
+        fluids?: FluidTank[];
     };
 }
 
@@ -53,6 +55,7 @@ export interface SetBlockBody {
     id: number;
     metadataIn?: number;
     flag?: number;
+    nbt?: string;
 }
 
 export type SetBlockResult = null

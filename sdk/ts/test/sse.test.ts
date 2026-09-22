@@ -88,7 +88,7 @@ describe("AE", async () => {
 
     it("probe", async () => {
         // /test/sse 仅当服务端启用虚拟线程（useVirtualThreads）时注册
-        assert.strictEqual(await api.getSSE(), true);
+        assert.strictEqual(await api.checkSSE(), true);
     })
 
 })

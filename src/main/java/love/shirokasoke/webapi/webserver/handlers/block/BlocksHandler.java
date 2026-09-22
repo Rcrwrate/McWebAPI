@@ -33,8 +33,8 @@ public class BlocksHandler implements RouteHandler {
         ArrayNode items = mapper.createArrayNode();
 
         for (Object obj : Block.blockRegistry) {
-            if (obj instanceof Block) {
-                items.add(Blocks.dump((Block) obj));
+            if (obj instanceof Block block) {
+                items.add(Blocks.dump(block));
             }
         }
         setCache(exchange, 86400);

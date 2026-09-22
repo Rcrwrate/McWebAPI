@@ -251,6 +251,14 @@ public interface RouteHandler extends HttpHandler {
                 + this.dimension
                 + '}';
         }
+
+        public ObjectNode tObjectNode() {
+            return mapper.createObjectNode()
+                .put("x", this.posX)
+                .put("y", this.posY)
+                .put("z", this.posZ)
+                .put("dimension", this.dimension);
+        }
     }
 
     /**
