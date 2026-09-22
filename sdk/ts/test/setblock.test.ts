@@ -35,7 +35,9 @@ describe(`setBlocks?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
     await it("set", async () => {
         assert.ok(targetBlock)
         const setResult = await api.setBlock({ x, y, z, dim }, { id: targetBlock.id, metadataIn: 0 });
-        assert.strictEqual(setResult, null);
+        assert.ok(v.SetBlockResultSchema.validate(setResult).error == undefined)
+        assert.strictEqual(setResult.changed, true);
+        assert.strictEqual(setResult.nbtchanged, false);
     })
     await it("set again", async () => {
         assert.ok(targetBlock)
@@ -94,6 +96,10 @@ describe(`batchSetBlock?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
         assert.strictEqual(jobResult.status, "completed")
         assert.strictEqual(jobResult.completed, 1)
         assert.strictEqual(jobResult.success + jobResult.failed, 1)
+        assert.strictEqual(jobResult.success, 1)
+        assert.strictEqual(jobResult.failed, 0)
+        assert.strictEqual(jobResult.changed, 1)
+        assert.strictEqual(jobResult.nbtchanged, 0)
     })
 
     await it("after", async () => {

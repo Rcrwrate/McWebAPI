@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.minecraft.block.Block;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.WorldServer;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,6 +21,7 @@ import com.sun.net.httpserver.HttpExchange;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.McAccessor;
+import love.shirokasoke.webapi.utils.NBT;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 public class BatchSetBlockHandler implements RouteHandler {
@@ -66,7 +67,7 @@ public class BatchSetBlockHandler implements RouteHandler {
         }
 
         // 预校验所有任务并收集
-        MinecraftServer server = McAccessor.getServer();
+        McAccessor.getServer();
         List<SetBlockTask> batchTasks = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
@@ -97,7 +98,14 @@ public class BatchSetBlockHandler implements RouteHandler {
                 throw new ApiException(400, "Block id not found at tasks[" + i + "]");
             }
 
-            batchTasks.add(new SetBlockTask(world, x, y, z, block, metadata, flag));
+            NBTTagCompound nbt = null;
+            if (taskNode.has("nbt")) {
+                String nbtBase64 = taskNode.path("nbt")
+                    .asText();
+                nbt = NBT.readFromBase64(nbtBase64);
+            }
+
+            batchTasks.add(new SetBlockTask(world, new coordinates(x, y, z, dim), block, metadata, flag, nbt));
         }
 
         String jobId = String.valueOf(ID_GENERATOR.incrementAndGet());
@@ -108,16 +116,28 @@ public class BatchSetBlockHandler implements RouteHandler {
         for (SetBlockTask task : batchTasks) {
             ServerThreadDispatcher.scheduleOnServerThread(() -> {
                 try {
-                    boolean changed = task.world.setBlock(task.x, task.y, task.z, task.block, task.metadata, task.flag);
-                    if (changed) {
+                    int result = SetBlockHandler
+                        .setblock(task.world, task.co, task.block, task.metadata, task.flag, task.nbt);
+                    if ((result & SetBlockHandler.RESULT_CHANGED) != 0) {
+                        job.changedCount.incrementAndGet();
+                    }
+                    if ((result & SetBlockHandler.RESULT_NBT_CHANGED) != 0) {
+                        job.nbtChangedCount.incrementAndGet();
+                    }
+                    if (result != 0) {
                         job.successCount.incrementAndGet();
                     } else {
                         job.failCount.incrementAndGet();
-                        job.addFailure(task.x, task.y, task.z, "setBlock returned false");
+                        job.addFailure(
+                            task.co.posX,
+                            task.co.posY,
+                            task.co.posZ,
+                            task.nbt != null ? "setBlock returned false and target has no TileEntity"
+                                : "setBlock returned false");
                     }
                 } catch (Exception e) {
                     job.failCount.incrementAndGet();
-                    job.addFailure(task.x, task.y, task.z, Logs.e(e));
+                    job.addFailure(task.co.posX, task.co.posY, task.co.posZ, Logs.e(e));
                 } finally {
                     int completed = job.completedCount.incrementAndGet();
                     if (completed >= job.total) {
@@ -155,6 +175,8 @@ public class BatchSetBlockHandler implements RouteHandler {
         node.put("completed", job.completedCount.get());
         node.put("success", job.successCount.get());
         node.put("failed", job.failCount.get());
+        node.put("changed", job.changedCount.get());
+        node.put("nbtchanged", job.nbtChangedCount.get());
         node.put("status", getJobStatus(job));
         node.put("createTime", job.createTime);
         if (job.finishTime > 0) {
@@ -213,6 +235,8 @@ public class BatchSetBlockHandler implements RouteHandler {
         final AtomicInteger completedCount = new AtomicInteger(0);
         final AtomicInteger successCount = new AtomicInteger(0);
         final AtomicInteger failCount = new AtomicInteger(0);
+        final AtomicInteger changedCount = new AtomicInteger(0);
+        final AtomicInteger nbtChangedCount = new AtomicInteger(0);
         final long createTime;
         volatile long finishTime;
         final List<FailureDetail> failures = new ArrayList<>();
@@ -248,19 +272,19 @@ public class BatchSetBlockHandler implements RouteHandler {
     private static class SetBlockTask {
 
         final WorldServer world;
-        final int x, y, z;
+        final coordinates co;
         final Block block;
         final int metadata;
         final int flag;
+        final NBTTagCompound nbt;
 
-        SetBlockTask(WorldServer world, int x, int y, int z, Block block, int metadata, int flag) {
+        SetBlockTask(WorldServer world, coordinates co, Block block, int metadata, int flag, NBTTagCompound nbt) {
             this.world = world;
-            this.x = x;
-            this.y = y;
-            this.z = z;
+            this.co = co;
             this.block = block;
             this.metadata = metadata;
             this.flag = flag;
+            this.nbt = nbt;
         }
     }
 }

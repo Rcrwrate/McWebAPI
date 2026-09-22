@@ -78,7 +78,7 @@ describe(`setBlock performance (concurrency=${CONCURRENCY}, y=${Y_MIN}-${Y_MAX})
         const results = await parallel(tasks, CONCURRENCY);
         const elapsed = performance.now() - start;
 
-        const ok = results.filter(r => r === null).length;
+        const ok = results.filter(r => r.changed).length;
         const avg = elapsed / total;
         const qps = (total / elapsed) * 1000;
 

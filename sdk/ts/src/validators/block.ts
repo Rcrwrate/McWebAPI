@@ -1,5 +1,5 @@
 import Joi from "joi";
-import type { BatchSetBlockJobResult, Block, BlockDetail } from "../types/block";
+import type { BatchSetBlockJobResult, Block, BlockDetail, SetBlockResult } from "../types/block";
 import { ClassInfoSchema, CoordinatesSchema } from "./common";
 import { FluidTankSchema } from "./fluid";
 import { ItemStackSchema, NBTCompoundSchema } from "./item";
@@ -59,7 +59,10 @@ export const SetBlockBodySchema = Joi.object({
     nbt: Joi.string().optional(),
 });
 
-export const SetBlockResultSchema = Joi.valid(null);
+export const SetBlockResultSchema = Joi.object<SetBlockResult>({
+    changed: Joi.boolean().required(),
+    nbtchanged: Joi.boolean().required(),
+});
 
 export const BatchSetBlockTaskSchema = Joi.object({
     x: Joi.number().required(),
@@ -69,6 +72,7 @@ export const BatchSetBlockTaskSchema = Joi.object({
     id: Joi.number().required(),
     metadata: Joi.number().optional(),
     flag: Joi.number().optional(),
+    nbt: Joi.string().optional(),
 });
 
 export const BatchSetBlockSubmitResultSchema = Joi.object({
@@ -91,6 +95,8 @@ export const BatchSetBlockJobResultSchema = Joi.object<BatchSetBlockJobResult>({
     completed: Joi.number().required(),
     success: Joi.number().required(),
     failed: Joi.number().required(),
+    changed: Joi.number().required(),
+    nbtchanged: Joi.number().required(),
     status: BatchSetBlockJobStatusSchema.required(),
     createTime: Joi.number().required(),
     finishTime: Joi.number().optional(),

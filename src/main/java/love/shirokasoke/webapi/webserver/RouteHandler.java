@@ -148,6 +148,9 @@ public interface RouteHandler extends HttpHandler {
         sendResponse(exchange, statusCode, message.getBytes(UTF_8));
     }
 
+    /**
+     * 手动发送完整的响应
+     */
     default void sendResponse(HttpExchange exchange, int statusCode, Object json, boolean direct) throws IOException {
         exchange.getResponseHeaders()
             .set("Content-Type", "application/json");

@@ -58,7 +58,10 @@ export interface SetBlockBody {
     nbt?: string;
 }
 
-export type SetBlockResult = null
+export interface SetBlockResult {
+    changed: boolean;
+    nbtchanged: boolean;
+}
 
 export interface BatchSetBlockTask {
     x: number;
@@ -68,6 +71,7 @@ export interface BatchSetBlockTask {
     id: number;
     metadata?: number;
     flag?: number;
+    nbt?: string;
 }
 
 export interface BatchSetBlockSubmitResult {
@@ -90,6 +94,8 @@ export interface BatchSetBlockJobResult {
     completed: number;
     success: number;
     failed: number;
+    changed: number;
+    nbtchanged: number;
     status: BatchSetBlockJobStatus;
     createTime: number;
     finishTime?: number;
