@@ -24,10 +24,10 @@ import {
     Typography,
     useTheme,
 } from "@mui/material"
-import type { ChunkMapCell, TPSInfo } from "@shirokasoke/webapi-sdk"
+import { type ChunkMapCell, type TPSInfo } from "@shirokasoke/webapi-sdk"
+import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
 
 const CHUNK_BLOCKS = 16
 const ZOOM_LEVELS = [1, 2, 4, 8, 16] // pixels per block
@@ -40,6 +40,8 @@ interface ChunkEntry {
     data?: ChunkMapCell[][]
     loading: boolean
     error?: string
+    /** 服务端未加载该区块 */
+    unloaded?: boolean
 }
 
 function buildHeightCanvas(data: ChunkMapCell[][]): HTMLCanvasElement {
@@ -107,6 +109,9 @@ export default function MapPage() {
     const renderFnRef = useRef<() => void>(() => { })
     const animFrameRef = useRef(0)
     const loadingSetRef = useRef(new Set<string>())
+    // 当前维度已加载区块坐标集合（"cx,cz"），需先于区块图像获取
+    const loadedChunksRef = useRef<Set<string>>(new Set())
+    const loadedChunksDimRef = useRef<number | null>(null)
 
     // Concurrency limiter
     const MAX_CONCURRENT = 8
@@ -164,6 +169,42 @@ export default function MapPage() {
             .catch(() => { })
     }, [api != undefined])
 
+    // 调整加载顺序：先获取当前维度的已加载区块列表，再加载区块图像。
+    // 列表中不存在的区块直接标记为未加载，不发请求。
+    useEffect(() => {
+        if (!api) return
+        let cancelled = false
+        const load = async () => {
+            try {
+                const data = await api.getChunks()
+                if (cancelled) return
+                const set = new Set<string>()
+                for (const c of data[String(dim)]?.chunks ?? []) {
+                    if (c.isChunkLoaded) set.add(`${c.chunkX},${c.chunkZ}`)
+                }
+                // 之前标记为未加载、现已加载的区块，清除缓存以便重新加载
+                const cache = cacheRef.current
+                for (const [k, v] of cache) {
+                    if (!v.unloaded) continue
+                    const [, dimStr, cxStr, czStr] = k.split(":")
+                    if (Number(dimStr) === dim && set.has(`${cxStr},${czStr}`)) {
+                        cache.delete(k)
+                    }
+                }
+                loadedChunksRef.current = set
+                loadedChunksDimRef.current = dim
+                // 跨过渲染节流边界，确保列表到达后立即重绘（渲染 effect 按 16/ppb 个 tick 节流）
+                setRenderTick((t) => t + Math.max(1, Math.ceil(16 / ppb)))
+            } catch { }
+        }
+        load()
+        const timer = setInterval(load, 15000)
+        return () => {
+            cancelled = true
+            clearInterval(timer)
+        }
+    }, [api != undefined, dim])
+
     // Helper to get dimension label
     const getDimLabel = (dimId: number) => {
         const info = worlds[String(dimId)]
@@ -193,8 +234,15 @@ export default function MapPage() {
             const key = cacheKey(cx, cz)
             const cache = cacheRef.current
             const existing = cache.get(key)
-            if (existing && (existing.img || existing.heightCanvas || existing.error)) return
+            if (existing && (existing.img || existing.heightCanvas || existing.error || existing.unloaded)) return
             if (loadingSetRef.current.has(key)) return
+
+            // 不在已加载列表中的区块不请求，直接标记为未加载
+            if (loadedChunksDimRef.current === dim && !loadedChunksRef.current.has(`${cx},${cz}`)) {
+                cache.set(key, { loading: false, unloaded: true })
+                setRenderTick((t) => t + 1)
+                return
+            }
 
             loadingSetRef.current.add(key)
             cache.set(key, { loading: true })
@@ -304,6 +352,24 @@ export default function MapPage() {
                     ctx.beginPath()
                     ctx.arc(sx + chunkPx / 2, sy + chunkPx / 2, Math.min(12, chunkPx / 4), 0, Math.PI * 2)
                     ctx.stroke()
+                } else if (loadedChunksDimRef.current !== dim) {
+                    // 已加载区块列表尚未获取，暂不请求区块图像
+                    ctx.fillStyle =
+                        theme.palette.mode === "dark"
+                            ? "rgba(40, 40, 80, 0.2)"
+                            : "rgba(200, 200, 240, 0.2)"
+                    ctx.fillRect(sx, sy, chunkPx, chunkPx)
+                } else if (entry?.unloaded || !loadedChunksRef.current.has(`${cx},${cz}`)) {
+                    // drawUnloadedChunk(ctx, sx, sy, chunkPx)
+                    ctx.fillStyle =
+                        theme.palette.mode === "dark"
+                            ? "rgba(40, 40, 80, 0.2)"
+                            : "rgba(200, 200, 240, 0.2)"
+                    ctx.fillRect(sx, sy, chunkPx, chunkPx)
+                    ctx.fillStyle = theme.palette.mode === "dark" ? "#9e9e9e" : "#757575"
+                    ctx.font = "10px monospace"
+                    ctx.textAlign = "center"
+                    ctx.fillText("✕", sx + chunkPx / 2, sy + chunkPx / 2 + 4)
                 } else {
                     chunksToLoad.push([cx, cz])
                 }

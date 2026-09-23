@@ -8,9 +8,12 @@ import { RContainer } from "@/components/RContainer"
 import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
 import BoltIcon from "@mui/icons-material/Bolt"
+import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import HelpIcon from "@mui/icons-material/Help"
 import Inventory2Icon from "@mui/icons-material/Inventory2"
+import PauseCircleOutlinedIcon from "@mui/icons-material/PauseCircleOutlined"
+import PlayCircleOutlinedIcon from "@mui/icons-material/PlayCircleOutlined"
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing"
 import RadarIcon from "@mui/icons-material/Radar"
 import RefreshIcon from "@mui/icons-material/Refresh"
@@ -30,6 +33,7 @@ import {
     Paper,
     Select,
     Stack,
+    Switch,
     Typography
 } from "@mui/material"
 import { keyframes } from "@mui/system"
@@ -56,23 +60,28 @@ const TYPE_META: Record<GT5MachineType, TypeMeta> = {
 }
 
 const TYPE_ORDER: GT5MachineType[] = ["MULTIBLOCK", "SINGLE", "GENERATOR", "HATCH", "UNKNOWN"]
-type MachineStatus = "running" | "maintenance" | "error" | "idle"
+type MachineStatus = "running" | "maintenance" | "error" | "stop" | "idle"
+/** 状态顺序：图例、进度条分段与列筛选共用 */
+const STATUS_ORDER: MachineStatus[] = ["running", "stop", "maintenance", "error", "idle"]
 const STATUS_COLORS: Record<MachineStatus, string> = {
     running: "success.main",
     maintenance: "warning.main",
     error: "error.main",
+    stop: "info.main",
     idle: "text.disabled",
 }
 const STATUS_LABELS: Record<MachineStatus, string> = {
     running: "运行中",
     maintenance: "需要维护",
     error: "错误",
+    stop: "暂停",
     idle: "空闲",
 }
-const STATUS_CHIP_COLOR: Record<MachineStatus, "success" | "warning" | "error" | "default"> = {
+const STATUS_CHIP_COLOR: Record<MachineStatus, "success" | "info" | "warning" | "error" | "default"> = {
     running: "success",
     maintenance: "warning",
     error: "error",
+    stop: "info",
     idle: "default",
 }
 
@@ -120,7 +129,7 @@ const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
         width: 120,
         filterable: true,
         type: "singleSelect",
-        valueOptions: ["running", "maintenance", "error", "idle"] as MachineStatus[],
+        valueOptions: STATUS_ORDER,
         renderCell: (params) => (
             <Chip size="small" variant={params.row.status === "idle" ? "outlined" : "filled"}
                 color={STATUS_CHIP_COLOR[params.row.status]}
@@ -193,12 +202,13 @@ function machineStatus(m: GT5MachineInfo): MachineStatus {
         }
     }
     if (m.state.isActive) return "running"
-    // isAllowedToWork=false 但无停机原因 = 用户用软锤手动关闭，非故障，按空闲处理
+    // isAllowedToWork=false 但无停机原因 = 用户用软锤手动关闭，非故障
+    if (!m.state.isAllowedToWork) return "stop"
     return "idle"
 }
 
 function statusSegments(counts: Record<MachineStatus, number>): MultiSegment[] {
-    return (["running", "maintenance", "error", "idle"] as MachineStatus[]).map((s) => ({
+    return STATUS_ORDER.map((s) => ({
         value: counts[s],
         color: STATUS_COLORS[s],
         label: STATUS_LABELS[s],
@@ -206,7 +216,7 @@ function statusSegments(counts: Record<MachineStatus, number>): MultiSegment[] {
 }
 
 function countByStatus(machines: GT5Row[]): Record<MachineStatus, number> {
-    const counts: Record<MachineStatus, number> = { running: 0, maintenance: 0, error: 0, idle: 0 }
+    const counts: Record<MachineStatus, number> = { running: 0, maintenance: 0, error: 0, idle: 0, stop: 0 }
     for (const m of machines) counts[m.status]++
     return counts
 }
@@ -217,6 +227,10 @@ export default function GT5Page() {
     const [liveMachines, setLiveMachines] = useState<GT5Row[]>([])
     const [loaded, setLoaded] = useState(false)
     const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
+   
+    // 正在启停的机器 id，用于禁用开关与操作按钮
+    const [busyId, setBusyId] = useState<string | null>(null)
+    const busyRef = useRef<string | null>(null)
     useEffect(() => {
         setMachines(getSavedMachines())
         setLoaded(true)
@@ -262,6 +276,27 @@ export default function GT5Page() {
             return () => sse.abort()
         }
     }
+
+    const doAction = async (target: GT5Row, action: "start" | "stop") => {
+        if (!api || busyRef.current !== null) return
+        busyRef.current = target.id
+        setBusyId(target.id)
+        try {
+            const result = await api.setGT5MachineStatus({ x: target.x, y: target.y, z: target.z, dim: target.dimension, action })
+            const verb = action === "start" ? "启动" : "暂停"
+            if (result.changed === false) {
+                enqueueSnackbar(`${target.localName} 已处于${verb}状态`, { variant: "info" })
+            } else {
+                enqueueSnackbar(`${target.localName} 已${verb}, 状态将延后更新`, { variant: "success" })
+            }
+        } catch (e) {
+            enqueueSnackbar(e instanceof Error ? e.message : "操作失败", { variant: "error" })
+        } finally {
+            busyRef.current = null
+            setBusyId(null)
+        }
+    }
+
     let cleanup: (() => void)[] = []
     useEffect(() => {
         api?.checkSSE().then((r) => {
@@ -283,6 +318,28 @@ export default function GT5Page() {
             </RContainer>
         )
     }
+
+    // 开关列依赖组件内的启停逻辑，故在此拼接（紧随「状态」列之后）
+    const columns: GridColDef<GT5Row>[] = MACHINE_COLUMNS.map((i) => {
+        i.align = "center"
+        i.headerAlign = "center"
+        return i
+    })
+    const statusIndex = columns.findIndex((c) => c.field === "status")
+    columns.splice(statusIndex < 0 ? columns.length : statusIndex + 1, 0, {
+        field: "switch",
+        headerName: "开关",
+        width: 90,
+        type: "boolean",
+        align: "center",
+        headerAlign: "center",
+        valueGetter: (_v, row) => row.state.isAllowedToWork,
+        renderCell: (params) => (
+            <Switch size="small" color="success" checked={params.row.state.isAllowedToWork}
+                disabled={busyId !== null}
+                onChange={() => doAction(params.row, params.row.state.isAllowedToWork ? "stop" : "start")} />
+        ),
+    })
 
     return (
         <RContainer>
@@ -323,12 +380,11 @@ export default function GT5Page() {
                     </Typography>
                 ) : <>
                     <MultiProgressLegend
-                        segments={[
-                            { value: 1, color: STATUS_COLORS.running, label: STATUS_LABELS.running },
-                            { value: 0, color: STATUS_COLORS.maintenance, label: STATUS_LABELS.maintenance },
-                            { value: 0, color: STATUS_COLORS.error, label: STATUS_LABELS.error },
-                            { value: 0, color: STATUS_COLORS.idle, label: STATUS_LABELS.idle },
-                        ]}
+                        segments={STATUS_ORDER.map((s, i) => ({
+                            value: i === 0 ? 1 : 0,
+                            color: STATUS_COLORS[s],
+                            label: STATUS_LABELS[s],
+                        }))}
                         sx={{ justifyContent: "center", mb: 2 }}
                     />
                     <Grid container spacing={2}>
@@ -403,7 +459,7 @@ export default function GT5Page() {
                                             </Typography>
                                             {live.length > 0 && (
                                                 <Typography variant="caption" color={sc.error ? "error" : "textSecondary"} component="div" sx={{ mt: 0.5 }}>
-                                                    运行 {sc.running} · 维护 {sc.maintenance} · 错误 {sc.error} · 空闲 {sc.idle}
+                                                    运行 {sc.running} · 暂停 {sc.stop} · 维护 {sc.maintenance} · 错误 {sc.error} · 空闲 {sc.idle}
                                                 </Typography>
                                             )}
                                         </CardContent>
@@ -415,7 +471,7 @@ export default function GT5Page() {
                     <Paper sx={{ mt: 3, height: "100vh", width: 1 }}>
                         <DataGrid
                             rows={liveMachines}
-                            columns={MACHINE_COLUMNS.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                            columns={columns}
                             getRowId={(row) => row.id}
                             loading={liveMachines.length == 0}
                             checkboxSelection

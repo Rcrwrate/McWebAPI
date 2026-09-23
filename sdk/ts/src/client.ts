@@ -35,6 +35,7 @@ import type {
     GT5MachineInfo,
     GT5ScanJobResult,
     GT5ScanSubmitResult,
+    GT5StatusResult,
     Item,
     ItemDetail,
     LagAnalyzerData,
@@ -89,6 +90,7 @@ import type {
     GT5MachineInfoSchema,
     GT5ScanJobResultSchema,
     GT5ScanSubmitResultSchema,
+    GT5StatusResultSchema,
     ItemDetailSchema,
     ItemSchema,
     LagAnalyzerDataSchema,
@@ -578,6 +580,16 @@ export class WebApiClient {
      */
     getGT5Machine(params: { x: number; y: number; z: number; dim?: number }): Promise<GT5MachineInfo> {
         return this.request<GT5MachineInfo>(`/gt5${buildQuery(params)}`);
+    }
+
+    /**
+     * 启停单台 GT5 机器
+     *
+     * @returns 使用 {@link GT5StatusResultSchema} 验证；`changed=false` 表示机器本就处于目标状态
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5StatusHandler.java)
+     */
+    setGT5MachineStatus(params: { x: number; y: number; z: number; dim?: number; action: "start" | "stop" }): Promise<GT5StatusResult> {
+        return this.request<GT5StatusResult>(`/gt5/status${buildQuery(params)}`, { method: "POST" });
     }
 
     /**

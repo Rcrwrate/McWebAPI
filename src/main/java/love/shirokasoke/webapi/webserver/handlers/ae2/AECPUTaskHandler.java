@@ -61,7 +61,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
-            throw new ApiException(400, "Method must be POST");
+            throw new ApiException(405, "Method must be POST");
         }
 
         Context context = AEinit(exchange);

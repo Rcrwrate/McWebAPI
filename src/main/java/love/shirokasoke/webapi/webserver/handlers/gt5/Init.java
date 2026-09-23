@@ -7,6 +7,7 @@ public class Init {
 
     public static void i() {
         RouteRegistry.register(new GT5BaseHandler());
+        RouteRegistry.register(new GT5StatusHandler());
         RouteRegistry.register(new GT5ChunkScanHandler());
         RouteRegistry.register(new GT5BatchHandler());
         if (ServerConfig.useVirtualThreads && ServerConfig.useServerSideEvent) {

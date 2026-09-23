@@ -8,7 +8,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
@@ -37,7 +36,7 @@ public class SetBlockHandler implements RouteHandler {
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
-            throw new ApiException(400, "Method must be POST");
+            throw new ApiException(405, "Method must be POST");
         }
         JsonNode data = getBody(exchange);
         coordinates co = getCoordinates(exchange);
@@ -78,15 +77,11 @@ public class SetBlockHandler implements RouteHandler {
         boolean changed = (result & RESULT_CHANGED) != 0;
         boolean nbtchanged = (result & RESULT_NBT_CHANGED) != 0;
 
-        ObjectNode rep = mapper.createObjectNode()
-            .put("success", changed || nbtchanged)
-            .set(
-                "data",
-                mapper.createObjectNode()
-                    .put("changed", changed)
-                    .put("nbtchanged", nbtchanged));
-
-        sendResponse(exchange, 200, rep, true);
+        sendResponse(
+            exchange,
+            mapper.createObjectNode()
+                .put("changed", changed)
+                .put("nbtchanged", nbtchanged));
     }
 
     public static int setblock(WorldServer world, coordinates co, Block block, int metadataIn, int flag,

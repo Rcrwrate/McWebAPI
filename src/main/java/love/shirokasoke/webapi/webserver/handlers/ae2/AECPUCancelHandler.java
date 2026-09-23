@@ -34,7 +34,7 @@ public class AECPUCancelHandler extends AEBaseHandler {
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("DELETE")) {
-            throw new ApiException(400, "Method must be DELETE");
+            throw new ApiException(405, "Method must be DELETE");
         }
 
         IGrid grid = AEinit(exchange).grid;

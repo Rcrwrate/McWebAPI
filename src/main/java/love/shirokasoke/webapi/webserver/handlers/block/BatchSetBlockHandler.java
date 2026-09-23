@@ -48,7 +48,7 @@ public class BatchSetBlockHandler implements RouteHandler {
         } else if ("GET".equals(method)) {
             handleQuery(exchange);
         } else {
-            throw new ApiException(400, "Method must be POST or GET");
+            throw new ApiException(405, "Method must be POST or GET");
         }
     }
 
@@ -63,7 +63,7 @@ public class BatchSetBlockHandler implements RouteHandler {
             throw new ApiException(400, "Task array is empty");
         }
         if (size > 65536) {
-            throw new ApiException(400, "Too many tasks (max 65536)");
+            throw new ApiException(429, "Too many tasks (max 65536)");
         }
 
         // 预校验所有任务并收集

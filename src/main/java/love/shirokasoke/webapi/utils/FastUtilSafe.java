@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 /**
- * {@link ObjectOpenHashSet} 的“非阻塞遍历”工具。
+ * {@link ObjectOpenHashSet} 的多线程用安全访问工具。
  *
  * <p>
  * 不做任何长度假设：直接扫 key 表（不会越界），收集阶段按需扩容，不预分配定长数组
@@ -22,7 +22,7 @@ public final class FastUtilSafe {
      *
      * @param set      目标集合，可为 null（此时直接返回，不回调）
      * @param consumer 元素回调，可为 null（此时直接返回）
-     * @return 实际读到的元素个数；不是 {@link SafeObjectOpenHashSet} 且反射不可用时返回 -1（调用方应回退）
+     * @return 实际读到的元素个数
      */
     public static <T> int forEach(final ObjectOpenHashSet<T> set, final Consumer<? super T> consumer) {
         if (set == null || consumer == null) {

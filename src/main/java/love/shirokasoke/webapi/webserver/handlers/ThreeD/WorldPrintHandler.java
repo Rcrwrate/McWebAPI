@@ -63,7 +63,7 @@ public class WorldPrintHandler implements RouteHandler {
         } else if ("GET".equals(method)) {
             handleQuery(exchange);
         } else {
-            throw new ApiException(400, "Method must be PUT or GET");
+            throw new ApiException(405, "Method must be PUT or GET");
         }
     }
 
@@ -103,7 +103,7 @@ public class WorldPrintHandler implements RouteHandler {
         int cols = img.getWidth() / 16;
         int rows = img.getHeight() / 16;
         if ((long) cols * rows > MAX_BLOCKS || rows > y) {
-            throw new ApiException(400, "Too many blocks: " + cols + "x" + rows);
+            throw new ApiException(429, "Too many blocks: " + cols + "x" + rows);
         }
 
         // 图片列在水平面内的延展方向（与 ExtendedAABB.rotateTowards(facing) 的块内旋转保持一致，

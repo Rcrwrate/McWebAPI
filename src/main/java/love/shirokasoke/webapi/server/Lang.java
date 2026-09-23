@@ -52,11 +52,11 @@ public class Lang {
             }
         }
 
-        // GT5 在 preInit 阶段把每个 Material 的本地化名冻结进 mLocalizedName 缓存字段，
-        // 此后所有 %material 占位符都走该缓存，而非动态查询翻译表。
-        // 这里在 inject 完成后强制刷新该缓存。
         // refreshGTMaterialLocalizedNames();
-        // 2.9.0似乎移除了lang缓存，等待验证
+        // 已验证（GT5U 5.09.54.20）：Materials.mLocalizedName 缓存字段已移除，
+        // %material 占位符经 Materials.getLocalizedNameForItem / OrePrefixes.getLocalizedNameForItemWithInflection，
+        // 最终由 IOreMaterial.getLocalizedName() 每次动态调用 StatCollector.translateToLocal 查询翻译表。
+        // 因此 StringTranslate.inject 后无需刷新缓存，refreshGTMaterialLocalizedNames() 已废弃，仅保留备查。
     }
 
     /**

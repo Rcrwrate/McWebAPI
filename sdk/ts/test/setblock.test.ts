@@ -41,7 +41,9 @@ describe(`setBlocks?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
     })
     await it("set again", async () => {
         assert.ok(targetBlock)
-        assert.rejects(api.setBlock({ x, y, z, dim }, { id: targetBlock.id, metadataIn: 0 }))
+        const r = await api.setBlock({ x, y, z, dim }, { id: targetBlock.id, metadataIn: 0 })
+        assert.strictEqual(r.changed, false);
+        assert.strictEqual(r.nbtchanged, false);
     })
 
     await it("after", async () => {

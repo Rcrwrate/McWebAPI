@@ -139,6 +139,11 @@ export type GT5MachineInfo = {
     nbt: NBTCompound;
 } & GT5Machine;
 
+export interface GT5StatusResult {
+    /** 状态是否实际发生变化；机器已处于目标状态时为 false */
+    changed: boolean;
+}
+
 // ========== GT5 Batch ==========
 
 export interface GT5BatchMachineCoord {

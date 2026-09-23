@@ -25,7 +25,7 @@ public class GT5BatchSSEHandler implements SSEHandler {
     public void run(HttpExchange exchange, SSEClient client) throws Exception {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
-            throw new ApiException(400, "method must be POST");
+            throw new ApiException(405, "method must be POST");
         }
         final Map<String, String> params = parseQueryParams(exchange);
         final int sleep = 1000 * Integer.valueOf(params.getOrDefault("interval", "5"));

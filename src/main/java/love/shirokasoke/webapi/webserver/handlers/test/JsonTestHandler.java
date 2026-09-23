@@ -21,7 +21,7 @@ public class JsonTestHandler implements RouteHandler {
     public void run(HttpExchange exchange) throws Exception {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
-            throw new ApiException(400, "method must be POST");
+            throw new ApiException(405, "method must be POST");
         }
 
         String req;

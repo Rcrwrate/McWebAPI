@@ -69,8 +69,8 @@ interface StyledSegment {
 
 interface MachineStatusMeta {
     label: string
-    color: "success" | "warning" | "error" | undefined
-    paletteColor: "success.main" | "warning.main" | "error.main" | "text.disabled"
+    color: "success" | "info" | "warning" | "error" | undefined
+    paletteColor: "success.main" | "info.main" | "warning.main" | "error.main" | "text.disabled"
     process: number
 }
 
@@ -137,6 +137,10 @@ function getMachineStatus(machine: GT5MachineInfo): MachineStatusMeta {
 
     if (machine.state.isActive) {
         return { label: "运行中", color: "success", paletteColor: "success.main", process }
+    }
+    // isAllowedToWork=false 但无停机原因 = 用户主动暂停（软锤/接口），非故障
+    if (!machine.state.isAllowedToWork) {
+        return { label: "暂停", color: "info", paletteColor: "info.main", process }
     }
     return { label: "空闲", color: undefined, paletteColor: "text.disabled", process }
 }
