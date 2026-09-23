@@ -112,3 +112,50 @@ describe(`batchSetBlock?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
         assert.ok(loadResult.isActive)
     })
 })
+
+describe(`batchSetBlock with nbt?x=${x}&y=${y}&z=${z}&dim=-1`, async () => {
+    const dim = -1;
+    /** 原版箱子，用于验证 TileEntity 的 NBT 写入 */
+    const id = 3711;
+    const metadata = 16;
+    const nbt = "AwABeP///8MIAAJpZAAjdGlsZS5wcm9qZWN0cmVkLmlsbHVtaW5hdGlvbi5sYW1wfDADAAF6AAAAZgMAAXkAAAB0AQADaW52AQEAA3BvdwAEAAVzY2hlZP//////////AA==";
+
+    await it("load", async () => {
+        const loadResult = await api.loadChunk({ x, z, dim, duration: 120 })
+        assert.ok(loadResult.durationSec == 120)
+        assert.ok(v.ChunkLoadResultSchema.validate(loadResult).error == undefined)
+        await sleep(5000)
+    })
+
+    const runBatch = async (task: BatchSetBlockTask) => {
+        const submitResult = await api.batchSetBlock([task]);
+        assert.ok(v.BatchSetBlockSubmitResultSchema.validate(submitResult).error == undefined)
+        assert.strictEqual(submitResult.total, 1);
+        return api.waitForBatchSetBlockJob(submitResult.id);
+    }
+
+    await it("set with nbt", async () => {
+        const jobResult = await runBatch({ x, y, z, dim, id, metadata, flag: 2, nbt });
+        assert.ok(v.BatchSetBlockJobResultSchema.validate(jobResult).error == undefined)
+        // 方块被替换 + NBT 写入成功，两个位都命中
+        assert.strictEqual(jobResult.changed, 1)
+        assert.strictEqual(jobResult.nbtchanged, 1)
+        const after = await api.getBlock({ x, y, z, dim });
+        assert.ok(after.tileEntity)
+        assert.notStrictEqual(after.metadata, 0)
+    })
+
+    await it("nbt only", async () => {
+        // 方块最终状态未变化，但 NBT 仍写入 → 只命中 nbtchanged
+        const jobResult = await runBatch({ x, y, z, dim, id, metadata, flag: 2, nbt });
+        assert.strictEqual(jobResult.changed, 0)
+        assert.strictEqual(jobResult.nbtchanged, 1)
+        assert.strictEqual(jobResult.success, 1)
+        assert.strictEqual(jobResult.failed, 0)
+    })
+
+    await it("clean", async () => {
+        const loadResult = await api.unloadChunk({ x, z, dim })
+        assert.ok(loadResult.isActive)
+    })
+})

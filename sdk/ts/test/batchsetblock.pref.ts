@@ -58,14 +58,14 @@ describe(`batchSetBlock performance (y=${Y_MIN}-${Y_MAX})`, async () => {
     console.log(`[perf] Picked chunk (${picked.chunkX}, ${picked.chunkZ}), baseX=${baseX}, baseZ=${baseZ}, total=${total} blocks`);
 
     // 记录原始方块以便恢复
-    const originals = new Map<string, { id: number; metadata: number }>();
+    const originals = new Map<string, { id: number; metadata: number, nbt?: string }>();
 
     await it(`getBlock before batch (snapshot)`, async () => {
         const tasks = coords.map(c => () => api.getBlock({ x: c.x, y: c.y, z: c.z, dim: 0 }));
         const results = await parallel(tasks, CONCURRENCY);
         for (let i = 0; i < coords.length; i++) {
             const key = `${coords[i].x},${coords[i].y},${coords[i].z}`;
-            originals.set(key, { id: results[i].block.id, metadata: results[i].metadata });
+            originals.set(key, { id: results[i].block.id, metadata: results[i].metadata, nbt: results[i]?.tileEntity?.nbt.nbtWrite });
         }
         console.log(`[perf] Snapshot done: ${originals.size} blocks recorded`);
     });
@@ -100,7 +100,7 @@ describe(`batchSetBlock performance (y=${Y_MIN}-${Y_MAX})`, async () => {
     await it(`restore original blocks via batch (${total} blocks)`, async () => {
         const tasks: BatchSetBlockTask[] = coords.map(c => {
             const orig = originals.get(`${c.x},${c.y},${c.z}`)!;
-            return { x: c.x, y: c.y, z: c.z, dim: 0, id: orig.id, metadata: orig.metadata, flag: 2 };
+            return { x: c.x, y: c.y, z: c.z, dim: 0, id: orig.id, metadata: orig.metadata, flag: 2, nbt: orig.nbt };
         });
 
         const start = performance.now();
