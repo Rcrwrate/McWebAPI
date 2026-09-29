@@ -12,6 +12,7 @@ public final class Configs {
         ConfigurationManager.registerConfig(ServerConfig.class);
 
         ConfigurationManager.registerConfig(SecurityConfig.class);
+        ConfigurationManager.registerConfig(McpConfig.class);
         ConfigurationManager.registerConfig(StaticResourceConfig.class);
         ConfigurationManager.registerConfig(ItemThreadConfig.class);
         ConfigurationManager.registerConfig(AE2Config.class);

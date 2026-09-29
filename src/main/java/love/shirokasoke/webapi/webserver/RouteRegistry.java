@@ -57,6 +57,10 @@ public class RouteRegistry {
         register(new love.shirokasoke.webapi.webserver.handlers.LagAnalyzerHandler());
         register(new love.shirokasoke.webapi.webserver.handlers.WorldInfoHandler());
 
+        if (love.shirokasoke.webapi.config.McpConfig.enable) {
+            register(new love.shirokasoke.webapi.webserver.mcp.McpHandler());
+        }
+
         register(new love.shirokasoke.webapi.webserver.handlers.NotFoundHandler());
     }
 }
