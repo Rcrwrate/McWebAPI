@@ -53,11 +53,6 @@ public class AECPUTaskHandler extends AEBaseHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Submit AE crafting task. POST body: {id, damage, amount, cpu?}";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {

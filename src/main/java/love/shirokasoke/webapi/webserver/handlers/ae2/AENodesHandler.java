@@ -26,11 +26,6 @@ public class AENodesHandler extends AEBaseHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "List all nodes in the AE network";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         Context context = AEinit(exchange);
 

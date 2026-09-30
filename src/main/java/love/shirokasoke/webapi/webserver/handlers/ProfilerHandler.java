@@ -30,11 +30,6 @@ public class ProfilerHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Returns detailed server performance profiling information including dimensions, chunks, entities, and tile entities";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         MinecraftServer server = McAccessor.getServer();
 

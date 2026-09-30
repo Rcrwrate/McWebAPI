@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.StatCollector;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,9 +41,25 @@ public interface RouteHandler extends HttpHandler {
     String getPath();
 
     /**
-     * Get description of this route for documentation
+     * 语言文件通过 {@link love.shirokasoke.webapi.config.LocalizationConfig#langFiles} 注入，
+     * 默认位于 {@code assets/webapi/lang/}
      */
+    default String getDescriptionKey() {
+        String path = getPath();
+        path = path.replaceAll("^/+", "")
+            .replaceAll("/+$", "")
+            .replace('/', '.');
+        if (path.isEmpty()) {
+            path = "root";
+        }
+        return "webapi.route." + path + ".description";
+    }
+
     default String getDescription() {
+        String key = getDescriptionKey();
+        if (StatCollector.canTranslate(key)) {
+            return StatCollector.translateToLocal(key);
+        }
         return "No description available";
     }
 
@@ -196,6 +213,7 @@ public interface RouteHandler extends HttpHandler {
                 (mapper.createObjectNode()
                     .put("success", false)
                     .put("message", message)
+                    .put("desc", getDescription())
                     .put("stack", stack))));
     }
 

@@ -24,9 +24,12 @@ public class StaticFileHandler implements RouteHandler {
         return path;
     }
 
+    /**
+     * 静态资源文件共用同一条描述，不按具体路径生成键
+     */
     @Override
-    public String getDescription() {
-        return "Serve static files like favicon.ico";
+    public String getDescriptionKey() {
+        return "webapi.route.static.description";
     }
 
     @Override

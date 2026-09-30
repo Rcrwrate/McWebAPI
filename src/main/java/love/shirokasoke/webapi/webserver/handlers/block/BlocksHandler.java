@@ -12,18 +12,13 @@ import love.shirokasoke.webapi.utils.McAccessor;
 import love.shirokasoke.webapi.webserver.RouteHandler;
 
 /**
- * 获取所有已注册的物品列表
+ * 获取所有已注册的方块列表
  */
 public class BlocksHandler implements RouteHandler {
 
     @Override
     public String getPath() {
         return "/blocks";
-    }
-
-    @Override
-    public String getDescription() {
-        return "获取服务器中所有已注册的物品列表";
     }
 
     @Override

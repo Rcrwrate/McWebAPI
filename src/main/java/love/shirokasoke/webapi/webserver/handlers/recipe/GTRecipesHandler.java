@@ -50,11 +50,6 @@ public class GTRecipesHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "查询 GT5 机器配方";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         McAccessor.getServer();
 

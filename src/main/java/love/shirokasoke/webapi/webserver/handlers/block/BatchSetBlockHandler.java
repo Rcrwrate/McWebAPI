@@ -36,11 +36,6 @@ public class BatchSetBlockHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Batch setblock via task queue. POST to submit, GET?id= to query result.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         if ("POST".equals(method)) {

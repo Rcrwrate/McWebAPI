@@ -20,11 +20,6 @@ public class EntityHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "根据 entityId 查询单个实体详情，Query 参数: id";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
         int entityId = Integer.parseInt(params.get("id"));

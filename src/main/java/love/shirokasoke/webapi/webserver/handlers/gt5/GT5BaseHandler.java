@@ -17,11 +17,6 @@ public class GT5BaseHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "GT5 machine base endpoint. Query params: x, y, z, dim (optional, default=0). Detects if a block is a GT5 machine (multiblock/single-block/hatch) and returns its working state.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         ObjectNode data = buildMachineInfo(GT5init(exchange));
         sendResponse(exchange, data);

@@ -20,11 +20,6 @@ public class WorldInfoHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Returns WorldInfo";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         ObjectNode root = mapper.createObjectNode();
 

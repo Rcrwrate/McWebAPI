@@ -22,11 +22,6 @@ public class AECPUSSEHandler implements SSEHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "AE Crafting CPUs";
-    }
-
-    @Override
     public void run(HttpExchange exchange, SSEClient client) throws Exception {
         final Map<String, String> params = parseQueryParams(exchange);
         final int sleep = 1000 * Integer.valueOf(params.getOrDefault("interval", "5"));

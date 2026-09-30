@@ -24,11 +24,6 @@ public class PrintSizeHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "PUT 上传图片，大致计算NBT大小";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         if (!"PUT".equals(exchange.getRequestMethod())) {
             throw new ApiException(405, "Method must be PUT");

@@ -15,12 +15,6 @@ public class McpHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "MCP (Model Context Protocol) Streamable HTTP endpoint. POST a JSON-RPC 2.0 message; "
-            + "supports initialize / tools/list / tools/call / ping.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();
         setNoCache(exchange);

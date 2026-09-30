@@ -18,11 +18,6 @@ public class GT5BatchHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Batch query GT5 machine info. POST with JSON body {machines:[{x,y,z,dim},...]} to submit; GET with id to query; PATCH with id to re-execute.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();
         switch (method.toUpperCase()) {

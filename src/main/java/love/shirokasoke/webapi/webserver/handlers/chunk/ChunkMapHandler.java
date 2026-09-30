@@ -83,11 +83,6 @@ public class ChunkMapHandler extends ChunkHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Get chunk top-layer map image (PNG). Query: chunkX, chunkZ, dim (optional) or x, z, dim (optional)";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
         ChunkCoord cc = getCo(params);

@@ -17,11 +17,6 @@ public class ChunkHandler implements RouteHandler {
         return "/chunk";
     }
 
-    @Override
-    public String getDescription() {
-        return "Get chunk information at specified coordinates. Query params: x, y, z, dim (optional, default=0) or chunkX, chunkZ, dim (optional, default=0)";
-    }
-
     public class ChunkCoord extends ChunkCoordIntPair {
 
         public int dimension;

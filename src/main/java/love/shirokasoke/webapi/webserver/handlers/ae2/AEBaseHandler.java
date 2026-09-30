@@ -16,11 +16,6 @@ public class AEBaseHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "AE Base";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         AEinit(exchange);
         ObjectNode response = mapper.createObjectNode()

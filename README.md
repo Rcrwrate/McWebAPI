@@ -45,7 +45,13 @@
 | ----------- | -------- | -------------------- |
 | 2.8.4       | 停止维护 | 2.8.4-0.5-pre        |
 | 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.11-pre |
-| 2.9.0-beta3 | 维护中   | 2.9.0-beta3-0.12-pre |
+| 2.9.0-beta3 | 维护中   | 2.9.0-beta3-0.14-pre |
+
+## 其他mod
+
+[![](https://img.shields.io/github/v/release/Rcrwrate/MCWebAPI?logo=github&label=MCWebAPI)](https://github.com/Rcrwrate/MCWebAPI)
+[![](https://img.shields.io/github/v/release/Rcrwrate/AggressivePatch?logo=github&label=AggressivePatch)](https://github.com/Rcrwrate/AggressivePatch)
+[![](https://img.shields.io/github/v/release/Rcrwrate/CropsPower?logo=github&label=CropsPower)](https://github.com/Rcrwrate/CropsPower)
 
 ## Lib下载(可选)
 
@@ -198,7 +204,15 @@ README更新不一定即时，可以在下方两个仓库中寻找预导出的�
 | ------------ | ------------------------ | -------------------- |
 | `/3d/player` | 打印完投递到玩家背包     | 2.9.0-beta2-0.9-pre  |
 | `/3d/world`  | 直接在世界中进行 3D 打印 | 2.9.0-beta2-0.9-pre  |
-| `/3d/test`   | 计算 3D 打印体积         | 2.9.0-beta2-0.11-pre |
+| `/3d/size`   | 计算 3D 打印体积         | 2.9.0-beta2-0.11-pre |
+
+### MCP(实验性)
+
+| 功能   | 说明 | 引入版本             |
+| ------ | ---- | -------------------- |
+| `/mcp` | --   | 2.9.0-beta2-0.14-pre |
+
+[详细说明点此查阅](./src/main/java/love/shirokasoke/webapi/webserver/mcp/README.md) 
 
 ## BUG
 

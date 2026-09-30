@@ -77,11 +77,6 @@ public class GT5ChunkScanHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Async scan all GT5 machines in a chunk (split into 256 cell sub-tasks). POST with chunkX & chunkZ (or x & z), dim to submit; GET with id to query.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();
         if ("POST".equalsIgnoreCase(method)) {

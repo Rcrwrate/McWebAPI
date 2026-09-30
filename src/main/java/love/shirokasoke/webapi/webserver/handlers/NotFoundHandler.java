@@ -21,11 +21,6 @@ public class NotFoundHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Returns 404";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         ObjectNode response = mapper.createObjectNode();
         response.put("modid", MyMod.MODID);

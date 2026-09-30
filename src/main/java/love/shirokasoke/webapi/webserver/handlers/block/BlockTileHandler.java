@@ -42,11 +42,6 @@ public class BlockTileHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Get block top-layer tile image (PNG). Query: id/registryName, meta (optional, default=0)";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
 

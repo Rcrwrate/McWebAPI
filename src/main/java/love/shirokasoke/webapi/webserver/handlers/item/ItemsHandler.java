@@ -18,11 +18,6 @@ public class ItemsHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "获取服务器中所有已注册的物品列表";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         McAccessor.getServer();
 

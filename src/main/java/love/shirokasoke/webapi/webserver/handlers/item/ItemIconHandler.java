@@ -22,11 +22,6 @@ public class ItemIconHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Returns item icon PNG by base64-encoded ItemStack NBT JSON. Query: ?id=<base64>";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         Map<String, String> params = parseQueryParams(exchange);
         if (params == null || !params.containsKey("id")) {

@@ -40,11 +40,6 @@ public class CraftingRecipesHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "查询工作台合成配方（有序/无序）。参数：type=output|input（默认 output），id/damage/tag 指定查询物品（省略时返回全部），limit 限制数量，offset 分页偏移。";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         McAccessor.getServer();
 

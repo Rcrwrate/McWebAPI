@@ -31,11 +31,6 @@ public class PlayerPrintHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "PUT 上传图片 → OC 3D 打印件，投递到玩家背包（多余掉落在玩家附近）";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         if (!"PUT".equals(exchange.getRequestMethod())) {
             throw new ApiException(405, "Method must be PUT");

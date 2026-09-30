@@ -17,11 +17,6 @@ public class GT5BatchSSEHandler implements SSEHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Batch query GT5 machine info. POST with JSON body {machines:[{x,y,z,dim},...]} to submit; GET with id to query; PATCH with id to re-execute.";
-    }
-
-    @Override
     public void run(HttpExchange exchange, SSEClient client) throws Exception {
         if (!exchange.getRequestMethod()
             .equals("POST")) {

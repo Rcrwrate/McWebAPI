@@ -28,11 +28,6 @@ public class SetBlockHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Setblock";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {

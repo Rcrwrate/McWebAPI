@@ -1,0 +1,81 @@
+# WebAPI route descriptions (English)
+# Key format: webapi.route.<path with '/' -> '.'>.description
+# Injected via LocalizationConfig.langFiles (see assets/webapi/lang/zh_CN.lang for the Chinese version)
+
+# common
+webapi.route.root.description=404
+webapi.route.version.description=Returns basic information about the WebAPI
+webapi.route.WorldInfo.description=Returns WorldInfo
+webapi.route.tps.description=Returns server TPS (Ticks Per Second) information
+webapi.route.profiler.description=Returns detailed server performance profiling information including dimensions, chunks, entities, and tile entities
+webapi.route.lag-analyzer.description=Analyzes potential lag sources: entities (incl. items/XP orbs), tile entities, and memory usage.
+webapi.route.static.description=Serve static files like favicon.ico
+
+# test
+webapi.route.test.description=Test endpoint: returns the item icon file name for id/damage/tag (registered only when DebugConfig.test is enabled).
+webapi.route.test.sse.description=Test endpoint: push numbers 1-49 then a 'success' event over SSE.
+webapi.route.test.nbt.description=Test endpoint: verify NBT sort order-independence, idempotence, and content equality.
+webapi.route.test.json2nbt.description=Test endpoint: parse body {data: "<SNBT>"} into NBT and dump it. POST only.
+
+# MCP
+webapi.route.mcp.description=MCP (Model Context Protocol) Streamable HTTP endpoint. POST a JSON-RPC 2.0 message; supports initialize / tools/list / tools/call / ping.
+
+# item
+webapi.route.item.description=Get item info by numeric item id (pre-exported static file first, live query fallback); includes all subtypes (subs) when the item has subtypes. Query: id
+webapi.route.items.description=List every registered item on the server.
+webapi.route.items.ae.description=List all AE2 definitions: items, parts, materials, and blocks.
+webapi.route.item.icon.description=Returns item icon PNG. Query: id (numeric item id, required), damage (optional), tag (optional, base64 NBT).
+
+# block
+webapi.route.block.description=Get block information at specified coordinates. Query params: x, y, z, dim (optional, default=0)
+webapi.route.blocks.description=List every registered block on the server.
+webapi.route.block.tile.description=Get block top-layer tile image (PNG). Query: id (numeric) or regName, meta (optional, default=0)
+webapi.route.block.fmp.description=List Forge MultiPart parts at coordinates. Query params: x, y, z, dim (optional, default=0).
+webapi.route.setblock.description=Set a single block at coordinates. POST with JSON body {id, metadataIn?, flag?, nbt?}; query params x, y, z, dim (optional, default=0). Returns whether the block and/or NBT changed.
+webapi.route.batchsetblock.description=Batch setblock via task queue. POST to submit, GET?id= to query result.
+
+# chunk
+webapi.route.chunk.description=Get chunk information at specified coordinates. Query params: chunkX & chunkZ, or x & z (world coordinates, converted to chunk coordinates), dim (optional, default=0)
+webapi.route.chunks.description=List loaded chunks for every dimension, including chunk provider class info and per-chunk data.
+webapi.route.chunk.map.description=Get chunk top-layer map image (PNG). Query: chunkX & chunkZ (or x & z), dim (optional, default 0); raw=true returns the 16x16 top-layer block matrix as JSON instead.
+webapi.route.chunk.force.description=Force-load chunk management. Without 'action': list active force-loaded chunks. action=load|unload with chunkX & chunkZ (or x & z), dim, duration (seconds, default 60).
+
+# entity
+webapi.route.entity.description=Get a single entity's details by entity id. Query: id
+webapi.route.entities.description=List all loaded entities for every dimension.
+
+# fluid
+webapi.route.fluidContainers.description=List all registered fluid container data (empty container, filled container, fluid, capacity).
+webapi.route.fluid.icon.description=Returns a fluid icon PNG by numeric fluid id or registry name. Query: id or name (one of them).
+webapi.route.fluids.description=List every registered fluid on the server.
+
+# GT5
+webapi.route.gt5.description=GT5 machine base endpoint. Query params: x, y, z, dim (optional, default=0). Detects if a block is a GT5 machine (multiblock/single-block/hatch) and returns its working state.
+webapi.route.gt5.batch.description=Batch query GT5 machine info. POST with JSON array body [{x,y,z,dim},...] to submit; GET with id to query; PATCH with id to re-execute.
+webapi.route.gt5.batch.sse.description=SSE stream that repeatedly batch-queries GT5 machines. POST with JSON array body [{x,y,z,dim},...]; each completed round is pushed as a 'gt5' event and re-run every interval seconds (default 5).
+webapi.route.gt5.scan.description=Async scan all GT5 machines in a chunk (split into 256 cell sub-tasks). POST with chunkX & chunkZ (or x & z), dim to submit; GET with id to query.
+webapi.route.gt5.status.description=Control a single GT5 machine (enable/disable, same as a soft mallet). POST with query params x, y, z, dim (optional, default=0) and action=start|stop. Returns whether the state changed.
+
+# AE2
+webapi.route.ae.description=AE base endpoint: validates that the block at coordinates is an AE grid host. Query params: x, y, z, dim (optional, default=0).
+webapi.route.ae.nodes.description=List all nodes in the AE network
+webapi.route.ae.cpu.description=List all AE crafting CPUs with their running tasks at coordinates. Query params: x, y, z, dim (optional, default=0).
+webapi.route.ae.cpu.sse.description=SSE stream of AE crafting CPU states/tasks at coordinates. Query params: x, y, z, dim (optional, default=0), interval (seconds, default 5).
+webapi.route.ae.cpu.task.description=Submit an AE crafting task. POST body: {id, Damage?, Count, Type? (item|fluid), tag?, cpu?}; query params x, y, z, dim (optional, default=0).
+webapi.route.ae.cpu.cancel.description=Cancel the crafting task on an AE CPU. DELETE body: {name} (CPU name) or {id} (CPU index), at least one; query params x, y, z, dim (optional, default=0).
+webapi.route.ae.item.description=Query the AE2 network item list at coordinates (cached). Query params: x, y, z, dim (optional, default=0).
+webapi.route.ae.item.sse.description=SSE stream of the AE2 network item list at coordinates. Query params: x, y, z, dim (optional, default=0); push interval from the AE2 item config.
+webapi.route.ae.me.description=Dump the patterns of an ME interface at coordinates (block TileInterface or cable-bus PartInterface). Query params: x, y, z, dim (optional, default=0).
+webapi.route.ae.mes.description=List interface-terminal-visible ME interfaces in the AE network at coordinates. Query params: x, y, z, dim (optional, default=0), pattern=true to include pattern contents.
+webapi.route.ae.me.support.description=List class names of machines visible to the ME interface terminal.
+
+# recipe
+webapi.route.recipes.crafting.description=Query crafting table recipes (shaped/shapeless; uses the pre-built item index when available). Params: type=output|input (default output), id/damage/tag to match an item (omit to list all), limit (max results), offset (pagination).
+webapi.route.recipes.furnace.description=Query furnace smelting recipes. Params: type=output|input (default output), id/damage/tag to match an item (omit to list all), limit (max results), offset (pagination).
+webapi.route.recipes.gt.description=Query GT5 machine recipes (grouped by recipe map). Params: type=output|input (default output), id/damage/tag for items, fluid for fluids, map to restrict one recipe map (unlocalizedName), limit (1-5000, default 200), offset; at least one of id/fluid/map is required.
+webapi.route.recipes.gt.maps.description=List every GT5 recipe map (machine): unlocalizedName + localized name; use the unlocalizedName as the 'map' filter of /recipes/gt.
+
+# 3D print
+webapi.route.3d.player.description=PUT an image -> OC 3D prints delivered to a player's inventory (overflow drops near the player). Query: id or name to select the player, optional label/tooltip.
+webapi.route.3d.size.description=PUT an image to estimate the NBT size of the resulting OC 3D print. Query: optional label/tooltip.
+webapi.route.3d.world.description=PUT an image to place an OC 3D print pixel art in the world (slow queue, one block per task). Query: x, y, z, dim, facing, optional label/tooltip; GET ?id= to query job progress.

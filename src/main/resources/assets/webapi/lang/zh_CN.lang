@@ -1,0 +1,81 @@
+# WebAPI 路由描述（简体中文）
+# 键格式：webapi.route.<路径，'/' 替换为 '.'>.description
+# 由 LocalizationConfig.langFiles 注入（英文版见 assets/webapi/lang/en_US.lang）
+
+# 通用
+webapi.route.root.description=404
+webapi.route.version.description=返回 WebAPI 的基本信息
+webapi.route.WorldInfo.description=返回世界信息（WorldInfo）
+webapi.route.tps.description=返回服务器 TPS（每秒刻数）信息
+webapi.route.profiler.description=返回详细的服务器性能分析信息，包括维度、区块、实体与方块实体
+webapi.route.lag-analyzer.description=分析潜在的卡顿来源：实体（含掉落物/经验球）、方块实体与内存占用。
+webapi.route.static.description=提供静态文件（如 favicon.ico）
+
+# 测试接口
+webapi.route.test.description=测试接口：根据 id/damage/tag 返回物品图标文件名（仅在 DebugConfig.test 启用时注册）。
+webapi.route.test.sse.description=测试接口：通过 SSE 推送数字 1-49，随后推送 'success' 事件。
+webapi.route.test.nbt.description=测试接口：验证 NBT 排序无关性、幂等性与内容相等性。
+webapi.route.test.json2nbt.description=测试接口：将 body {data: "<SNBT>"} 解析为 NBT 并输出。仅支持 POST。
+
+# MCP
+webapi.route.mcp.description=MCP（Model Context Protocol）Streamable HTTP 接口。POST 一个 JSON-RPC 2.0 消息；支持 initialize / tools/list / tools/call / ping。
+
+# 物品
+webapi.route.item.description=按数字物品 id 查询物品信息（优先使用预导出的静态文件，未命中时回退实时查询）；物品有子类型时包含全部子类型（subs）。Query 参数: id
+webapi.route.items.description=获取服务器中所有已注册的物品列表。
+webapi.route.items.ae.description=列出所有 AE2 定义：物品、部件、材料与方块。
+webapi.route.item.icon.description=返回物品图标 PNG。Query 参数: id（数字物品 id，必填）、damage（可选）、tag（可选，base64 NBT）。
+
+# 方块
+webapi.route.block.description=获取指定坐标的方块信息。Query 参数: x, y, z, dim（可选，默认 0）
+webapi.route.blocks.description=获取服务器中所有已注册的方块列表。
+webapi.route.block.tile.description=获取方块顶层贴图（PNG）。Query 参数: id（数字）或 regName，meta（可选，默认 0）
+webapi.route.block.fmp.description=列出坐标处的 Forge MultiPart 部件。Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.setblock.description=在指定坐标放置单个方块。POST JSON body {id, metadataIn?, flag?, nbt?}；Query 参数: x, y, z, dim（可选，默认 0）。返回方块和/或 NBT 是否发生变化。
+webapi.route.batchsetblock.description=通过任务队列批量放置方块（setblock）。POST 提交，GET?id= 查询结果。
+
+# 区块
+webapi.route.chunk.description=获取指定坐标的区块信息。Query 参数: chunkX & chunkZ，或 x & z（世界坐标，自动换算为区块坐标），dim（可选，默认 0）
+webapi.route.chunks.description=列出每个维度已加载的区块，包含区块提供器类信息与逐区块数据。
+webapi.route.chunk.map.description=获取区块顶层地图图像（PNG）。Query 参数: chunkX & chunkZ（或 x & z），dim（可选，默认 0）；raw=true 时改为返回 16x16 顶层方块矩阵 JSON。
+webapi.route.chunk.force.description=强制加载区块管理。不带 action 时列出当前强制加载的区块；action=load|unload 配合 chunkX & chunkZ（或 x & z）、dim、duration（秒，默认 60）。
+
+# 实体
+webapi.route.entity.description=根据 entityId 查询单个实体详情。Query 参数: id
+webapi.route.entities.description=列出每个维度所有已加载的实体。
+
+# 流体
+webapi.route.fluidContainers.description=列出所有已注册的流体容器数据（空容器、装满容器、流体、容量）。
+webapi.route.fluid.icon.description=按数字流体 id 或注册名返回流体图标 PNG。Query 参数: id 或 name（二选一）。
+webapi.route.fluids.description=获取服务器中所有已注册的流体列表。
+
+# GT5
+webapi.route.gt5.description=GT5 机器基础接口。Query 参数: x, y, z, dim（可选，默认 0）。检测方块是否为 GT5 机器（多方块/单方块/仓室）并返回其工作状态。
+webapi.route.gt5.batch.description=批量查询 GT5 机器信息。POST JSON 数组 body [{x,y,z,dim},...] 提交；GET 带 id 查询；PATCH 带 id 重新执行。
+webapi.route.gt5.batch.sse.description=反复批量查询 GT5 机器的 SSE 推送流。POST JSON 数组 body [{x,y,z,dim},...]；每轮完成后作为 'gt5' 事件推送，并按 interval 秒（默认 5）重新执行。
+webapi.route.gt5.scan.description=异步扫描区块内的所有 GT5 机器（拆分为 256 格子的子任务）。POST 带 chunkX & chunkZ（或 x & z）、dim 提交；GET 带 id 查询。
+webapi.route.gt5.status.description=控制单个 GT5 机器（启停，等同于软锤）。POST 带 Query 参数 x, y, z, dim（可选，默认 0）与 action=start|stop。返回状态是否发生变化。
+
+# AE2
+webapi.route.ae.description=AE 基础接口：校验坐标处的方块是否为 AE 网络宿主。Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.nodes.description=列出 AE 网络中的所有节点
+webapi.route.ae.cpu.description=列出坐标处所有 AE 合成 CPU 及其正在执行的任务。Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.cpu.sse.description=坐标处 AE 合成 CPU 状态/任务的 SSE 推送流。Query 参数: x, y, z, dim（可选，默认 0）、interval（秒，默认 5）。
+webapi.route.ae.cpu.task.description=提交 AE 合成任务。POST body: {id, Damage?, Count, Type?（item|fluid）, tag?, cpu?}；Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.cpu.cancel.description=取消 AE CPU 上的合成任务。DELETE body: {name}（CPU 名称）或 {id}（CPU 序号），至少之一；Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.item.description=查询坐标处 AE2 网络的物品列表（带缓存）。Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.item.sse.description=坐标处 AE2 网络物品列表的 SSE 推送流。Query 参数: x, y, z, dim（可选，默认 0）；推送间隔取自 AE2 物品配置。
+webapi.route.ae.me.description=导出坐标处 ME 接口（方块 TileInterface 或线缆 PartInterface）的样板。Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.mes.description=列出坐标处 AE 网络中接口终端可见的 ME 接口。Query 参数: x, y, z, dim（可选，默认 0），pattern=true 时包含样板内容。
+webapi.route.ae.me.support.description=列出 ME 接口终端可见的机器类名。
+
+# 配方
+webapi.route.recipes.crafting.description=查询工作台合成配方（有序/无序，可用时使用预构建物品索引）。参数：type=output|input（默认 output），id/damage/tag 指定查询物品（省略时返回全部），limit 限制数量，offset 分页偏移。
+webapi.route.recipes.furnace.description=查询熔炉熔炼配方。参数：type=output|input（默认 output），id/damage/tag 指定查询物品（省略时返回全部），limit 限制数量，offset 分页偏移。
+webapi.route.recipes.gt.description=查询 GT5 机器配方（按配方表分组）。参数：type=output|input（默认 output），id/damage/tag 指定物品，fluid 指定流体，map 限定单个配方表（unlocalizedName），limit（1-5000，默认 200），offset；id/fluid/map 至少需要一个。
+webapi.route.recipes.gt.maps.description=列出所有 GT5 配方表（机器）：unlocalizedName + 本地化名称；unlocalizedName 可作为 /recipes/gt 的 'map' 过滤参数。
+
+# 3D 打印
+webapi.route.3d.player.description=PUT 上传图片 → 将 OC 3D 打印件投递到玩家背包（溢出部分掉落在玩家附近）。Query 参数: id 或 name 指定玩家，可选 label/tooltip。
+webapi.route.3d.size.description=PUT 上传图片，估算生成的 OC 3D 打印件的 NBT 大小。Query 参数: 可选 label/tooltip。
+webapi.route.3d.world.description=PUT 上传图片 → 在世界中铺设 OC 3D 打印像素画（慢队列逐块执行）。Query 参数: x, y, z, dim, facing, 可选 label/tooltip；GET ?id= 查询任务进度。

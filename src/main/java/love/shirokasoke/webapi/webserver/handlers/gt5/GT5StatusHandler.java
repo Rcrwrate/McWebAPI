@@ -26,12 +26,6 @@ public class GT5StatusHandler extends GT5BaseHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Query or control a single GT5 machine. Query params: x, y, z, dim (optional, default=0). "
-            + "POST with action=start|stop to enable/disable the machine (same as a soft mallet); GET returns the current state only.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {

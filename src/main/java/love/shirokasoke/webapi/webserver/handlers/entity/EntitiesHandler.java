@@ -20,11 +20,6 @@ public class EntitiesHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "获取服务器中所有已加载实体列表";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         McAccessor.getServer();
 

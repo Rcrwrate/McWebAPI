@@ -51,11 +51,6 @@ public class WorldPrintHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "PUT 上传图片 → 在世界中铺设 OC 3D 打印像素画（慢队列逐块执行）。Query 参数: x,y,z, dim, facing, 可选 label/tooltip；GET ?id= 查询任务";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws Exception {
         String method = exchange.getRequestMethod();
         if ("PUT".equals(method)) {

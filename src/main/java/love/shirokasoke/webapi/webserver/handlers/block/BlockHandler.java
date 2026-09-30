@@ -34,11 +34,6 @@ public class BlockHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Get block information at specified coordinates. Query params: x, y, z, dim (optional, default=0)";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         String query = exchange.getRequestURI()
             .getQuery();

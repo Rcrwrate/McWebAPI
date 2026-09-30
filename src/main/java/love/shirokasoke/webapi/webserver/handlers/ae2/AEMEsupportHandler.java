@@ -17,11 +17,6 @@ public class AEMEsupportHandler implements RouteHandler {
         return "/ae/me/support";
     }
 
-    @Override
-    public String getDescription() {
-        return "ME supportedClasses";
-    }
-
     private Set<Class<? extends IInterfaceViewable>> supportedClasses = null;
 
     @Override

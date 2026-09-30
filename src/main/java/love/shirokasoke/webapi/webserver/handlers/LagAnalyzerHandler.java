@@ -33,11 +33,6 @@ public class LagAnalyzerHandler implements RouteHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Analyzes potential lag sources: entities, tile entities, items, etc.";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         MinecraftServer server = McAccessor.getServer();
 

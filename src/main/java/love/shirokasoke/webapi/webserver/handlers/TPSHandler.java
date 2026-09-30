@@ -22,11 +22,6 @@ public class TPSHandler implements RouteHandler {
         return "/tps";
     }
 
-    @Override
-    public String getDescription() {
-        return "Returns server TPS (Ticks Per Second) information";
-    }
-
     public static long mean(long[] values) {
         long sum = 0l;
         for (long v : values) {

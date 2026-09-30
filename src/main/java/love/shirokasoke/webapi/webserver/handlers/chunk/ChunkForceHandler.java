@@ -75,11 +75,6 @@ public class ChunkForceHandler extends ChunkHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Chunk loading management. GET: list loaded chunks, POST: load/unload chunk";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         Map<String, String> params = parseQueryParams(exchange);
         String action = params.get("action");

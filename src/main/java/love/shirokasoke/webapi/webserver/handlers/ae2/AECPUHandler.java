@@ -33,11 +33,6 @@ public class AECPUHandler extends AEBaseHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "AE Crafting CPUs";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         Context context = AEinit(exchange);
 

@@ -26,11 +26,6 @@ public class AECPUCancelHandler extends AEBaseHandler {
     }
 
     @Override
-    public String getDescription() {
-        return "Cancel crafting task on AE CPU. DELETE body: {name?} or {id?}";
-    }
-
-    @Override
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("DELETE")) {
