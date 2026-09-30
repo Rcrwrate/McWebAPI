@@ -8,6 +8,7 @@ import net.minecraft.item.crafting.IRecipe;
 
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.config.RecipeConfig;
+import love.shirokasoke.webapi.thread.BackgroundScheduler;
 import love.shirokasoke.webapi.webserver.RouteRegistry;
 import love.shirokasoke.webapi.webserver.WebServer;
 
@@ -22,7 +23,7 @@ public class Init {
 
     public static void after() {
         if (RecipeConfig.indexCraftingRecipes) {
-            new Thread(() -> {
+            BackgroundScheduler.submit("RecipeIndexer", () -> {
                 try {
                     // 延迟加载
                     TimeUnit.SECONDS.sleep(60);
@@ -43,7 +44,7 @@ public class Init {
                 IndexedCraftingRecipesHandler r = new IndexedCraftingRecipesHandler(recipes);
                 WebServer.removeRoute(r.getPath());
                 WebServer.addRoute(r);
-            }, "RecipeIndexer").start();
+            });
         }
     }
 }

@@ -78,12 +78,14 @@ public class CommonProxy {
         }
         Lang.setup(LocalizationConfig.langFiles);
         love.shirokasoke.webapi.thread.TPSRecorder._start_();
+        love.shirokasoke.webapi.thread.DynamicBudgetTask._start_();
     }
 
     // Called when the server is stopping
     public void serverStopping(FMLServerStoppingEvent event) {
         CloudflaredTunnel.stop();
         love.shirokasoke.webapi.thread.TPSRecorder._stop_();
+        love.shirokasoke.webapi.thread.DynamicBudgetTask._stop_();
         WebServer.stop();
     }
 }

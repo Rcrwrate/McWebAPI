@@ -2,7 +2,7 @@
 
 - [x] [1.NBT](#1nbt)
 
-- [ ] [2.NBT -> JSON -> NBT](#2nbt---json---nbt)
+- [x] [2.NBT -> JSON -> NBT](#2nbt---json---nbt)
 
 - [x] [3.客户端与服务端直接的物品数据ID不一致](#3客户端与服务端直接的物品数据id不一致)
 
@@ -10,7 +10,7 @@
 
 - [ ] [5.AE CPU下单必须使用非部件形式的接口](#5-ae-cpu下单必须使用非部件形式的接口)
 
-- [ ] [6. Hodgepodge 警告](#6-hodgepodge-警告)
+- [x] [6. Hodgepodge 警告](#6-hodgepodge-警告)
 
 ## 1.NBT
 
@@ -62,11 +62,13 @@ IconDump会跳过`item.microblock`的大量物品（应该是伪装板）
 
 ## 2.NBT -> JSON -> NBT
 
-不可行，java中byte/short/int/long/float/double转向JSON直接丢失精度且不方便处理
+MC有现成的`net.minecraft.nbt.JsonToNBT`
 
-选择使用`NBTBase.write`转为Base64处理
+~~不可行，java中byte/short/int/long/float/double转向JSON直接丢失精度且不方便处理~~
 
-但是客户端/服务端各自生成的Base64**不一致**，导致hash生成的icon文件名不一致（暂时没有好的解决办法，目前打算在SDK中处理）
+~~选择使用`NBTBase.write`转为Base64处理~~
+
+但是客户端/服务端各自生成的Base64**不一致**，导致hash生成的icon文件名不一致（直接排序一次实现唯一化）
 
 客户端
 

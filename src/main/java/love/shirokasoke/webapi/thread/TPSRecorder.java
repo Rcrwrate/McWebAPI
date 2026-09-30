@@ -6,8 +6,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
@@ -24,20 +26,17 @@ import love.shirokasoke.webapi.utils.Logs;
  * (in milliseconds) and TPS for the configured dimensions (or all loaded worlds
  * when the configured dim id list is empty).
  */
-public class TPSRecorder extends Thread {
+public class TPSRecorder implements Runnable {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static volatile TPSRecorder instance;
+    private static volatile Future<?> future;
 
     private final File outputFile;
-    private volatile boolean running = true;
     private BufferedWriter writer;
     private long sleepMs;
     private Set<Integer> targetDims;
 
     private TPSRecorder(File outputFile) {
-        super("TPS-Recorder");
-        setDaemon(true);
         this.outputFile = outputFile;
         this.sleepMs = TPSRecordConfig.interval * 1000L;
         if (this.sleepMs <= 0) this.sleepMs = 5000L;
@@ -46,22 +45,14 @@ public class TPSRecorder extends Thread {
 
     public static void _start_() {
         if (!TPSRecordConfig.enable) return;
-        if (instance != null && instance.isAlive()) return;
-        instance = new TPSRecorder(new File(TPSRecordConfig.file));
-        instance.start();
+        if (future != null && !future.isDone()) return;
+        future = BackgroundScheduler.submit("TPS-Recorder", new TPSRecorder(new File(TPSRecordConfig.file)));
     }
 
     public static void _stop_() {
-        TPSRecorder rec = instance;
-        if (rec != null) {
-            rec.shutdown();
-            instance = null;
-        }
-    }
-
-    public void shutdown() {
-        this.running = false;
-        this.interrupt();
+        Future<?> f = future;
+        future = null;
+        BackgroundScheduler.cancel(f);
     }
 
     @Override
@@ -85,9 +76,11 @@ public class TPSRecorder extends Thread {
                 outputFile.getAbsolutePath(),
                 targetDims.isEmpty() ? "全部" : targetDims.toString());
 
-            while (running) {
+            while (true) {
                 try {
                     recordOnce();
+                } catch (ConcurrentModificationException e) {
+                    MyMod.LOG.debug("TickTime CME hit");
                 } catch (Throwable e) {
                     MyMod.LOG.error("TPS record failed");
                     Logs.e(e);

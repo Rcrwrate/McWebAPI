@@ -15,7 +15,7 @@ public class ServerConfig {
     @Config.RangeInt(min = 4, max = 36)
     public static int nThreads = 10;
 
-    @Config.Comment("Use virtual threads for WebServer (default requires Java 21+, but here need Java 25+)")
+    @Config.Comment("Use virtual threads (default requires Java 21+, but here need Java 25+)")
     public static boolean useVirtualThreads = true;
 
     @Config.Comment("Use SSE instead of polling (requires virtual threads; the payload cannot be compressed, so it costs more bandwidth)")

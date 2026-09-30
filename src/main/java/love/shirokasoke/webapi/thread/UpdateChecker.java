@@ -29,7 +29,7 @@ import love.shirokasoke.webapi.MyMod;
  * <p>
  * https://github.com/Rcrwrate/McWebAPI
  */
-public class UpdateChecker {
+public class UpdateChecker implements Runnable {
 
     private static final String GITHUB_API = "https://api.github.com/repos/Rcrwrate/McWebAPI/releases/latest";
 
@@ -74,14 +74,16 @@ public class UpdateChecker {
     }
 
     public void checkAsync() {
-        new Thread(() -> {
-            try {
-                checkForUpdate();
-            } catch (Exception e) {
-                MyMod.LOG.warn("Update check failed: {}", e.getMessage());
-            }
-            return;
-        }, "UpdateCheck").start();
+        BackgroundScheduler.submit("update-check", this);
+    }
+
+    @Override
+    public void run() {
+        try {
+            checkForUpdate();
+        } catch (Exception e) {
+            MyMod.LOG.warn("Update check failed: {}", e.getMessage());
+        }
     }
 
     private void checkForUpdate() {
@@ -112,7 +114,10 @@ public class UpdateChecker {
             }
             MyMod.LOG.info("========================================");
         } else {
-            MyMod.LOG.info("WebAPI is up to date (built at {}).", formatDate(local));
+            MyMod.LOG.info(
+                "WebAPI is up to date (built at {}, remote at {}).",
+                formatDate(local),
+                formatDate(release.publishedAt));
         }
     }
 

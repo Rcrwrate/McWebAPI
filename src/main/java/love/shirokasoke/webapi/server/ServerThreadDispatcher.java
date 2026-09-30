@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import love.shirokasoke.webapi.MyMod;
 
 public class ServerThreadDispatcher {
 
@@ -14,8 +15,8 @@ public class ServerThreadDispatcher {
     /** 每tick从慢队列中执行的最大任务数（硬上限） */
     private static int slowTasksPerTick = 1000;
 
-    /** 每tick后台任务的统一时间预算上限 (ms) */
-    private static int budgetMs = 50;
+    /** 每tick后台任务的统一时间预算上限 (ms)，可被 TPSRecorder 动态更新 */
+    private static volatile int budgetMs = 50;
 
     /** 上一 tick 的实际耗时 (ns)，用于动态调整预算 */
     private static long lastTickDurationNanos = 0;
@@ -80,6 +81,7 @@ public class ServerThreadDispatcher {
     /** 设置每tick后台任务的统一时间预算上限 (ms) */
     public static void setBudgetMs(int ms) {
         budgetMs = Math.max(1, ms);
+        MyMod.LOG.debug("BudgetMs changed {}", ms);
     }
 
     /** 获取慢队列中待执行的任务数 */
