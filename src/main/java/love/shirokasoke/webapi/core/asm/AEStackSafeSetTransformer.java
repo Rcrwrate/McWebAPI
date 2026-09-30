@@ -24,6 +24,8 @@ public class AEStackSafeSetTransformer implements IClassTransformer {
     /** 只改写该包（含子包）下的类；结尾带点，避免误伤同前缀的其它包 */
     private static final String TARGET_PACKAGE = "appeng.util.item.";
 
+    private static final String TARGET_PACKAGE2 = "thaumicenergistics.common.storage.EssentiaList";
+
     /** 被替换的 fastutil 集合（AE2 源码里的原始类型） */
     private static final String FASTUTIL_SET = "it/unimi/dsi/fastutil/objects/ObjectOpenHashSet";
 
@@ -40,7 +42,7 @@ public class AEStackSafeSetTransformer implements IClassTransformer {
         }
 
         final String className = transformedName != null ? transformedName : name;
-        if (className == null || !className.startsWith(TARGET_PACKAGE)) {
+        if (className == null || !(className.startsWith(TARGET_PACKAGE) || className.equals(TARGET_PACKAGE2))) {
             return basicClass;
         }
 

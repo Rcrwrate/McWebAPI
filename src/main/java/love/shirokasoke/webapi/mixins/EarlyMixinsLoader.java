@@ -22,11 +22,18 @@ public class EarlyMixinsLoader implements IFMLLoadingPlugin, IEarlyMixinLoader {
     /** appeng.util.item 下 {@code new ObjectOpenHashSet<>()} -> {@code new SafeObjectOpenHashSet<>()} */
     private static final String AE_STACK_SAFE_SET_TRANSFORMER = "love.shirokasoke.webapi.core.asm.AEStackSafeSetTransformer";
 
+    /** net.minecraft.util.StringTranslate：移除全部方法的 synchronized */
+    private static final String STRING_TRANSLATE_TRANSFORMER = "love.shirokasoke.webapi.core.asm.StringTranslateTransformer";
+
     @Override
     public String[] getASMTransformerClass() {
         List<String> asms = new ArrayList<>();
         if (MixinConfig.early.enableAEStackSafeSetTransformer) {
             asms.add(AE_STACK_SAFE_SET_TRANSFORMER);
+        }
+
+        if (MixinConfig.early.enableStringTranslateSyncRemoval) {
+            asms.add(STRING_TRANSLATE_TRANSFORMER);
         }
 
         if (!asms.isEmpty()) {

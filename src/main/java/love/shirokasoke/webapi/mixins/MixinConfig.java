@@ -44,6 +44,13 @@ public class MixinConfig {
             "Recommended to keep enabled; if disabled, the conversion is done at runtime instead" })
         @Config.DefaultBoolean(true)
         public boolean enableAEStackSafeSetTransformer;
+
+        @Config.Comment({
+            "StringTranslateTransformer: remove all 'synchronized' keywords from net.minecraft.util.StringTranslate, "
+                + "so web threads can read translations directly",
+            "Requires a restart to take effect" })
+        @Config.DefaultBoolean(true)
+        public boolean enableStringTranslateSyncRemoval;
     }
 
     public static class NBT {
