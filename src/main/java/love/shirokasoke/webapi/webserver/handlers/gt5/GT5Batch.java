@@ -143,7 +143,9 @@ public final class GT5Batch {
             int z = node.get("z")
                 .asInt();
             int dim = node.has("dim") ? node.get("dim")
-                .asInt() : 0;
+                .asInt()
+                : node.has("dimension") ? node.get("dimension")
+                    .asInt() : 0;
             coords.add(new coordinates(x, y, z, dim));
         }
         return coords;

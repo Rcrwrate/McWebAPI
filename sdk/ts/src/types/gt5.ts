@@ -151,6 +151,7 @@ export interface GT5BatchMachineCoord {
     y: number;
     z: number;
     dim?: number;
+    dimension?: number;
 }
 
 /** POST /gt5/batch 提交结果 */

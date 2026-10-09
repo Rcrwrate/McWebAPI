@@ -588,7 +588,7 @@ export class WebApiClient {
      * @returns 使用 {@link GT5StatusResultSchema} 验证；`changed=false` 表示机器本就处于目标状态
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5StatusHandler.java)
      */
-    setGT5MachineStatus(params: { x: number; y: number; z: number; dim?: number; action: "start" | "stop" }): Promise<GT5StatusResult> {
+    setGT5MachineStatus(params: { x: number; y: number; z: number; dim?: number, dimension?: number, action: "start" | "stop" }): Promise<GT5StatusResult> {
         return this.request<GT5StatusResult>(`/gt5/status${buildQuery(params)}`, { method: "POST" });
     }
 

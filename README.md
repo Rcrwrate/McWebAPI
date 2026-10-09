@@ -87,10 +87,12 @@
 
 > [!TIP]
 > 默认目录为dumps，可在配置文件中修改
+>
+> 2.9.0+预计可以跨版本兼容
 
 [2.8.4.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.6.18.7z)
 
-[2.9.0-beta2.7z](https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.8.4-0.4-pre/2.9.0-beta2.dumps.7z)
+[2.9.0-beta2.7z](https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.9.0-beta2-0.11-pre/290beta2-915.dump.7z)
 
 README更新不一定即时，可以在下方两个仓库中寻找预导出的压缩包
 
@@ -212,7 +214,7 @@ README更新不一定即时，可以在下方两个仓库中寻找预导出的�
 | ------ | ---- | -------------------- |
 | `/mcp` | --   | 2.9.0-beta2-0.14-pre |
 
-[详细说明点此查阅](./src/main/java/love/shirokasoke/webapi/webserver/mcp/README.md) 
+[详细说明点此查阅](./src/main/java/love/shirokasoke/webapi/webserver/mcp/README.md)
 
 ## BUG
 
