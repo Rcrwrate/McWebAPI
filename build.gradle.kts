@@ -1,5 +1,7 @@
 
 import java.io.File
+import java.time.Clock
+import java.time.Instant
 
 plugins {
     id("com.gtnewhorizons.gtnhconvention")
@@ -40,7 +42,8 @@ tasks.register("generateBuildInfo") {
         val dir = outputDir.get().asFile
         val assetsDir = File(dir, "assets")
         assetsDir.mkdirs()
-        val buildTime = System.currentTimeMillis() / 1000
+        val buildTime = Instant.now(Clock.systemUTC())
+            .epochSecond
         File(assetsDir, "build.json").writeText("{\"buildTime\":$buildTime}")
     }
 }
