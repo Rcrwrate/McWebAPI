@@ -64,6 +64,18 @@ const columns: GridColDef<AECPURow>[] = [
         renderCell: (params) => (
             <Chip label={params.row.busy ? "是" : "否"} color={params.row.busy ? "warning" : "success"} size="small" />
         ),
+    }, {
+        field: "progress",
+        headerName: "进度",
+        width: 180,
+        type: "number",
+        filterable: true,
+        valueGetter: (_value, row) => (1 - row.remainingItemCount / row.startItemCount) * 100,
+        renderCell: (params) => (
+            params.row.busy ?
+                <TinyProcess value={params.value} color={params.value > 90 ? "success" : params.value > 70 ? "primary" : "warning"} />
+                : <>-</>
+        ),
     },
     {
         field: "storage",

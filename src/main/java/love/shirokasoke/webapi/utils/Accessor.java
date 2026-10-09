@@ -122,7 +122,9 @@ public final class Accessor {
     private static Field craftingCPUClusterTasks = null;
 
     /**
-     * 访问私有字段 {@link CraftingCPUCluster#tasks} 类型 {@link java.util.TreeMap} (fail-fast，无需关心)
+     * 访问私有字段 {@link CraftingCPUCluster#tasks} （正在等待提交的合成任务）
+     * <p>
+     * 类型 {@link java.util.TreeMap} (fail-fast，无需关心)
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_tasks}
      */
@@ -164,7 +166,7 @@ public final class Accessor {
     private static Field craftingCPUClusterWaitingFor = null;
 
     /**
-     * 访问私有字段 {@link CraftingCPUCluster#waitingFor}
+     * 访问私有字段 {@link CraftingCPUCluster#waitingFor} （已提交合成，等待产物中）
      * <p>
      * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
      *
@@ -212,7 +214,7 @@ public final class Accessor {
     private static Field craftingCPUClusterReasonProvider = null;
 
     /**
-     * 访问私有字段 {@link CraftingCPUCluster#reasonProvider}，获取某图案的调度原因
+     * 访问私有字段 {@link CraftingCPUCluster#reasonProvider}，获取某任务的调度原因
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_getReason}
      */
@@ -236,7 +238,7 @@ public final class Accessor {
     private static Field craftingCPUClusterWaitingForMissing = null;
 
     /**
-     * 访问私有字段 {@link CraftingCPUCluster#waitingForMissing}（等待缺失的原料）
+     * 访问私有字段 {@link CraftingCPUCluster#waitingForMissing} （等待缺失的原料，无法进行合成的任务/CPU合成卡住）
      * <p>
      * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
      *

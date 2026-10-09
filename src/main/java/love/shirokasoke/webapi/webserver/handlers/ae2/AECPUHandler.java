@@ -2,6 +2,7 @@ package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -70,19 +71,21 @@ public class AECPUHandler extends AEBaseHandler {
             .put("coProcessors", cpu.getCoProcessors())
             .put("remainingItemCount", cpu.getRemainingItemCount())
             .put("startItemCount", cpu.getStartItemCount())
-            .put("elapsedTime", cpu.getElapsedTime())
+            // elapsedTime 内部单位为纳秒(System.nanoTime)，统一换算为毫秒输出
+            .put("elapsedTime", TimeUnit.MILLISECONDS.convert(cpu.getElapsedTime(), TimeUnit.NANOSECONDS))
             .put(
                 "craftingAllowMode",
                 cpu.getCraftingAllowMode()
                     .name())
             .put("waiting", Accessor.CraftingCPUCluster_waiting(cpu))
             .put("suspended", cpu.isSuspended())
+            // isMissingMode: 在ME系统内原料存在缺失的情况下,也可开始合成
             .put("missingMode", cpu.isMissingMode());
         ClassUtils.getClassInfo(cpu, cpuNode);
 
-        // 导出等待缺失的原料（无法从网络中取得、也无法通过合成补充的原料）
-        IItemList<IAEStack<?>> waitingForMissing = Accessor.CraftingCPUCluster_waitingForMissing(cpu);
-        if (waitingForMissing != null && !waitingForMissing.isEmpty()) {
+        final IItemList<IAEStack<?>> waitingForMissing;
+        if (cpu.isMissingMode() && (waitingForMissing = Accessor.CraftingCPUCluster_waitingForMissing(cpu)) != null
+            && !waitingForMissing.isEmpty()) {
             ArrayNode missingArray = cpuNode.putArray("waitingForMissing");
             for (IAEStack<?> stack : waitingForMissing) {
                 if (stack == null) continue;

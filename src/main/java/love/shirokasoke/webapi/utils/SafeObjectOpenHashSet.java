@@ -33,12 +33,12 @@ public class SafeObjectOpenHashSet<T> extends ObjectOpenHashSet<T> {
         super(c);
     }
 
-    /** {@code ObjectOpenHashSet.key}，长度恒为 {@code n + 1}；绝不要缓存到静态字段或跨方法使用 */
+    /** {@link ObjectOpenHashSet#key}，长度恒为 {@code n + 1}；绝不要缓存到静态字段或跨方法使用 */
     public T[] $key() {
         return this.key;
     }
 
-    /** {@code ObjectOpenHashSet.containsNull}；null 元素不在 key 表里，迭代时靠该标记补一条 */
+    /** {@link ObjectOpenHashSet#containsNull}；null 元素不在 key 表里，迭代时靠该标记补一条 */
     public boolean $containsNull() {
         return this.containsNull;
     }
@@ -51,8 +51,8 @@ public class SafeObjectOpenHashSet<T> extends ObjectOpenHashSet<T> {
             return o;
         }
         if (set == null) {
-            return new SafeObjectOpenHashSet<>();
+            return new SafeObjectOpenHashSet<T>();
         }
-        return new SafeObjectOpenHashSet<>(set);
+        return new SafeObjectOpenHashSet<T>(set);
     }
 }

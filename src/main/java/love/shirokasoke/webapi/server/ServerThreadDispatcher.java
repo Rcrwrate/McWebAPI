@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import love.shirokasoke.webapi.MyMod;
 
 public class ServerThreadDispatcher {
 
@@ -81,7 +80,7 @@ public class ServerThreadDispatcher {
     /** 设置每tick后台任务的统一时间预算上限 (ms) */
     public static void setBudgetMs(int ms) {
         budgetMs = Math.max(1, ms);
-        MyMod.LOG.debug("BudgetMs changed {}", ms);
+        // MyMod.LOG.debug("BudgetMs changed {}", ms);
     }
 
     /** 获取慢队列中待执行的任务数 */

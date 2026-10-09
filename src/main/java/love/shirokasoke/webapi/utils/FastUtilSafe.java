@@ -29,7 +29,6 @@ public final class FastUtilSafe {
             return 0;
         }
 
-        // 首选子类直读（AE2 的 records 在构造时已被换成 SafeObjectOpenHashSet）；其它集合退回反射
         final Object[] key;
         if (set instanceof SafeObjectOpenHashSet<?>safe) {
             key = safe.$key();
@@ -38,8 +37,7 @@ public final class FastUtilSafe {
                 .$key();
         }
 
-        // key 长度恒为 n + 1（n ≥ 1），故 length - 1 即可安全定界，永不越界。
-        // 绝不要读 mask：key 与 mask 可能来自不同时刻，会错位越界。
+        // key 长度恒为 n + 1（n ≥ 1），故 length - 1 即可安全定界，永不越界
         if (key == null || key.length < 2) {
             return 0;
         }
