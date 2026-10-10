@@ -1,5 +1,6 @@
 "use client"
 
+import PersistentDataGrid from "@/app/blocks/PersistentDataGrid"
 import { H2 } from "@/components/H2"
 import type { MultiSegment } from "@/components/MultiProgressBar"
 import { MultiProgressBar, MultiProgressLegend } from "@/components/MultiProgressBar"
@@ -8,12 +9,9 @@ import { RContainer } from "@/components/RContainer"
 import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
 import BoltIcon from "@mui/icons-material/Bolt"
-import CloseIcon from "@mui/icons-material/Close"
 import DeleteIcon from "@mui/icons-material/Delete"
 import HelpIcon from "@mui/icons-material/Help"
 import Inventory2Icon from "@mui/icons-material/Inventory2"
-import PauseCircleOutlinedIcon from "@mui/icons-material/PauseCircleOutlined"
-import PlayCircleOutlinedIcon from "@mui/icons-material/PlayCircleOutlined"
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing"
 import RadarIcon from "@mui/icons-material/Radar"
 import RefreshIcon from "@mui/icons-material/Refresh"
@@ -37,7 +35,7 @@ import {
     Typography
 } from "@mui/material"
 import { keyframes } from "@mui/system"
-import { DataGridPro as DataGrid, type GridColDef, type GridRowSelectionModel } from "@mui/x-data-grid-pro"
+import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid-pro"
 import type { GT5MachineInfo, GT5MachineType } from "@shirokasoke/webapi-sdk"
 import { default as LinkC } from "next/link"
 import { enqueueSnackbar } from "notistack"
@@ -469,7 +467,8 @@ export default function GT5Page() {
                         })}
                     </Grid>
                     <Paper sx={{ mt: 3, height: "100vh", width: 1 }}>
-                        <DataGrid
+                        <PersistentDataGrid
+                            storageKey="gt5"
                             rows={liveMachines}
                             columns={columns}
                             getRowId={(row) => row.id}

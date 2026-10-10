@@ -1,21 +1,14 @@
 {
     "name": "@shirokasoke/webapi-sdk",
-    "version": "2.9.0-beta3-0.13-pre2",
+    "version": "2.9.0-beta3-0.14-pre",
     "private": false,
     "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod",
     "main": "./dist/index.js",
-    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
-            "import": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/esm/index.js"
-            },
-            "require": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
-            }
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         }
     },
     "files": [
@@ -23,11 +16,9 @@
     ],
     "sideEffects": false,
     "scripts": {
-        "build": "npm run build:cjs && npm run build:esm",
-        "build:cjs": "tsc -p tsconfig.json",
-        "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\": \"module\"}' > dist/esm/package.json",
+        "build": "tsc -p tsconfig.json",
         "test": "tsx --test test/*.test.ts",
-        "web": "npm run build && cp -r /workspace/sdk/ts/dist/* /workspace/web/node_modules/@shirokasoke/webapi-sdk/dist/"
+        "web": "npm run build && rm -rf /workspace/web/node_modules/@shirokasoke/webapi-sdk/dist && cp -r dist package.json /workspace/web/node_modules/@shirokasoke/webapi-sdk/"
     },
     "keywords": [
         "gtnh",
@@ -39,12 +30,12 @@
     "author": "Rcrwrate",
     "license": "MIT",
     "devDependencies": {
-        "@types/node": "^25.9.0",
-        "tsx": "^4.22.1",
-        "typescript": "^5.4.0"
+        "@types/node": "^26.6.5",
+        "tsx": "^4.23.15",
+        "typescript": "^7.0.2"
     },
     "dependencies": {
         "@microsoft/fetch-event-source": "^2.0.1",
-        "joi": "^18.2.1"
+        "joi": "^18.2.9"
     }
 }

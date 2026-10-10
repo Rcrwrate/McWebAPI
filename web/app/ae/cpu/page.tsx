@@ -1,10 +1,12 @@
 "use client"
 
 import CustomPagination from "@/app/blocks/CustomPagination"
+import PersistentDataGrid from "@/app/blocks/PersistentDataGrid"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
 import { RContainer } from "@/components/RContainer"
+import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
 import { formatBytes, formatDuration } from "@/data/format"
 import useCoords from "@/data/useCoords"
@@ -30,20 +32,17 @@ import {
     Select,
     Typography
 } from "@mui/material"
-import type { GridFilterModel, GridRowSelectionModel, GridSortModel } from "@mui/x-data-grid"
+import type { GridRowSelectionModel } from "@mui/x-data-grid"
 import {
-    DataGrid,
-    GridColDef,
-    gridExpandedSortedRowEntriesSelector,
+    GridColDef
 } from "@mui/x-data-grid"
-import { GridApiCommunity } from "@mui/x-data-grid/internals"
+import type { GridApiPro } from "@mui/x-data-grid-pro"
 import type { AECPU } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
-import TinyProcess from "@/components/TinyProcess"
 
 type AECPURow = AECPU & { id: number; storage: number }
 
@@ -70,12 +69,20 @@ const columns: GridColDef<AECPURow>[] = [
         width: 180,
         type: "number",
         filterable: true,
-        valueGetter: (_value, row) => (1 - row.remainingItemCount / row.startItemCount) * 100,
+        valueGetter: (_value, row) => row.busy ? (1 - row.remainingItemCount / row.startItemCount) * 100 : null,
         renderCell: (params) => (
             params.row.busy ?
                 <TinyProcess value={params.value} color={params.value > 90 ? "success" : params.value > 70 ? "primary" : "warning"} />
                 : <>-</>
         ),
+    },
+    {
+        field: "elapsedTime",
+        headerName: "已运行时间",
+        width: 130,
+        type: "number",
+        filterable: true,
+        valueFormatter: (value: number) => formatDuration(value),
     },
     {
         field: "storage",
@@ -125,14 +132,6 @@ const columns: GridColDef<AECPURow>[] = [
         filterable: true,
     },
     {
-        field: "elapsedTime",
-        headerName: "已运行时间",
-        width: 130,
-        type: "number",
-        filterable: true,
-        valueFormatter: (value: number) => formatDuration(value),
-    },
-    {
         field: "craftingAllowMode",
         headerName: "合成模式",
         width: 130,
@@ -156,9 +155,8 @@ export default function AECPUPage() {
     const [error, setError] = useState<string | null>(null)
     const [displayRows, setDisplayRows] = useState<AECPURow[]>([])
 
-    const [sortM, setSortM] = useState<GridSortModel>()
-    const [filterM, setFilterM] = useState<GridFilterModel>()
-    const apiRef = useRef<GridApiCommunity>(null)
+    const apiRef = useRef<GridApiPro>(null)
+
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
 
     const [refreshSec, setRefreshSec] = useState<number>(5)
@@ -207,15 +205,6 @@ export default function AECPUPage() {
         })
         return () => { while (cleanup.length > 0) { cleanup.pop()?.() } }
     }, [refreshSec, api != undefined, x, y, z, dimension])
-
-    useEffect(() => {
-        if (!apiRef.current) return
-        const timer = setTimeout(() => {
-            const entries = gridExpandedSortedRowEntriesSelector(apiRef)
-            setDisplayRows(entries.map((e) => e.model as AECPURow))
-        }, 200)
-        return () => clearTimeout(timer)
-    }, [filterM, sortM])
 
     const totalStorage = cpus.reduce((sum, c) => sum + c.availableStorage, 0)
     const usedStorage = cpus.reduce((sum, c) => sum + c.usedStorage, 0)
@@ -318,17 +307,15 @@ export default function AECPUPage() {
             </Grid>
 
             <Paper sx={{ height: "70vh", width: "100%", mb: 2 }}>
-                <DataGrid
+                <PersistentDataGrid
+                    storageKey="ae-cpu"
                     apiRef={apiRef}
+                    showToolbar
                     rows={cpus}
                     columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                     loading={cpus.length == 0}
                     getRowId={(row) => row.id}
                     pageSizeOptions={[25, 50, 100]}
-                    filterModel={filterM}
-                    onFilterModelChange={(m) => setFilterM(m)}
-                    sortModel={sortM}
-                    onSortModelChange={(s) => setSortM(s)}
                     density="compact"
                     slots={{ pagination: CustomPagination }}
                     rowSelectionModel={rowSelectionModel}
