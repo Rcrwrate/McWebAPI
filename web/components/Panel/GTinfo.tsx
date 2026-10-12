@@ -1,5 +1,6 @@
 "use client"
 
+import type { GT5Row } from "@/app/gt5/page"
 import BoltIcon from "@mui/icons-material/Bolt"
 import HelpOutlineIcon from "@mui/icons-material/HelpOutlined"
 import Inventory2Icon from "@mui/icons-material/Inventory2"
@@ -9,7 +10,7 @@ import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturi
 import SettingsIcon from "@mui/icons-material/Settings"
 import { Box, Card, Chip, Grid, LinearProgress, Stack, Typography } from "@mui/material"
 import { alpha } from "@mui/material/styles"
-import type { GT5MachineInfo, GT5MachineType } from "@shirokasoke/webapi-sdk"
+import type { GT5MachineType } from "@shirokasoke/webapi-sdk"
 
 const MC_COLORS: Record<string, string> = {
     "0": "#000000",
@@ -111,7 +112,15 @@ function parseMCFormat(raw: string): StyledSegment[] {
     return segments
 }
 
-function getMachineStatus(machine: GT5MachineInfo): MachineStatusMeta {
+const STATUS_META: Record<GT5Row["status"], Omit<MachineStatusMeta, "process">> = {
+    running: { label: "运行中", color: "success", paletteColor: "success.main" },
+    stop: { label: "暂停", color: "info", paletteColor: "info.main" },
+    maintenance: { label: "需要维护", color: "warning", paletteColor: "warning.main" },
+    error: { label: "错误", color: "error", paletteColor: "error.main" },
+    idle: { label: "空闲", color: undefined, paletteColor: "text.disabled" },
+}
+
+function getMachineStatus(machine: GT5Row): MachineStatusMeta {
 
     let process = 100
     switch (machine.machineType) {
@@ -122,27 +131,7 @@ function getMachineStatus(machine: GT5MachineInfo): MachineStatusMeta {
             process = machine.single.maxProgressTime > 0 ? (machine.single.progressTime / machine.single.maxProgressTime) * 100 : 100
             break
     }
-
-    if (machine.state.wasShutdown) {
-        return machine.state.lastShutDownReason?.wasCritical
-            ? { label: "错误", color: "error", paletteColor: "error.main", process }
-            : { label: "需要维护", color: "warning", paletteColor: "warning.main", process }
-    }
-
-    if (machine.machineType === "MULTIBLOCK") {
-        const maintenance = machine.multi.maintenance
-        const healthy = Object.values(maintenance).every(Boolean)
-        if (!healthy) return { label: "需要维护", color: "warning", paletteColor: "warning.main", process }
-    }
-
-    if (machine.state.isActive) {
-        return { label: "运行中", color: "success", paletteColor: "success.main", process }
-    }
-    // isAllowedToWork=false 但无停机原因 = 用户主动暂停（软锤/接口），非故障
-    if (!machine.state.isAllowedToWork) {
-        return { label: "暂停", color: "info", paletteColor: "info.main", process }
-    }
-    return { label: "空闲", color: undefined, paletteColor: "text.disabled", process }
+    return { ...STATUS_META[machine.status], process }
 }
 
 function GTInfoLine({ line, index }: { line: string; index: number }) {
@@ -192,7 +181,7 @@ function GTInfoLine({ line, index }: { line: string; index: number }) {
 }
 
 export interface GTInfoCardProps {
-    machine: GT5MachineInfo | null
+    machine: GT5Row | null
 }
 
 export default function GTInfoCard({ machine }: GTInfoCardProps) {

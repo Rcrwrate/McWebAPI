@@ -95,7 +95,7 @@ const crtBeam = keyframes`
   100% { transform: translateY(200%); }
 `
 
-type GT5Row = GT5MachineInfo & { id: string; status: MachineStatus; }
+export type GT5Row = GT5MachineInfo & { id: string; status: MachineStatus; }
 
 const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
     {
@@ -183,16 +183,16 @@ const MACHINE_COLUMNS: GridColDef<GT5Row>[] = [
         headerName: "停机原因",
         width: 200,
         filterable: true,
-        valueGetter: (_v, row) =>
-            row.state.wasShutdown ? (row.state.lastShutDownReason?.displayString || "未知") : "-",
+        valueGetter: (_v, row) => {
+            if (!row.state.wasShutdown) return "-"
+            // displayString 为空 = NONE 原因（用户主动暂停），无故障描述而非未知
+            return row.state.lastShutDownReason?.displayString || "手动暂停"
+        },
     },
 ]
 
 function machineStatus(m: GT5MachineInfo): MachineStatus {
-    if (m.state.wasShutdown) {
-        if (m.state.lastShutDownReason?.wasCritical) return "error"
-        return "maintenance"
-    }
+    if (m.state.wasShutdown && m.state.lastShutDownReason?.wasCritical) return "error"
     if (m.machineType === "MULTIBLOCK" && m.multi) {
         const mt = m.multi.maintenance
         if (!mt.wrench || !mt.screwdriver || !mt.softMallet || !mt.hardHammer || !mt.solderingTool || !mt.crowbar) {
@@ -200,8 +200,12 @@ function machineStatus(m: GT5MachineInfo): MachineStatus {
         }
     }
     if (m.state.isActive) return "running"
+    // 停机但无具体故障描述 = NONE 原因，即用户主动暂停
+    if (m.state.wasShutdown && !m.state.lastShutDownReason?.displayString) return "stop"
     // isAllowedToWork=false 但无停机原因 = 用户用软锤手动关闭，非故障
     if (!m.state.isAllowedToWork) return "stop"
+    // - 其余非关键原因（结构不完整/无转子/风力不足等）仍需人工处理
+    if (m.state.wasShutdown) return "maintenance"
     return "idle"
 }
 

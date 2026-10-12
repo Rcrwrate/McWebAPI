@@ -5,7 +5,9 @@ import type { NBTCompound } from "./item";
 // ========== GT5 Machine Base ==========
 
 export type GT5MachineType = "MULTIBLOCK" | "SINGLE" | "GENERATOR" | "HATCH" | "UNKNOWN";
-
+/**
+ * 注意：所有 SimpleShutDownReason 的 id 都是 "simple_result"，只能靠 displayString / wasCritical 区分，不能按 id 判断
+ */
 export interface GT5ShutDownReason {
     id: string;
     displayString: string;
