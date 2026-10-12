@@ -82,7 +82,7 @@ export const AEItem: Panel<AEItemsResult, AEItemReq> = {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,
-    size: { w: 2, h: 2 },
+    size: { w: 3, h: 3 },
     Render: function (data: AEItemsResult, req): React.ReactElement {
         return <AEItemContent data={data} req={req} />
     }

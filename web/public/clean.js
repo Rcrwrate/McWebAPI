@@ -20,6 +20,7 @@
         "dark", "darkm", "lightm", // 主题设置
         "url", "auth",         // API 设置
         "noSw",                // Service Worker 开关
+        "noSSE",               // SSE 推送开关
     ]
 
     function today() {

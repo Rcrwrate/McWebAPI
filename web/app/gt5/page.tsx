@@ -1,10 +1,10 @@
 "use client"
 
-import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { H2 } from "@/components/H2"
 import type { MultiSegment } from "@/components/MultiProgressBar"
 import { MultiProgressBar, MultiProgressLegend } from "@/components/MultiProgressBar"
 import GTInfoCard from "@/components/Panel/GTinfo"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { RContainer } from "@/components/RContainer"
 import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
@@ -225,7 +225,7 @@ export default function GT5Page() {
     const [liveMachines, setLiveMachines] = useState<GT5Row[]>([])
     const [loaded, setLoaded] = useState(false)
     const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
-   
+
     // 正在启停的机器 id，用于禁用开关与操作按钮
     const [busyId, setBusyId] = useState<string | null>(null)
     const busyRef = useRef<string | null>(null)
@@ -474,15 +474,13 @@ export default function GT5Page() {
                             getRowId={(row) => row.id}
                             loading={liveMachines.length == 0}
                             checkboxSelection
-                            pagination
                             rowSelectionModel={rowSelection}
                             onRowSelectionModelChange={setRowSelection}
                             pageSizeOptions={[10, 25, 50, 100]}
-                            density="compact"
-                            showToolbar
                             initialState={{
                                 pagination: { paginationModel: { pageSize: 25 } },
                             }}
+                            slots={{ pagination: undefined }}
                             slotProps={{
                                 loadingOverlay: {
                                     variant: "skeleton",

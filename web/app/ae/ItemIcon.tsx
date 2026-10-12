@@ -30,7 +30,7 @@ export default function ItemIcon({ api, item, badge }: { api: NonNullable<Return
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl)
         }
-    }, [api, item])
+    }, [api, item.localizedName])
     if (!url) return <Skeleton variant="rectangular" width={48} height={48} />
 
     const displayName = item.localizedName ?? ("name" in item ? item.name : item.registryName)

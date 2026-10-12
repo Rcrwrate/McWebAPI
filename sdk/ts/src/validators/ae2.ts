@@ -1,5 +1,5 @@
 import Joi from "joi";
-import type { AECPU, AECPUCancelBody, AECPUCancelResult, AECraftingTaskBody, AECraftingTaskResult, AEHitResult, AEItemsResult, AEMEInterface, AENode } from "../types/ae2";
+import type { AECPU, AECPUCancelBody, AECPUCancelResult, AECraftingTaskBody, AECraftingTaskResult, AEHitResult, AEItemsResult, AEMEInterface, AENode, AECPUSuspendResult } from "../types/ae2";
 import { ClassInfoSchema } from "./common";
 import { FluidSchema } from "./fluid";
 import { ItemStackSchema } from "./item";
@@ -151,6 +151,14 @@ export const AECPUCancelBodySchema = Joi.object<AECPUCancelBody>({
 export const AECPUCancelResultSchema = Joi.object<AECPUCancelResult>({
     cpu: Joi.string().required(),
     wasBusy: Joi.boolean().required(),
+});
+
+export const AECPUSuspendBodySchema = AECPUCancelBodySchema;
+
+export const AECPUSuspendResultSchema = Joi.object<AECPUSuspendResult>({
+    cpu: Joi.string().required(),
+    wasBusy: Joi.boolean().required(),
+    Suspended: Joi.boolean().required(),
 });
 
 export const AEItemStackSchema = Joi.alternatives(

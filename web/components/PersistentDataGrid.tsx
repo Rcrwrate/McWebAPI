@@ -1,5 +1,6 @@
 "use client"
 
+import CustomPagination from "@/app/blocks/CustomPagination"
 import Box from "@mui/material/Box"
 import CircularProgress from "@mui/material/CircularProgress"
 import {
@@ -80,13 +81,17 @@ export default function PersistentDataGrid<R extends GridValidRowModel = any>({
 
     return initialState ?
         <DataGridPro
+            slots={{ pagination: CustomPagination, ...gridProps.slots }}
+            pagination
+            showToolbar
+            density="compact"
             {...gridProps}
             apiRef={apiRef}
             initialState={{
                 ...gridProps.initialState,
                 ...initialState,
             }}
-        /> : <Box sx={{ height: "100%", display: "grid", placeItems: "center" }}>
+        /> : <Box sx={{ height: "100vh", display: "grid", placeItems: "center" }}>
             <CircularProgress />
         </Box>
 }

@@ -4,6 +4,8 @@ import type {
     AECPU,
     AECPUCancelBody,
     AECPUCancelResult,
+    AECPUSuspendBody,
+    AECPUSuspendResult,
     AECraftingTaskBody,
     AECraftingTaskResult,
     AEHitResult,
@@ -59,6 +61,8 @@ import type {
     AE2PatternSchema,
     AECPUCancelBodySchema,
     AECPUCancelResultSchema,
+    AECPUSuspendBodySchema,
+    AECPUSuspendResultSchema,
     AECPUSchema,
     AECraftingTaskBodySchema,
     AECraftingTaskResultSchema,
@@ -796,6 +800,20 @@ export class WebApiClient {
     aeCancel(params: { x: number, y: number, z: number, dimension?: number }, body: AECPUCancelBody): Promise<AECPUCancelResult> {
         return this.request<AECPUCancelResult>(`/ae/cpu/cancel${buildQuery(params)}`, {
             method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+    }
+
+    /**
+     * 暂停（suspend=true，POST）或恢复（suspend=false，DELETE）AE 合成 CPU 上正在执行的合成任务。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUSuspendHandler.java)
+     * @param body 使用 {@link AECPUSuspendBodySchema} 验证
+     * @returns 使用 {@link AECPUSuspendResultSchema} 验证
+     */
+    aeSuspend(params: { x: number, y: number, z: number, dimension?: number }, body: AECPUSuspendBody, suspend: boolean): Promise<AECPUSuspendResult> {
+        return this.request<AECPUSuspendResult>(`/ae/cpu/suspend${buildQuery(params)}`, {
+            method: suspend ? "POST" : "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });

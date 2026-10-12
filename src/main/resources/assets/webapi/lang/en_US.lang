@@ -63,6 +63,7 @@ webapi.route.ae.cpu.description=List all AE crafting CPUs with their running tas
 webapi.route.ae.cpu.sse.description=SSE stream of AE crafting CPU states/tasks at coordinates. Query params: x, y, z, dim (optional, default=0), interval (seconds, default 5).
 webapi.route.ae.cpu.task.description=Submit an AE crafting task. POST body: {id, Damage?, Count, Type? (item|fluid), tag?, cpu?}; query params x, y, z, dim (optional, default=0).
 webapi.route.ae.cpu.cancel.description=Cancel the crafting task on an AE CPU. DELETE body: {name} (CPU name) or {id} (CPU index), at least one; query params x, y, z, dim (optional, default=0).
+webapi.route.ae.cpu.suspend.description=Suspend or resume the crafting task on an AE CPU. POST suspends, DELETE resumes. Body: {name} (CPU name) or {id} (CPU index), at least one; query params x, y, z, dim (optional, default=0). Returns whether the CPU was busy and the resulting suspended state.
 webapi.route.ae.item.description=Query the AE2 network item list at coordinates (cached). Query params: x, y, z, dim (optional, default=0).
 webapi.route.ae.item.sse.description=SSE stream of the AE2 network item list at coordinates. Query params: x, y, z, dim (optional, default=0); push interval from the AE2 item config.
 webapi.route.ae.me.description=Dump the patterns of an ME interface at coordinates (block TileInterface or cable-bus PartInterface). Query params: x, y, z, dim (optional, default=0).

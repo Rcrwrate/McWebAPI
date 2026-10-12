@@ -1,8 +1,8 @@
 "use client"
 
-import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { RContainer } from "@/components/RContainer"
 import { useAPI } from "@/data/api"
 import useCoords from "@/data/useCoords"
@@ -20,19 +20,15 @@ import {
     Grid,
     Paper,
     Stack,
-    TextField,
     Typography
 } from "@mui/material"
-import type { GridFilterModel, GridRowSelectionModel, GridSortModel } from "@mui/x-data-grid"
+import type { GridRowSelectionModel } from "@mui/x-data-grid"
 import {
-    DataGrid,
-    GridColDef,
-    gridExpandedSortedRowEntriesSelector,
+    GridColDef
 } from "@mui/x-data-grid"
-import { GridApiCommunity } from "@mui/x-data-grid/internals"
-import type { AE2Pattern, AEMEInterface, AEStack, ItemStack } from "@shirokasoke/webapi-sdk"
+import type { AE2Pattern, AEMEInterface, AEStack } from "@shirokasoke/webapi-sdk"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
 
@@ -151,11 +147,6 @@ export default function AEPatternsPage() {
     const [x, y, z, dimension] = useCoords(searchParams)
     const [patterns, setPatterns] = useState<PatternRow[]>([])
     const [error, setError] = useState<string | null>(null)
-    const [displayRows, setDisplayRows] = useState<PatternRow[]>([])
-
-    const [sortM, setSortM] = useState<GridSortModel>()
-    const [filterM, setFilterM] = useState<GridFilterModel>()
-    const apiRef = useRef<GridApiCommunity>(null)
 
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
 
@@ -177,19 +168,9 @@ export default function AEPatternsPage() {
                     })
                 })
                 setPatterns(rows)
-                setDisplayRows(rows)
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载样板列表失败"))
     }, [api != undefined, x, y, z, dimension])
-
-    useEffect(() => {
-        if (!apiRef.current) return
-        const timer = setTimeout(() => {
-            const entries = gridExpandedSortedRowEntriesSelector(apiRef)
-            setDisplayRows(entries.map((e) => e.model as PatternRow))
-        }, 200)
-        return () => clearTimeout(timer)
-    }, [filterM, sortM])
 
     const craftingCount = patterns.filter((p) => p.crafting).length
     const processingCount = patterns.filter((p) => !p.crafting).length
@@ -268,41 +249,18 @@ export default function AEPatternsPage() {
                 </Grid>
             )}
 
-            <Grid container spacing={2} sx={{ mb: 2, alignItems: "center", justifyContent: "center" }}>
-                <Grid>
-                    <TextField
-                        label="搜索样板"
-                        placeholder="输入接口名、物品名等快速筛选"
-                        onChange={(e) => apiRef.current?.setQuickFilterValues([e.target.value])}
-                        size="small"
-                        sx={{ minWidth: 280 }}
-                    />
-                </Grid>
-                <Grid>
-                    <Typography variant="body2" color="primary">
-                        共 {displayRows.length} / {patterns.length} 个样板
-                    </Typography>
-                </Grid>
-            </Grid>
-
             <Paper sx={{ height: "70vh", width: "100%", mb: 2 }}>
-                <DataGrid
-                    apiRef={apiRef}
+                <PersistentDataGrid
+                    storageKey="ae-patterns"
                     rows={patterns}
                     columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                     loading={patterns.length === 0}
                     getRowId={(row) => row.uid}
                     pageSizeOptions={[25, 50, 100]}
-                    filterModel={filterM}
-                    onFilterModelChange={(m) => setFilterM(m)}
-                    sortModel={sortM}
-                    onSortModelChange={(s) => setSortM(s)}
-                    density="compact"
                     rowSelectionModel={rowSelectionModel}
                     onRowSelectionModelChange={(model) => {
                         setRowSelectionModel(model)
                     }}
-                    slots={{ pagination: CustomPagination }}
                     slotProps={{
                         loadingOverlay: {
                             variant: "skeleton",

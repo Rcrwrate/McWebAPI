@@ -12,7 +12,7 @@
         "@mui/x-data-grid": "^9.15.0",
         "@mui/x-data-grid-pro": "^9.15.0",
         "@mui/x-license": "^9.15.0",
-        "@shirokasoke/webapi-sdk": "2.9.0-beta3-0.14-pre",
+        "@shirokasoke/webapi-sdk": "2.9.0-beta3-0.15-pre",
         "next": "16.4.0",
         "notistack": "^3.0.2",
         "react": "19.3.0",
@@ -282,7 +282,7 @@
 
     "@rtsao/scc": ["@rtsao/scc@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@rtsao/scc/-/scc-1.1.0.tgz", {}, ""],
 
-    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@2.9.0-beta3-0.14-pre", "", { "dependencies": { "@microsoft/fetch-event-source": "^2.0.1", "joi": "^18.2.9" } }, "sha512-ApqSiYl3SZglTaQReUmyPL9RJU6OVinzi4nHRzyvmRA/LDUPVUf6KMJ1hZodF6Uri6WtaciMiZXgm+zexEvGsQ=="],
+    "@shirokasoke/webapi-sdk": ["@shirokasoke/webapi-sdk@2.9.0-beta3-0.15-pre", "", { "dependencies": { "@microsoft/fetch-event-source": "^2.0.1", "joi": "^18.2.9" } }, "sha512-WQb3jZgzf2thOkHQsPO9ufVV89gcUpeNg11wSq1Nwt2m7yMSgtos8Xs3ipMWY2eus7fL5wUZptftYymQUsrwhg=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://npm.cnb.cool/shirokasoke/npm/-/packages/@standard-schema/spec/-/spec-1.1.0.tgz", {}, ""],
 

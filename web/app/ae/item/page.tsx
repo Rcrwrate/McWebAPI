@@ -1,6 +1,5 @@
 "use client"
 
-import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
@@ -266,12 +265,8 @@ export default function AEItemPage() {
                     pageSizeOptions={[25, 50, 100, 500]}
                     paginationModel={paginationModel}
                     onPaginationModelChange={setPaginationModel}
-                    pagination
-                    showToolbar
                     onFilterModelChange={displayCallback}
                     onSortModelChange={displayCallback}
-                    density="compact"
-                    slots={{ pagination: CustomPagination }}
                     rowSelectionModel={rowSelectionModel}
                     onRowSelectionModelChange={(model) => setRowSelectionModel(model)}
                     onCellClick={(_, event) => setMousePos({ left: event.clientX, top: event.clientY })}
@@ -390,6 +385,16 @@ export default function AEItemPage() {
                 }}>取消选择</Button>
             </Popover>
             <Footer args={searchParams.toString()} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center", pt: 2 }}>
+                <Button onClick={() => CP(JSON.stringify({ type: "ae-item-storage", requestData: { x, y, z, dimension } }))}
+                    size="small" variant="outlined" startIcon={<ContentCopyIcon />} >复制物品存储占用面板代码</Button>
+                <Button onClick={() => CP(JSON.stringify({ type: "ae-item-type", requestData: { x, y, z, dimension } }))}
+                    size="small" variant="outlined" startIcon={<ContentCopyIcon />} >复制物品类型占用面板代码</Button>
+                <Button onClick={() => CP(JSON.stringify({ type: "ae-fluid-storage", requestData: { x, y, z, dimension } }))}
+                    size="small" variant="outlined" startIcon={<ContentCopyIcon />} >复制流体存储占用面板代码</Button>
+                <Button onClick={() => CP(JSON.stringify({ type: "ae-fluid-type", requestData: { x, y, z, dimension } }))}
+                    size="small" variant="outlined" startIcon={<ContentCopyIcon />} >复制流体类型占用面板代码</Button>
+            </Box>
         </RContainer>
     )
 }

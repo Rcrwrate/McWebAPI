@@ -1,14 +1,16 @@
 "use client"
 
+import { useResetAPI } from "@/data/api";
 import CachedIcon from '@mui/icons-material/Cached';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ImageIcon from '@mui/icons-material/Image';
 import SettingsIcon from '@mui/icons-material/Settings';
+import StreamIcon from '@mui/icons-material/Stream';
 import { Button, FormControl, Grid, MenuItem, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow, TextField, styled } from "@mui/material";
+import { WebApiClient } from "@shirokasoke/webapi-sdk";
 import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import ColorSetting from "./Color";
-import { WebApiClient } from "@shirokasoke/webapi-sdk"
 
 const H2 = styled("h2")(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#e5dfdf',
@@ -29,6 +31,8 @@ export default function Setting() {
     const [auth, setAuth] = useState(def.auth)
     const [data, setdata] = useState<{ key: string; length: number; }[]>([])
     const [CacheStatus, setCS] = useState(false)
+    const [noSSE, setNoSSE] = useState(false)
+    const resetAPI = useResetAPI()
 
     async function cache() {
         const r = await navigator.serviceWorker.getRegistrations()
@@ -73,6 +77,7 @@ export default function Setting() {
     useEffect(() => {
         setUrl(localStorage.getItem("url") ?? def.url)
         setAuth(localStorage.getItem("auth") ?? def.auth)
+        setNoSSE(localStorage.getItem("noSSE") === "true")
         cache()
     }, [])
 
@@ -91,7 +96,25 @@ export default function Setting() {
                     <Grid size={{ xs: 12, md: 6 }}>
                         <TextField label="Auth" variant="outlined" value={auth} onChange={(e) => { setAuth(e.target.value) }} />
                     </Grid>
-
+                    <Grid size={{ xs: 12, md: 12 }}>
+                        <Stack direction="row" spacing={2} sx={{ justifyContent: "center", flexWrap: "wrap" }} useFlexGap >
+                            <p>SSE实时推送</p>
+                            <Button variant="outlined" color={noSSE ? "error" : "success"} onClick={() => {
+                                if (noSSE) {
+                                    localStorage.setItem("noSSE", "false")
+                                    setNoSSE(false)
+                                    enqueueSnackbar(`已启用SSE推送`, { variant: 'info' })
+                                } else {
+                                    localStorage.setItem("noSSE", "true")
+                                    setNoSSE(true)
+                                    enqueueSnackbar(`已禁用SSE推送`, { variant: 'info' })
+                                }
+                                resetAPI()
+                            }}>
+                                {noSSE ? "已禁用" : "已启用"}
+                            </Button>
+                        </Stack>
+                    </Grid>
                     <Button variant="contained" color="success" onClick={() => {
                         localStorage.setItem("url", url)
                         if (auth.length > 0) {
@@ -99,7 +122,8 @@ export default function Setting() {
                         } else {
                             localStorage.removeItem("auth")
                         }
-                        enqueueSnackbar("保存成功，重新加载后生效", { variant: "success" })
+                        resetAPI()
+                        enqueueSnackbar("保存成功", { variant: "success" })
                     }}>保存修改</Button>
                     <Button variant="contained" color="info" onClick={async () => {
                         const api = new WebApiClient({ baseUrl: url, authToken: auth, fetch: (input: RequestInfo | URL, init?: RequestInit) => window.fetch(input, init) })
@@ -116,6 +140,10 @@ export default function Setting() {
                         enqueueSnackbar("已重置，但未保存", { variant: "warning" })
                     }}>重置设置</Button>
                 </Grid>
+                <H2>
+                    <StreamIcon /> SSE推送
+                </H2>
+
                 <H2>
                     <CachedIcon /> 缓存控制
                 </H2>

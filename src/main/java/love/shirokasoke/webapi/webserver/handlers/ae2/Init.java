@@ -13,6 +13,7 @@ public class Init {
         RouteRegistry.register(new AEMEsupportHandler());
         RouteRegistry.register(new AECPUHandler());
         RouteRegistry.register(new AECPUTaskHandler());
+        RouteRegistry.register(new AECPUSuspendHandler());
         RouteRegistry.register(new AECPUCancelHandler());
         RouteRegistry.register(new AENodesHandler());
         if (ServerConfig.useVirtualThreads && ServerConfig.useServerSideEvent) {

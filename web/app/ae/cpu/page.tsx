@@ -1,17 +1,20 @@
 "use client"
 
-import CustomPagination from "@/app/blocks/CustomPagination"
-import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { RContainer } from "@/components/RContainer"
 import TinyProcess from "@/components/TinyProcess"
 import { useAPI } from "@/data/api"
+import CP from "@/data/Clipboard"
 import { formatBytes, formatDuration } from "@/data/format"
 import useCoords from "@/data/useCoords"
 import CancelScheduleSendIcon from '@mui/icons-material/CancelScheduleSend'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MoreVertIcon from "@mui/icons-material/MoreVert"
+import PauseIcon from "@mui/icons-material/Pause"
+import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import {
     Alert,
@@ -32,15 +35,11 @@ import {
     Select,
     Typography
 } from "@mui/material"
-import type { GridRowSelectionModel } from "@mui/x-data-grid"
-import {
-    GridColDef
-} from "@mui/x-data-grid"
-import type { GridApiPro } from "@mui/x-data-grid-pro"
+import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid"
 import type { AECPU } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
 
@@ -55,13 +54,14 @@ const columns: GridColDef<AECPURow>[] = [
         valueGetter: (_value, row) => row.name || "-",
     },
     {
-        field: "busy",
-        headerName: "忙碌",
+        field: "status",
+        headerName: "状态",
         width: 100,
-        type: "boolean",
+        type: "string",
         filterable: true,
+        valueGetter: (_value, row) => row.suspended ? "暂停" : row.busy ? "运行中" : "空闲",
         renderCell: (params) => (
-            <Chip label={params.row.busy ? "是" : "否"} color={params.row.busy ? "warning" : "success"} size="small" />
+            <Chip label={params.value} color={params.row.suspended ? "primary" : params.row.busy ? "success" : "default"} size="small" />
         ),
     }, {
         field: "progress",
@@ -153,7 +153,7 @@ export default function AECPUPage() {
 
     const [cpus, setCpus] = useState<AECPURow[]>([])
     const [error, setError] = useState<string | null>(null)
-    
+
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
 
     const [refreshSec, setRefreshSec] = useState<number>(5)
@@ -299,14 +299,11 @@ export default function AECPUPage() {
             <Paper sx={{ height: "70vh", width: "100%", mb: 2 }}>
                 <PersistentDataGrid
                     storageKey="ae-cpu"
-                    showToolbar
                     rows={cpus}
                     columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                     loading={cpus.length == 0}
                     getRowId={(row) => row.id}
                     pageSizeOptions={[25, 50, 100]}
-                    density="compact"
-                    slots={{ pagination: CustomPagination }}
                     rowSelectionModel={rowSelectionModel}
                     onRowSelectionModelChange={(model) => {
                         setRowSelectionModel(model)
@@ -324,29 +321,50 @@ export default function AECPUPage() {
 
                 return (
                     <Box sx={{ mb: 2 }}>
-                        <Button fullWidth variant="outlined" color="error" disabled={!selectedCPU.busy}
-                            startIcon={<CancelScheduleSendIcon />}
-                            onClick={async () => {
-                                if (!x) return
-                                const r = await api.aeCancel(
-                                    { x, y, z, dimension },
-                                    {
-                                        id: selectedCPU.id,
-                                        ...((selectedCPU?.name && selectedCPU.name.length > 0) ? { name: selectedCPU.name } : {}),
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            <Button fullWidth variant="outlined" color="warning" disabled={!selectedCPU.busy}
+                                startIcon={selectedCPU.suspended ? <PlayArrowIcon /> : <PauseIcon />}
+                                onClick={async () => {
+                                    if (!x) return
+                                    const r = await api.aeSuspend(
+                                        { x, y, z, dimension },
+                                        {
+                                            id: selectedCPU.id,
+                                            ...((selectedCPU?.name && selectedCPU.name.length > 0) ? { name: selectedCPU.name } : {}),
+                                        },
+                                        !selectedCPU.suspended
+                                    )
+                                    enqueueSnackbar(r.Suspended ? `已暂停 ${r.cpu} 的合成任务` : `已恢复 ${r.cpu} 的合成任务`, { variant: "info" })
+                                    loadCPUs()
+                                }}>
+                                {selectedCPU.suspended
+                                    ? `继续 ${selectedCPU.name || "CPU"} 的合成任务`
+                                    : `暂停 ${selectedCPU.name || "CPU"} 的合成任务`}
+                            </Button>
+                            <Button fullWidth variant="outlined" color="error" disabled={!selectedCPU.busy}
+                                startIcon={<CancelScheduleSendIcon />}
+                                onClick={async () => {
+                                    if (!x) return
+                                    const r = await api.aeCancel(
+                                        { x, y, z, dimension },
+                                        {
+                                            id: selectedCPU.id,
+                                            ...((selectedCPU?.name && selectedCPU.name.length > 0) ? { name: selectedCPU.name } : {}),
+                                        }
+                                    )
+                                    if (r.wasBusy) {
+                                        enqueueSnackbar("已尝试取消合成任务", { variant: "info" })
+                                    } else {
+                                        enqueueSnackbar("CPU无合成任务", { variant: "warning" })
                                     }
-                                )
-                                if (r.wasBusy) {
-                                    enqueueSnackbar("已尝试取消合成任务", { variant: "info" })
-                                } else {
-                                    enqueueSnackbar("CPU无合成任务", { variant: "warning" })
-                                }
-                                setRowSelectionModel({ type: "include", ids: new Set() })
-                                loadCPUs()
-                            }}>
-                            {selectedCPU.busy
-                                ? `取消 ${selectedCPU.name || "CPU"} 正在进行的合成任务 (${(selectedCPU.tasking?.length ?? 0) + (selectedCPU.tasks?.length ?? 0)}个 )`
-                                : `${selectedCPU.name || "CPU"} 无正在进行的合成任务`}
-                        </Button>
+                                    setRowSelectionModel({ type: "include", ids: new Set() })
+                                    loadCPUs()
+                                }}>
+                                {selectedCPU.busy
+                                    ? `取消 ${selectedCPU.name || "CPU"} 正在进行的合成任务 (${(selectedCPU.tasking?.length ?? 0) + (selectedCPU.tasks?.length ?? 0)}个 )`
+                                    : `${selectedCPU.name || "CPU"} 无正在进行的合成任务`}
+                            </Button>
+                        </Box>
                         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, pt: 1 }}>
                             {selectedCPU?.tasking && selectedCPU.tasking.length > 0 && (
                                 <Paper sx={{
@@ -417,6 +435,10 @@ export default function AECPUPage() {
                 )
             })()}
             <Footer args={searchParams.toString()} />
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center", pt: 2 }}>
+                <Button onClick={() => CP(JSON.stringify({ type: "ae-cpu-status", requestData: { x, y, z, dimension } }))}
+                    size="small" variant="outlined" startIcon={<ContentCopyIcon />} >复制CPU状态监控面板代码</Button>
+            </Box>
         </RContainer>
     )
 }

@@ -4,7 +4,7 @@ import { WebApiClient } from "@shirokasoke/webapi-sdk";
 import { createContext, useCallback, useContext, useState } from "react";
 
 function createClient(): WebApiClient {
-    return new WebApiClient({
+    const client = new WebApiClient({
         baseUrl:
             typeof window !== "undefined"
                 ? (localStorage.getItem("url") ?? "http://127.0.0.1:40002/")
@@ -16,6 +16,11 @@ function createClient(): WebApiClient {
         fetch: (input: RequestInfo | URL, init?: RequestInit) =>
             window.fetch(input, init),
     });
+    // 禁用 SSE
+    if (typeof window !== "undefined" && localStorage.getItem("noSSE") === "true") {
+        client.SSE = false;
+    }
+    return client;
 }
 
 interface APIContextValue {

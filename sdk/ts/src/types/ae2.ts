@@ -139,6 +139,16 @@ export interface AECPUCancelResult {
     wasBusy: boolean;
 }
 
+/** AE CPU 暂停/恢复请求体，与取消任务一致：按名称或序号定位 CPU */
+export type AECPUSuspendBody = AECPUCancelBody;
+
+export interface AECPUSuspendResult {
+    cpu: string;
+    wasBusy: boolean;
+    /** 本次操作后的挂起状态（POST 暂停为 true，DELETE 恢复为 false） */
+    Suspended: boolean;
+}
+
 /** AE 网络库存堆：物品（type 为 "item"）或流体（type 为 "fluid"），可通过 type 判别收窄 */
 export type AEItemStack =
     | (ItemStack & { type: "item"; stackSize: number; Craftable: boolean })
