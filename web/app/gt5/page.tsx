@@ -1,6 +1,6 @@
 "use client"
 
-import PersistentDataGrid from "@/app/blocks/PersistentDataGrid"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { H2 } from "@/components/H2"
 import type { MultiSegment } from "@/components/MultiProgressBar"
 import { MultiProgressBar, MultiProgressLegend } from "@/components/MultiProgressBar"

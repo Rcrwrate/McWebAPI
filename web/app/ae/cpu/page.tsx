@@ -1,7 +1,7 @@
 "use client"
 
 import CustomPagination from "@/app/blocks/CustomPagination"
-import PersistentDataGrid from "@/app/blocks/PersistentDataGrid"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
@@ -153,10 +153,7 @@ export default function AECPUPage() {
 
     const [cpus, setCpus] = useState<AECPURow[]>([])
     const [error, setError] = useState<string | null>(null)
-    const [displayRows, setDisplayRows] = useState<AECPURow[]>([])
-
-    const apiRef = useRef<GridApiPro>(null)
-
+    
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
 
     const [refreshSec, setRefreshSec] = useState<number>(5)
@@ -173,7 +170,6 @@ export default function AECPUPage() {
                     storage: c.availableStorage > 0 ? c.usedStorage / c.availableStorage : 0,
                 }))
                 setCpus(rows)
-                setDisplayRows(rows)
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载 CPU 失败"))
     }
@@ -187,7 +183,6 @@ export default function AECPUPage() {
                 storage: c.availableStorage > 0 ? c.usedStorage / c.availableStorage : 0,
             }))
             setCpus(rows)
-            setDisplayRows(rows)
         }, (e) => { enqueueSnackbar(`${e}`, { variant: "error" }) })
         return () => sse.abort()
     }
@@ -299,17 +294,11 @@ export default function AECPUPage() {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid>
-                    <Typography variant="body2" color="primary">
-                        共 {displayRows.length} / {cpus.length} 个 CPU
-                    </Typography>
-                </Grid>
             </Grid>
 
             <Paper sx={{ height: "70vh", width: "100%", mb: 2 }}>
                 <PersistentDataGrid
                     storageKey="ae-cpu"
-                    apiRef={apiRef}
                     showToolbar
                     rows={cpus}
                     columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}

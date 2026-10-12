@@ -19,9 +19,10 @@ export function formatBytes(bytes: number): string {
     return `${sign}${val.toFixed(2)} ${BYTE_UNITS[exp]}`
 }
 
+const COUNT_UNITS = ["", "k", "M", "G", "T", "P", "E"]
+
 export function formatCount(n: number): string {
     if (!n || n < 1000) return String(n || 0)
-    if (n < 1000000) return `${(n / 1000).toFixed(1)}k`
-    if (n < 1000000000) return `${(n / 1000000).toFixed(1)}M`
-    return `${(n / 1000000000).toFixed(1)}G`
+    const exp = Math.min(Math.floor(Math.log10(n) / 3), COUNT_UNITS.length - 1)
+    return `${(n / Math.pow(1000, exp)).toFixed(1)}${COUNT_UNITS[exp]}`
 }

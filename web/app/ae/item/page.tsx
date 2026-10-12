@@ -4,16 +4,18 @@ import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
 import MCToolitip from "@/components/MCTooltip"
 import Percent from "@/components/PerCent"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { RContainer } from "@/components/RContainer"
 import { SelectableIconPaper } from "@/components/SelectableIconPaper"
 import { useAPI } from "@/data/api"
+import CP from "@/data/Clipboard"
 import { formatBytes, formatCount } from "@/data/format"
 import useCoords from "@/data/useCoords"
 import CloseIcon from "@mui/icons-material/Close"
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SendIcon from '@mui/icons-material/Send'
 import ViewListIcon from "@mui/icons-material/ViewList"
 import ViewModuleIcon from "@mui/icons-material/ViewModule"
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
     Alert,
     Box,
@@ -32,20 +34,18 @@ import {
     ToggleButtonGroup,
     Typography
 } from "@mui/material"
-import type { GridFilterModel, GridRowSelectionModel, GridSortModel } from "@mui/x-data-grid"
+import type { GridRowSelectionModel } from "@mui/x-data-grid"
 import {
-    DataGrid,
     GridColDef,
     gridExpandedSortedRowEntriesSelector
 } from "@mui/x-data-grid"
-import { GridApiCommunity } from "@mui/x-data-grid/internals"
+import type { GridApiPro } from "@mui/x-data-grid-pro/models"
 import type { AEItemStack, AEItemsResult } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
 import { Footer } from "../Footer"
 import ItemIcon from "../ItemIcon"
-import CP from "@/data/Clipboard"
 type AEItemRow = AEItemStack & { uid: string }
 type AEItemStorageStats = Pick<AEItemsResult, "totalBytes" | "usedBytes" | "totalTypes" | "usedTypes">
 
@@ -133,9 +133,7 @@ export default function AEItemPage() {
 
     const [displayRows, setDisplayRows] = useState<AEItemRow[]>([])
 
-    const [sortM, setSortM] = useState<GridSortModel>()
-    const [filterM, setFilterM] = useState<GridFilterModel>()
-    const apiRef = useRef<GridApiCommunity>(null)
+    const apiRef = useRef<GridApiPro>(null)
 
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
     const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
@@ -151,7 +149,7 @@ export default function AEItemPage() {
                     uid: it.type == "item" ? `${it.id}-${it.damage}-${it.nbt?.nbtstr ?? ""}` : `f-${it.id}`,
                 }))
                 setItems(rows)
-                setDisplayRows(rows)
+                displayCallback()
                 setStorageStats([{
                     totalBytes: data.totalBytes, usedBytes: data.usedBytes, totalTypes: data.totalTypes, usedTypes: data.usedTypes,
                 }, {
@@ -161,15 +159,13 @@ export default function AEItemPage() {
             .catch((e) => setError(e instanceof Error ? e.message : "加载物品失败"))
     }, [api != undefined, x, y, z, dimension])
 
-    useEffect(() => {
+    const displayCallback = () => {
         if (!apiRef.current) return
-        const timer = setTimeout(() => {
+        setTimeout(() => {
             const entries = gridExpandedSortedRowEntriesSelector(apiRef)
             setDisplayRows(entries.map((e) => e.model as AEItemRow))
         }, 200)
-        return () => clearTimeout(timer)
-    }, [filterM, sortM])
-
+    }
     let pageCount = 0
     let pageItems: AEItemRow[] = []
     if (viewMode === "icon") {
@@ -232,7 +228,7 @@ export default function AEItemPage() {
             <Grid container spacing={2} sx={{ mb: 2, alignItems: "center", justifyContent: "center" }}>
                 <Grid>
                     <TextField label="搜索物品" placeholder="输入名称、注册名或 ID" size="small" sx={{ minWidth: 280 }}
-                        disabled={viewMode == "icon"}
+                        disabled={apiRef.current == undefined}
                         onChange={(e) => apiRef.current?.setQuickFilterValues([e.target.value])} />
                 </Grid>
                 <Grid>
@@ -259,99 +255,92 @@ export default function AEItemPage() {
                     </ToggleButtonGroup>
                 </Grid>
             </Grid>
-
-            {viewMode === "list" ? (
-                <Paper sx={{ height: "70vh", width: "100%", mb: 2 }}>
-                    <DataGrid
-                        apiRef={apiRef}
-                        rows={items}
-                        columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
-                        loading={items.length === 0}
-                        getRowId={(row) => row.uid}
-                        pageSizeOptions={[25, 50, 100, 500]}
-                        paginationModel={paginationModel}
-                        onPaginationModelChange={setPaginationModel}
-                        filterModel={filterM}
-                        onFilterModelChange={(m) => setFilterM(m)}
-                        sortModel={sortM}
-                        onSortModelChange={(s) => setSortM(s)}
-                        density="compact"
-                        slots={{ pagination: CustomPagination }}
-                        rowSelectionModel={rowSelectionModel}
-                        onRowSelectionModelChange={(model) => {
-                            setRowSelectionModel(model)
+            <Paper sx={{ height: "70vh", width: "100%", mb: 2, display: viewMode === "list" ? undefined : "none" }}>
+                <PersistentDataGrid
+                    apiRef={apiRef}
+                    storageKey="ae-item"
+                    rows={items}
+                    columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                    loading={items.length === 0}
+                    getRowId={(row) => row.uid}
+                    pageSizeOptions={[25, 50, 100, 500]}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={setPaginationModel}
+                    pagination
+                    showToolbar
+                    onFilterModelChange={displayCallback}
+                    onSortModelChange={displayCallback}
+                    density="compact"
+                    slots={{ pagination: CustomPagination }}
+                    rowSelectionModel={rowSelectionModel}
+                    onRowSelectionModelChange={(model) => setRowSelectionModel(model)}
+                    onCellClick={(_, event) => setMousePos({ left: event.clientX, top: event.clientY })}
+                    slotProps={{
+                        loadingOverlay: {
+                            variant: "skeleton",
+                            noRowsVariant: "skeleton",
+                        },
+                    }}
+                />
+            </Paper>
+            {viewMode === "icon" && <>
+                <Paper sx={{ p: 2, mb: 2, position: "relative", minHeight: 240 }}>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))",
+                            gap: 1.5,
+                            opacity: items.length == 0 ? 0.35 : 1,
+                            transition: "opacity 0.2s ease",
                         }}
-                        onCellClick={(_, event) => {
-                            setMousePos({ left: event.clientX, top: event.clientY })
-                        }}
-                        slotProps={{
-                            loadingOverlay: {
-                                variant: "skeleton",
-                                noRowsVariant: "skeleton",
-                            },
-                        }}
-                    />
-                </Paper>
-            ) : (
-                <>
-                    <Paper sx={{ p: 2, mb: 2, position: "relative", minHeight: 240 }}>
+                    >
+                        {pageItems.map((item) => {
+                            const selected = rowSelectionModel.ids.has(item.uid)
+                            return <MCToolitip k={item.uid} item={item}>
+                                <SelectableIconPaper elevation={selected ? 16 : 0} selected={selected} onClick={(event) => {
+                                    setRowSelectionModel({ type: "include", ids: selected ? new Set([]) : new Set([item.uid]) })
+                                    setMousePos({ left: event.clientX, top: event.clientY })
+                                }}>
+                                    <ItemIcon api={api} item={item} badge />
+                                </SelectableIconPaper>
+                            </MCToolitip>
+                        })}
+                    </Box>
+                    {items.length == 0 && (
                         <Box
                             sx={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))",
-                                gap: 1.5,
-                                opacity: items.length == 0 ? 0.35 : 1,
-                                transition: "opacity 0.2s ease",
+                                position: "absolute",
+                                inset: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                bgcolor: "rgba(255, 255, 255, 0.35)",
+                                backdropFilter: "blur(1px)",
                             }}
                         >
-                            {pageItems.map((item) => {
-                                const selected = rowSelectionModel.ids.has(item.uid)
-                                return <MCToolitip k={item.uid} item={item}>
-                                    <SelectableIconPaper elevation={selected ? 16 : 0} selected={selected} onClick={(event) => {
-                                        setRowSelectionModel({ type: "include", ids: selected ? new Set([]) : new Set([item.uid]) })
-                                        setMousePos({ left: event.clientX, top: event.clientY })
-                                    }}>
-                                        <ItemIcon api={api} item={item} badge />
-                                    </SelectableIconPaper>
-                                </MCToolitip>
-                            })}
-                        </Box>
-                        {items.length == 0 && (
-                            <Box
-                                sx={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    bgcolor: "rgba(255, 255, 255, 0.35)",
-                                    backdropFilter: "blur(1px)",
-                                }}
-                            >
-                                <CircularProgress />
-                            </Box>
-                        )}
-                        {pageItems.length === 0 && items.length != 0 && (
-                            <Typography align="center" sx={{ py: 4 }}>
-                                无匹配结果
-                            </Typography>
-                        )}
-                    </Paper>
-                    {pageCount > 1 && (
-                        <Box sx={{ display: "flex", justifyContent: "center", pb: 1 }}>
-                            <Pagination
-                                count={pageCount}
-                                page={paginationModel.page + 1}
-                                onChange={(_, p) => {
-                                    setPaginationModel(prev => ({ ...prev, page: p - 1 }))
-                                }}
-                                showFirstButton
-                                showLastButton
-                            />
+                            <CircularProgress />
                         </Box>
                     )}
-                </>
-            )}
+                    {pageItems.length === 0 && items.length != 0 && (
+                        <Typography align="center" sx={{ py: 4 }}>
+                            无匹配结果
+                        </Typography>
+                    )}
+                </Paper>
+                {pageCount > 1 && (
+                    <Box sx={{ display: "flex", justifyContent: "center", pb: 1 }}>
+                        <Pagination
+                            count={pageCount}
+                            page={paginationModel.page + 1}
+                            onChange={(_, p) => {
+                                setPaginationModel(prev => ({ ...prev, page: p - 1 }))
+                            }}
+                            showFirstButton
+                            showLastButton
+                        />
+                    </Box>
+                )}
+            </>}
             <Popover
                 open={rowSelectionModel.ids.size > 0 && mousePos !== null}
                 anchorReference="anchorPosition"
