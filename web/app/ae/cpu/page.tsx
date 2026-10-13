@@ -194,6 +194,7 @@ export default function AECPUPage() {
             if (r) {
                 fetchCPUSSE().then(r => { if (r) cleanup.push(r) })
             } else {
+                loadCPUs()
                 const interval = setInterval(() => loadCPUs(), refreshSec * 1000)
                 cleanup.push(() => clearInterval(interval))
             }

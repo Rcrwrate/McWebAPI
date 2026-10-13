@@ -1,7 +1,7 @@
 "use client"
 
-import CustomPagination from "@/app/blocks/CustomPagination"
 import { H2 } from "@/components/H2"
+import PersistentDataGrid from "@/components/PersistentDataGrid"
 import { RContainer } from "@/components/RContainer"
 import { useAPI } from "@/data/api"
 import useCoords from "@/data/useCoords"
@@ -21,13 +21,11 @@ import {
     TextField,
     Typography
 } from "@mui/material"
-import type { GridFilterModel, GridRowSelectionModel, GridSortModel } from "@mui/x-data-grid"
+import type { GridRowSelectionModel } from "@mui/x-data-grid"
 import {
-    DataGrid,
-    GridColDef,
-    gridExpandedSortedRowEntriesSelector,
+    GridColDef
 } from "@mui/x-data-grid"
-import { GridApiCommunity } from "@mui/x-data-grid/internals"
+import { GridApiPro } from "@mui/x-data-grid-pro"
 import type { AEMEInterface } from "@shirokasoke/webapi-sdk"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -125,11 +123,8 @@ export default function AEMESPage() {
     const [x, y, z, dimension] = useCoords(searchParams)
     const [interfaces, setInterfaces] = useState<AEMESRow[]>([])
     const [error, setError] = useState<string | null>(null)
-    const [displayRows, setDisplayRows] = useState<AEMESRow[]>([])
 
-    const [sortM, setSortM] = useState<GridSortModel>()
-    const [filterM, setFilterM] = useState<GridFilterModel>()
-    const apiRef = useRef<GridApiCommunity>(null)
+    const apiRef = useRef<GridApiPro>(null)
 
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
     const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
@@ -141,19 +136,9 @@ export default function AEMESPage() {
             .then((data) => {
                 const rows = data.map((n, i): AEMESRow => ({ ...n, id: String(i) }))
                 setInterfaces(rows)
-                setDisplayRows(rows)
             })
             .catch((e) => setError(e instanceof Error ? e.message : "加载接口列表失败"))
     }, [api != undefined, x, y, z, dimension])
-
-    useEffect(() => {
-        if (!apiRef.current) return
-        const timer = setTimeout(() => {
-            const entries = gridExpandedSortedRowEntriesSelector(apiRef)
-            setDisplayRows(entries.map((e) => e.model as AEMESRow))
-        }, 200)
-        return () => clearTimeout(timer)
-    }, [filterM, sortM])
 
     if (!api) {
         return (
@@ -236,26 +221,17 @@ export default function AEMESPage() {
                         sx={{ minWidth: 280 }}
                     />
                 </Grid>
-                <Grid>
-                    <Typography variant="body2" color="primary">
-                        共 {displayRows.length} / {interfaces.length} 个接口
-                    </Typography>
-                </Grid>
             </Grid>
 
             <Paper sx={{ height: "70vh", width: "100%", mb: 2 }}>
-                <DataGrid
+                <PersistentDataGrid
+                    storageKey="ae-mes"
                     apiRef={apiRef}
                     rows={interfaces}
                     columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
                     loading={interfaces.length == 0}
                     getRowId={(row) => row.id}
                     pageSizeOptions={[25, 50, 100]}
-                    filterModel={filterM}
-                    onFilterModelChange={(m) => setFilterM(m)}
-                    sortModel={sortM}
-                    onSortModelChange={(s) => setSortM(s)}
-                    density="compact"
                     rowSelectionModel={rowSelectionModel}
                     onRowSelectionModelChange={(model) => {
                         setRowSelectionModel(model)
@@ -263,14 +239,12 @@ export default function AEMESPage() {
                     onCellClick={(_, event) => {
                         setMousePos({ left: event.clientX, top: event.clientY })
                     }}
-                    slots={{ pagination: CustomPagination }}
                     slotProps={{
                         loadingOverlay: {
                             variant: "skeleton",
                             noRowsVariant: "skeleton",
                         },
-                    }}
-                />
+                    }} />
 
                 <Popover
                     open={rowSelectionModel.ids.size > 0 && mousePos !== null}

@@ -29,7 +29,7 @@ import {
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useMemo, useState } from "react"
 import type { LayoutItem } from "react-grid-layout"
-import ReactGridLayout, { useContainerWidth } from "react-grid-layout"
+import ReactGridLayout, { getCompactor, useContainerWidth } from "react-grid-layout"
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
 
@@ -145,9 +145,10 @@ function Dashboard() {
 
     useEffect(() => {
         if (refreshSec <= 0) return
+        actions?.refreshAll()
         const timer = setInterval(() => actions?.refreshAll(), refreshSec * 1000)
         return () => clearInterval(timer)
-    }, [refreshSec, actions])
+    }, [refreshSec, actions?.refreshAll])
 
     const persist = (next: DashboardConfig) => {
         setConfig(next)
@@ -245,6 +246,7 @@ function Dashboard() {
             {mounted && hydrated && <ReactGridLayout
                 layout={layout}
                 width={width}
+                compactor={getCompactor(null, true)}
                 gridConfig={{ cols: 12, rowHeight: 30, margin: [8, 8] }}
                 dragConfig={{ enabled: editMode, handle: `.${DRAG_HANDLE}` }}
                 resizeConfig={{ enabled: editMode, handles: ["w", "s", "e", "n", "sw", "nw", "se", "ne"] }}
@@ -273,8 +275,8 @@ function Dashboard() {
 }
 
 export default function DashboardPage() {
-    return <RContainer>
-        <H2>数据大屏</H2>
+    return <RContainer maxWidth={false} disableGutters>
+        <H2 sx={{ mx: { xs: 2, sm: 3 } }}>数据大屏</H2>
         <PanelDataProvider>
             <Dashboard />
         </PanelDataProvider>

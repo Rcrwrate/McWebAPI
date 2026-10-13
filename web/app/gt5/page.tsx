@@ -305,6 +305,7 @@ export default function GT5Page() {
             if (r) {
                 fetchMachineSSE().then(r => { if (r) cleanup.push(r) })
             } else {
+                fetchMachine()
                 let id = setInterval(() => fetchMachine().catch((e) => enqueueSnackbar(`${e}`, { variant: "error" })), refreshSec * 1000)
                 cleanup.push(() => clearInterval(id))
             }
