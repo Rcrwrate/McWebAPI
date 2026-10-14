@@ -26,9 +26,7 @@ import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.config.RecipeConfig;
 
 /**
- * 配方查询工具类。
- * <p>
- * 参考 NEI 客户端查询机制（见 {@code docs/NEI/recipe.md}）：
+ * 配方查询工具类
  */
 public final class Recipes {
 
@@ -241,24 +239,24 @@ public final class Recipes {
         if (obj == null) {
             return;
         }
-        if (obj instanceof ItemStack) {
-            spec.items.add(((ItemStack) obj).copy());
+        if (obj instanceof ItemStack is) {
+            spec.items.add(is.copy());
             return;
         }
-        if (obj instanceof ItemStack[]) {
-            for (ItemStack s : (ItemStack[]) obj) {
+        if (obj instanceof ItemStack[]iss) {
+            for (ItemStack s : iss) {
                 if (s != null) {
                     spec.items.add(s.copy());
                 }
             }
             return;
         }
-        if (obj instanceof String) {
-            addOre((String) obj, spec);
+        if (obj instanceof String str) {
+            addOre(str, spec);
             return;
         }
-        if (obj instanceof List) {
-            for (Object o : (List<?>) obj) {
+        if (obj instanceof List objList) {
+            for (Object o : objList) {
                 collectInput(o, spec);
             }
         }
@@ -330,13 +328,7 @@ public final class Recipes {
         if (!RecipeConfig.cacheRecipes) {
             return dumpCraftingRecipe(recipe);
         }
-        ObjectNode cached = CRAFTING_RECIPE_CACHE.get(recipe);
-        if (cached != null) {
-            return cached;
-        }
-        ObjectNode node = dumpCraftingRecipe(recipe);
-        CRAFTING_RECIPE_CACHE.put(recipe, node);
-        return node;
+        return CRAFTING_RECIPE_CACHE.computeIfAbsent(recipe, Recipes::dumpCraftingRecipe);
     }
 
     private static void dumpShaped(int width, int height, Object[] items, ObjectNode node) {

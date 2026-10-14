@@ -3,6 +3,7 @@ package love.shirokasoke.webapi.utils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkCoordIntPair;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.DimensionManager;
@@ -10,6 +11,7 @@ import net.minecraftforge.common.DimensionManager;
 import com.mitchej123.hodgepodge.util.ServerThreadLongHashMap;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import gregtech.common.pollution.Pollution;
 import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.config.SafeConfig;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
@@ -83,6 +85,18 @@ public final class McAccessor {
 
     public static Chunk loadChunk(int dim, int chunkX, int chunkZ) throws ApiException {
         return loadChunk(getWorld(dim), chunkX, chunkZ);
+    }
+
+    /**
+     * 获取指定区块的 GT5 污染值，污染关闭时恒为 0
+     * <p>
+     * 其底层存储 {@link Pollution.Storage} -> {@link gregtech.api.util.GTChunkAssociatedData#get(World, int, int)}
+     * -> {@link gregtech.api.util.GTChunkAssociatedData.SuperRegion} 涉及 {@link java.util.Map#computeIfAbsent}
+     * 
+     * 线程安全，先判断后访问
+     */
+    public static int getChunkPollution(Chunk chunk) {
+        return Pollution.hasPollution(chunk) ? Pollution.getPollution(chunk) : 0;
     }
 
     /**

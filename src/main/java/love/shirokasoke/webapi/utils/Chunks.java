@@ -35,6 +35,8 @@ public final class Chunks {
         data.put("isChunkLoaded", chunk.isChunkLoaded);
         data.put("sendUpdates", chunk.sendUpdates);
 
+        data.put("pollution", McAccessor.getChunkPollution(chunk));
+
         // 实体和方块实体数量
         data.put("tileEntityCount", chunk.chunkTileEntityMap != null ? chunk.chunkTileEntityMap.size() : 0);
         if (chunk.entityLists != null) {

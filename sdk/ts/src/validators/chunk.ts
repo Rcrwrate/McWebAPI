@@ -18,6 +18,7 @@ export const ChunkSchema = Joi.object({
     hasEntities: Joi.boolean().required(),
     isChunkLoaded: Joi.boolean().required(),
     sendUpdates: Joi.boolean().required(),
+    pollution: Joi.number().required(),
     tileEntityCount: Joi.number().required(),
     entityCount: Joi.number().optional(),
     entityList: Joi.array().items(Joi.array().items(EntitySchema)).optional(),

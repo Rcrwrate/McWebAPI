@@ -16,6 +16,7 @@ export interface Chunk {
     hasEntities: boolean;
     isChunkLoaded: boolean;
     sendUpdates: boolean;
+    pollution: number;
     tileEntityCount: number;
     entityCount?: number;
     entityList?: Entity[][];
