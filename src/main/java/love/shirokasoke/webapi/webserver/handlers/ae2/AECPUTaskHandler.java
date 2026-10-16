@@ -1,6 +1,7 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -17,6 +18,7 @@ import appeng.api.AEApi;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridHost;
 import appeng.api.networking.crafting.ICraftingCPU;
+import appeng.api.networking.crafting.ICraftingCallback;
 import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.ICraftingJob;
 import appeng.api.networking.crafting.ICraftingLink;
@@ -26,7 +28,9 @@ import appeng.api.networking.security.MachineSource;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.crafting.v2.CraftingJobV2;
+import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Items;
+import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.NBT;
 import love.shirokasoke.webapi.webserver.Context;
 
@@ -34,8 +38,8 @@ import love.shirokasoke.webapi.webserver.Context;
  * 向 AE 合成网络提交自动合成任务
  *
  * <li>构造 {@link ItemStack}，再包装为 {@link IAEItemStack} 并设置合成数量</li>
- * <li>调用 {@link ICraftingGrid#beginCraftingJob} 异步计算合成计划</li>
- * <li>等待计算完成（兼容 V1/V2 两种计算器，30 秒超时）</li>
+ * <li>在服务器主线程调用 {@link ICraftingGrid#beginCraftingJob} 注册合成计划</li>
+ * <li>被动等待计算完成：计算由 AE2 TickHandler 在主线程分时片驱动，回调通知，30 秒超时</li>
  * <li>若计算结果为 simulation（材料不足），返回失败</li>
  * <li>若指定了 CPU 名称，在可用 CPU 中查找匹配项</li>
  * <li>调用 {@link ICraftingGrid#submitJob} 将任务提交到 CPU</li>
@@ -125,9 +129,21 @@ public class AECPUTaskHandler extends AEBaseHandler {
             throw new ApiException(500, "Host does not support action source");
         }
 
-        // 开始异步计算合成计划
-        Future<ICraftingJob> future = craftingGrid.beginCraftingJob(context.world, grid, src, craftWhat, null);
-        ICraftingJob<?> job = waitForJob(future);
+        // 在服务器主线程注册合成计划：CraftingContext 构造需读取网络库存与图案表，
+        // lite 模式更会在 schedule() 中同步完成计算，均不能脱离主线程
+        final CountDownLatch calculated = new CountDownLatch(1);
+        final ICraftingCallback callback = j -> calculated.countDown();
+        Future<ICraftingJob> future;
+        try {
+            future = ServerThreadDispatcher
+                .callOnServerThread(() -> craftingGrid.beginCraftingJob(context.world, grid, src, craftWhat, callback));
+        } catch (Exception e) {
+            Logs.e(e);
+            throw new ApiException(503, e.getMessage());
+        }
+
+        // 被动等待计算完成
+        ICraftingJob<?> job = waitForJob(future, calculated);
 
         // 若计算结果为 simulation，说明材料不足或该物品无法合成
         if (job.isSimulation()) {
@@ -149,7 +165,14 @@ public class AECPUTaskHandler extends AEBaseHandler {
         }
 
         // 提交合成任务到目标 CPU
-        ICraftingLink link = craftingGrid.submitJob(job, null, targetCpu, true, src);
+        ICraftingLink link;
+        try {
+            final ICraftingCPU cpu = targetCpu;
+            link = ServerThreadDispatcher.callOnServerThread(() -> craftingGrid.submitJob(job, null, cpu, true, src));
+        } catch (Exception e) {
+            Logs.e(e);
+            throw new ApiException(503, e.getMessage());
+        }
         if (link == null) {
             throw new ApiException(500, "Failed to submit job to CPU (no available CPU or insufficient resources)");
         }
@@ -170,38 +193,35 @@ public class AECPUTaskHandler extends AEBaseHandler {
     }
 
     /**
-     * 等待异步合成计算完成。
+     * 被动等待合成计算完成
      *
      * <p>
-     * AE2 存在两种合成计算器版本：
-     * <ul>
-     * <li><b>V1 (CraftingJob)</b>：基于 Future.get() 阻塞等待</li>
-     * <li><b>V2 (CraftingJobV2)</b>：基于 simulateFor() 轮询计算进度，需手动控制超时</li>
-     * </ul>
+     * job 已在 {@link ICraftingJob#schedule()} 时注册到{@link appeng.hooks.TickHandler}，由服务器主线程每 tick 分时片执行
+     * 不调用 {@link ICraftingJob#simulateFor} 驱动计算，避免多线程竞态
      *
-     * @param future beginCraftingJob 返回的 Future
+     * @param future     beginCraftingJob 返回的 Future
+     * @param calculated 计算完成时由回调触发释放的 latch
      * @return 计算完成的 ICraftingJob
      * @throws ApiException 计算超时、被中断或发生异常时抛出
      */
-    private ICraftingJob<?> waitForJob(Future<ICraftingJob> future) throws ApiException {
+    private ICraftingJob<?> waitForJob(Future<ICraftingJob> future, CountDownLatch calculated) throws ApiException {
         try {
-            // V2 计算器：CraftingJobV2 自身实现了 Future 接口，需要轮询 simulateFor
+            // V2 计算器：等待主线程分时片计算完成，由回调经 latch 通知
             if (future instanceof CraftingJobV2 v2) {
-                long deadline = System.currentTimeMillis() + CRAFTING_TIMEOUT_MS;
-                while (v2.simulateFor(100) && System.currentTimeMillis() < deadline) {
-                    // 每次让出 100ms 给计算线程，直到完成或超时
-                }
-                if (!v2.isDone()) {
+                if (!calculated.await(CRAFTING_TIMEOUT_MS, TimeUnit.MILLISECONDS) && !v2.isDone()) {
                     v2.cancel(true);
                     throw new ApiException(504, "Crafting calculation timed out");
                 }
+                // 计算在主线程抛出异常时 state 为 CANCELLED，errorMessage 记录原因
+                if (v2.isCancelled()) {
+                    throw new ApiException(500, "Crafting calculation failed: " + v2.getErrorMessage());
+                }
                 return v2;
             }
-            // V1 计算器：直接使用 Future.get 阻塞等待，带超时
+            // lite (CraftingJobFast)：schedule() 时已同步计算完成，直接获取
             return future.get(CRAFTING_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (java.util.concurrent.TimeoutException e) {
-            future.cancel(true);
-            throw new ApiException(504, "Crafting calculation timed out");
+        } catch (ApiException e) {
+            throw e;
         } catch (InterruptedException e) {
             future.cancel(true);
             Thread.currentThread()
