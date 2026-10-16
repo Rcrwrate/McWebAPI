@@ -20,7 +20,7 @@ fi
 
 target=$(ls /workspace/build/libs/ | grep -vE "(dev|sources|preshadow).jar")
 
-ls /workspace/GTNH-server/mods/ | grep webapi | while read line
+ls /workspace/GTNH-server/mods/ | grep dirty | while read line
 do
     echo "$line"
     rm "/workspace/GTNH-server/mods/$line"

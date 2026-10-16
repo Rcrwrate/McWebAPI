@@ -13,6 +13,9 @@ public class Init {
         RouteRegistry.register(new AEMEsupportHandler());
         RouteRegistry.register(new AECPUHandler());
         RouteRegistry.register(new AECPUTaskHandler());
+        if (ServerConfig.experimentalBackgroundCrafting) {
+            RouteRegistry.register(new AECPUTaskBackgroundHandler());
+        }
         RouteRegistry.register(new AECPUSuspendHandler());
         RouteRegistry.register(new AECPUCancelHandler());
         RouteRegistry.register(new AENodesHandler());

@@ -129,8 +129,6 @@ public class AECPUTaskHandler extends AEBaseHandler {
             throw new ApiException(500, "Host does not support action source");
         }
 
-        // 在服务器主线程注册合成计划：CraftingContext 构造需读取网络库存与图案表，
-        // lite 模式更会在 schedule() 中同步完成计算，均不能脱离主线程
         final CountDownLatch calculated = new CountDownLatch(1);
         final ICraftingCallback callback = j -> calculated.countDown();
         Future<ICraftingJob> future;
