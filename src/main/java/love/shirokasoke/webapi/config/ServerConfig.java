@@ -20,7 +20,4 @@ public class ServerConfig {
 
     @Config.Comment("Use SSE instead of polling (requires virtual threads; the payload cannot be compressed, so it costs more bandwidth)")
     public static boolean useServerSideEvent = true;
-
-    @Config.Comment("Experimental: register /ae/cpu/task/background, which computes the crafting tree on the web thread instead of the server tick (submitJob still runs on the server thread)")
-    public static boolean experimentalBackgroundCrafting = false;
 }

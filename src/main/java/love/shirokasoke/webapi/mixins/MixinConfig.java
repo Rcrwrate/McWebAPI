@@ -78,5 +78,9 @@ public class MixinConfig {
             "for off-thread chunk reads initiated by WebAPI's own threads (Hodgepodge)" })
         @Config.DefaultBoolean(true)
         public boolean enableServerThreadLongHashMapBypass;
+
+        @Config.Comment("MECraftingInventoryMixin: allow AE crafting jobs to be computed off the server thread")
+        @Config.DefaultBoolean(true)
+        public boolean enableAECraftJoboffThread;
     }
 }

@@ -97,7 +97,7 @@ public interface SSEHandler extends RouteHandler {
             method,
             exchange.getRequestHeaders()
                 .get("Authorization"))) {
-            sendErrorResponse(exchange, 401, "not auth", null);
+            sendErrorResponse(exchange, 401, "not auth", null, null);
             return;
         }
 

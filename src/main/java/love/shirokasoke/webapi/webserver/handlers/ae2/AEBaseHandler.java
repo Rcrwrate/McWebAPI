@@ -1,6 +1,7 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
@@ -27,6 +28,15 @@ public class AEBaseHandler implements RouteHandler {
 
     protected Context AEinit(HttpExchange exchange) throws ApiException {
         Context context = new Context(getCoordinates(exchange)).initServer()
+            .initWorld()
+            .checkblockExists()
+            .initTileEntity()
+            .initAE();
+        return context;
+    }
+
+    protected Context AEinit(Map<String, String> query) throws ApiException {
+        Context context = new Context(getCoordinates(query)).initServer()
             .initWorld()
             .checkblockExists()
             .initTileEntity()

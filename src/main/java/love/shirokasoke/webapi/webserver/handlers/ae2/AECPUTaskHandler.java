@@ -1,6 +1,10 @@
 package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -11,10 +15,12 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 
 import appeng.api.AEApi;
+import appeng.api.config.CraftingMode;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridHost;
 import appeng.api.networking.crafting.ICraftingCPU;
@@ -27,11 +33,18 @@ import appeng.api.networking.security.IActionHost;
 import appeng.api.networking.security.MachineSource;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
+import appeng.crafting.fast.CraftingJobFast;
+import appeng.crafting.v2.CraftingContext;
 import appeng.crafting.v2.CraftingJobV2;
+import appeng.crafting.v2.CraftingRequest;
+import appeng.crafting.v2.resolvers.CraftingTask;
+import love.shirokasoke.webapi.crafting.OffTickCraftingJobV2;
+import love.shirokasoke.webapi.mixins.MixinConfig;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Items;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.utils.NBT;
+import love.shirokasoke.webapi.utils.Pattern;
 import love.shirokasoke.webapi.webserver.Context;
 
 /**
@@ -50,22 +63,33 @@ public class AECPUTaskHandler extends AEBaseHandler {
 
     /** 合成计算超时时间（毫秒） */
     private static final long CRAFTING_TIMEOUT_MS = 30000L;
+    /** 是否允许跨线程计算 */
+    private static final boolean OffThread = MixinConfig.late.enableAECraftJoboffThread;
+    /** 请求树递归展开的最大深度，超过则截断（防异常深的链条打爆栈） */
+    private static final int MAX_TREE_DEPTH = 256;
 
     @Override
     public String getPath() {
         return "/ae/cpu/task";
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void run(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod()
             .equals("POST")) {
             throw new ApiException(405, "Method must be POST");
         }
-
-        Context context = AEinit(exchange);
-        IGrid grid = context.grid;
-        IGridHost host = context.host;
+        final Map<String, String> query = parseQueryParams(exchange);
+        final int detailMode = switch (query.getOrDefault("detail", "fail")) {
+            case "all" -> 2;
+            case "fail" -> 1;
+            case "none" -> 0;
+            default -> 1;
+        };
+        final Context context = AEinit(query);
+        final IGrid grid = context.grid;
+        final IGridHost host = context.host;
 
         JsonNode json = getBody(exchange);
 
@@ -122,19 +146,25 @@ public class AECPUTaskHandler extends AEBaseHandler {
         /**
          * BaseActionSource 不能为 null，否则后续 CPU 筛选和权限检查会 NPE
          */
-        BaseActionSource src;
-        if (host instanceof IActionHost) {
-            src = new MachineSource((IActionHost) host);
+        final BaseActionSource src;
+        if (host instanceof IActionHost AH) {
+            src = new MachineSource(AH);
         } else {
             throw new ApiException(500, "Host does not support action source");
         }
 
         final CountDownLatch calculated = new CountDownLatch(1);
         final ICraftingCallback callback = j -> calculated.countDown();
-        Future<ICraftingJob> future;
+        final Future<ICraftingJob> future;
         try {
-            future = ServerThreadDispatcher
-                .callOnServerThread(() -> craftingGrid.beginCraftingJob(context.world, grid, src, craftWhat, callback));
+            if (OffThread) {
+                // 手动创建
+                future = new OffTickCraftingJobV2(context.world, grid, src, craftWhat, CraftingMode.STANDARD, callback)
+                    .schedule();
+            } else {
+                future = ServerThreadDispatcher.callOnServerThread(
+                    () -> craftingGrid.beginCraftingJob(context.world, grid, src, craftWhat, callback));
+            }
         } catch (Exception e) {
             Logs.e(e);
             throw new ApiException(503, e.getMessage());
@@ -145,7 +175,10 @@ public class AECPUTaskHandler extends AEBaseHandler {
 
         // 若计算结果为 simulation，说明材料不足或该物品无法合成
         if (job.isSimulation()) {
-            throw new ApiException(500, "Failed to simulate job (Materials missing or craft not possible)");
+            throw new ApiException(
+                500,
+                "Failed to simulate job (Materials missing or craft not possible)",
+                detailMode >= 1 ? dumpTree(job) : null);
         }
 
         // 若请求中指定了 CPU，按名称查找；未指定则自动分配
@@ -187,25 +220,27 @@ public class AECPUTaskHandler extends AEBaseHandler {
                     "stackSize",
                     job.getOutput()
                         .getStackSize()));
+        if (detailMode >= 2) response.set("job", dumpTree(job));
         sendResponse(exchange, response);
     }
 
     /**
      * 被动等待合成计算完成
-     *
-     * <p>
-     * job 已在 {@link ICraftingJob#schedule()} 时注册到{@link appeng.hooks.TickHandler}，由服务器主线程每 tick 分时片执行
-     * 不调用 {@link ICraftingJob#simulateFor} 驱动计算，避免多线程竞态
-     *
-     * @param future     beginCraftingJob 返回的 Future
-     * @param calculated 计算完成时由回调触发释放的 latch
-     * @return 计算完成的 ICraftingJob
-     * @throws ApiException 计算超时、被中断或发生异常时抛出
+     * 
+     * @apiNote 实际上只会使用V2版本，Fast版本后续可以添加参数控制
      */
-    private ICraftingJob<?> waitForJob(Future<ICraftingJob> future, CountDownLatch calculated) throws ApiException {
+    private ICraftingJob<?> waitForJob(@SuppressWarnings("rawtypes") Future<ICraftingJob> future,
+        CountDownLatch calculated) throws ApiException {
         try {
+            if (future instanceof OffTickCraftingJobV2 off) {
+                off.simulateFor((int) CRAFTING_TIMEOUT_MS);
+                if (!off.isDone()) {
+                    throw new ApiException(504, "Crafting calculation timed out");
+                }
+                return off;
+            }
             // V2 计算器：等待主线程分时片计算完成，由回调经 latch 通知
-            if (future instanceof CraftingJobV2 v2) {
+            else if (future instanceof CraftingJobV2 v2) {
                 if (!calculated.await(CRAFTING_TIMEOUT_MS, TimeUnit.MILLISECONDS) && !v2.isDone()) {
                     v2.cancel(true);
                     throw new ApiException(504, "Crafting calculation timed out");
@@ -229,5 +264,114 @@ public class AECPUTaskHandler extends AEBaseHandler {
             future.cancel(true);
             throw new ApiException(504, "Crafting calculation failed: " + e.getMessage());
         }
+    }
+
+    // region 合成树
+
+    /**
+     * 序列化合成树
+     *
+     * <ul>
+     * <li>{@code requests}：请求树，从根请求递归展开</li>
+     * <li>{@code tasks}：按执行顺序的任务列表(重复内容，仅供调试)</li>
+     * </ul>
+     */
+    private static ObjectNode dumpTree(ICraftingJob<?> job) {
+        final CraftingContext context;
+        switch (job) {
+            case CraftingJobV2<?> j-> context = j.getContext();
+            case CraftingJobFast<?> j-> context = j.getContext();
+            default -> {
+                return null;
+            }
+        }
+        final ObjectNode tree = mapper.createObjectNode();
+
+        // 按父请求分组，用于自顶向下展开请求树
+        final Map<CraftingRequest, List<CraftingRequest>> childrenByParent = new IdentityHashMap<>();
+        for (CraftingContext.RequestInProcessing processing : context.getLiveRequests()) {
+            childrenByParent.computeIfAbsent(processing.request.parentRequest, key -> new ArrayList<>())
+                .add(processing.request);
+        }
+
+        final ArrayNode roots = mapper.createArrayNode();
+        for (CraftingContext.RequestInProcessing processing : context.getLiveRequests()) {
+            if (processing.request.parentRequest == null) {
+                roots.add(dumpRequest(processing.request, childrenByParent, 0));
+            }
+        }
+        tree.set("requests", roots);
+
+        final ArrayNode tasks = mapper.createArrayNode();
+        for (CraftingTask task : context.getResolvedTasks()) {
+            final ObjectNode node = mapper.createObjectNode();
+            node.put(
+                "type",
+                task.getClass()
+                    .getSimpleName());
+            node.put(
+                "state",
+                task.getState()
+                    .name());
+            node.put("simulated", task.isSimulated());
+            node.put("priority", task.priority);
+            node.put("detail", task.toString());
+            tasks.add(node);
+        }
+        tree.set("tasks", tasks);
+
+        return tree;
+    }
+
+    /**
+     * 递归序列化单个请求节点：自身信息 + resolver 链 + 子请求
+     *
+     * @param depth 当前深度，超过 {@link #MAX_TREE_DEPTH} 截断
+     */
+    private static ObjectNode dumpRequest(CraftingRequest request,
+        Map<CraftingRequest, List<CraftingRequest>> childrenByParent, int depth) {
+        final ObjectNode node = mapper.createObjectNode();
+        node.set(
+            "stack",
+            Pattern.dumpAEStack(request.stack)
+                .put("stackSize", request.stack.getStackSize()));
+        node.put("substitutionMode", request.substitutionMode.name());
+        node.put("remaining", request.remainingToProcess);
+        node.put("byteCost", request.getByteCost());
+        node.put("simulated", request.wasSimulated);
+        node.put("incomplete", request.incomplete);
+        node.put("detail", request.toString());
+
+        final ArrayNode resolvers = mapper.createArrayNode();
+        for (CraftingRequest.UsedResolverEntry entry : request.usedResolvers) {
+            final ObjectNode resolver = mapper.createObjectNode();
+            resolver.put(
+                "type",
+                entry.task.getClass()
+                    .getSimpleName());
+            resolver.put(
+                "state",
+                entry.task.getState()
+                    .name());
+            resolver.put("simulated", entry.task.isSimulated());
+            resolver.put("detail", entry.task.toString());
+            resolver.put("resolved", entry.resolvedStack.getStackSize());
+            resolvers.add(resolver);
+        }
+        node.set("resolvers", resolvers);
+
+        final List<CraftingRequest> children = childrenByParent.get(request);
+        if (children != null && !children.isEmpty()) {
+            if (depth >= MAX_TREE_DEPTH) {
+                node.put("childrenTruncated", children.size());
+            } else {
+                final ArrayNode childNodes = mapper.createArrayNode();
+                for (CraftingRequest child : children) {
+                    childNodes.add(dumpRequest(child, childrenByParent, depth + 1));
+                }
+                node.set("children", childNodes);
+            }
+        }
+        return node;
     }
 }

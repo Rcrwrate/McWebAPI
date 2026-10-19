@@ -30,8 +30,15 @@ public class AEMEsHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        IGrid grid = AEinit(exchange).grid;
-        Map<String, String> params = parseQueryParams(exchange);
+        final Map<String, String> params = parseQueryParams(exchange);
+        final IGrid grid = AEinit(params).grid;
+
+        final boolean dumpPattern = params.getOrDefault("pattern", "false")
+            .equalsIgnoreCase("true");
+        final boolean load = params.getOrDefault("load", "false")
+            .equalsIgnoreCase("true");
+        final boolean world = params.getOrDefault("world", "false")
+            .equalsIgnoreCase("true");
 
         // 获取可被ME接口终端查看的机器类型列表
         if (supportedClasses == null) {
@@ -72,17 +79,11 @@ public class AEMEsHandler extends AEBaseHandler {
 
                 ArrayNode patterns = iface.putArray("patterns");
                 IInventory patternInv = machine.getPatterns();
-                if (params.getOrDefault("pattern", "false")
-                    .equalsIgnoreCase("true") && patternInv != null) {
+                if (dumpPattern && patternInv != null) {
                     for (int i = 0; i < patternInv.getSizeInventory(); i++) {
                         ItemStack patternStack = patternInv.getStackInSlot(i);
                         if (patternStack != null) {
-                            ObjectNode pattern = Pattern.dump(
-                                patternStack,
-                                params.getOrDefault("load", "false")
-                                    .equalsIgnoreCase("true"),
-                                params.getOrDefault("world", "false")
-                                    .equalsIgnoreCase("true") ? loc.getWorld() : null);
+                            ObjectNode pattern = Pattern.dump(patternStack, load, world ? loc.getWorld() : null);
                             pattern.put("slot", i);
                             patterns.add(pattern);
                         }

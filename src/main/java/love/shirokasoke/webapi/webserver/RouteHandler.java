@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.StatCollector;
 
@@ -84,7 +86,7 @@ public interface RouteHandler extends HttpHandler {
             method,
             exchange.getRequestHeaders()
                 .get("Authorization"))) {
-            sendErrorResponse(exchange, 401, "not auth", null);
+            sendErrorResponse(exchange, 401, "not auth", null, null);
             return;
         }
         try {
@@ -94,7 +96,7 @@ public interface RouteHandler extends HttpHandler {
         } catch (Throwable e) {
             double duration = (System.nanoTime() - startTime) / 1_000_000.0;
             if (e instanceof ApiException e2) {
-                sendErrorResponse(exchange, e2.code, e2.getMessage(), null);
+                sendErrorResponse(exchange, e2.code, e2.getMessage(), null, e2.body);
                 MyMod.LOG.error(
                     "[{}]\t{} - Error after {}ms\t{}",
                     method,
@@ -111,7 +113,8 @@ public interface RouteHandler extends HttpHandler {
                 e.getMessage() != null ? e.getMessage()
                     : e.getClass()
                         .getSimpleName(),
-                Logs.e(e));
+                Logs.e(e),
+                null);
         }
     }
 
@@ -202,7 +205,7 @@ public interface RouteHandler extends HttpHandler {
         sendResponse(exchange, 200, data);
     }
 
-    default void sendErrorResponse(HttpExchange exchange, int statusCode, String message, String stack)
+    default void sendErrorResponse(HttpExchange exchange, int statusCode, String message, String stack, ObjectNode body)
         throws IOException {
         exchange.getResponseHeaders()
             .set("Content-Type", "application/json");
@@ -210,11 +213,12 @@ public interface RouteHandler extends HttpHandler {
             exchange,
             statusCode,
             mapper.writeValueAsBytes(
-                (mapper.createObjectNode()
+                mapper.createObjectNode()
                     .put("success", false)
                     .put("message", message)
                     .put("desc", getDescription())
-                    .put("stack", stack))));
+                    .put("stack", stack)
+                    .set("body", body)));
     }
 
     public class coordinates extends ChunkCoordinates {
@@ -391,11 +395,21 @@ public interface RouteHandler extends HttpHandler {
 
         public final int code;
         public final String message;
+        @Nullable
+        public final ObjectNode body;
 
         public ApiException(int code, String message) {
             super(message);
             this.code = code;
             this.message = message;
+            this.body = null;
+        }
+
+        public ApiException(int code, String message, ObjectNode body) {
+            super(message);
+            this.code = code;
+            this.message = message;
+            this.body = body;
         }
     }
 
