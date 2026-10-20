@@ -1,6 +1,6 @@
 {
     "name": "@shirokasoke/webapi-sdk",
-    "version": "2.9.0-beta3-0.15-pre",
+    "version": "2.9.0-beta3-0.17-pre2",
     "private": false,
     "description": "TypeScript SDK for the love.shirokasoke.WebAPI Minecraft Mod",
     "main": "./dist/index.js",
@@ -29,6 +29,7 @@
     ],
     "author": "Rcrwrate",
     "license": "MIT",
+    "homepage": "https://github.com/Rcrwrate/McWebAPI/tree/main/sdk/ts",
     "devDependencies": {
         "@types/node": "^26.6.5",
         "tsx": "^4.23.15",
@@ -36,6 +37,6 @@
     },
     "dependencies": {
         "@microsoft/fetch-event-source": "^2.0.1",
-        "joi": "^18.2.9"
+        "joi": "^18.3.0"
     }
 }

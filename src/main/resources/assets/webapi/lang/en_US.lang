@@ -61,13 +61,13 @@ webapi.route.ae.description=AE base endpoint: validates that the block at coordi
 webapi.route.ae.nodes.description=List all nodes in the AE network
 webapi.route.ae.cpu.description=List all AE crafting CPUs with their running tasks at coordinates. Query params: x, y, z, dim (optional, default=0).
 webapi.route.ae.cpu.sse.description=SSE stream of AE crafting CPU states/tasks at coordinates. Query params: x, y, z, dim (optional, default=0), interval (seconds, default 5).
-webapi.route.ae.cpu.task.description=Submit an AE crafting task. POST body: {id, Damage?, Count, Type? (item|fluid), tag?, cpu?}; query params x, y, z, dim (optional, default=0).
+webapi.route.ae.cpu.task.description=Submit an AE crafting task. POST body: {id, Damage?, Count, Type? (item|fluid), tag?, cpu?}; query params x, y, z, dim (optional, default=0), detail=all|fail|none (default fail; controls when the crafting tree is returned). On success returns bytes (byte cost), cpu (CPU name, or "auto" when unspecified) and output (the output stack); with detail=all an additional job crafting tree (requests tree + tasks list) is included. If materials are missing or the craft is impossible (failed simulation), a 500 is returned whose error body carries the crafting tree (for missing-material analysis), unless detail=none.
 webapi.route.ae.cpu.cancel.description=Cancel the crafting task on an AE CPU. DELETE body: {name} (CPU name) or {id} (CPU index), at least one; query params x, y, z, dim (optional, default=0).
 webapi.route.ae.cpu.suspend.description=Suspend or resume the crafting task on an AE CPU. POST suspends, DELETE resumes. Body: {name} (CPU name) or {id} (CPU index), at least one; query params x, y, z, dim (optional, default=0). Returns whether the CPU was busy and the resulting suspended state.
 webapi.route.ae.item.description=Query the AE2 network item list at coordinates (cached). Query params: x, y, z, dim (optional, default=0).
 webapi.route.ae.item.sse.description=SSE stream of the AE2 network item list at coordinates. Query params: x, y, z, dim (optional, default=0); push interval from the AE2 item config.
 webapi.route.ae.me.description=Dump the patterns of an ME interface at coordinates (block TileInterface or cable-bus PartInterface). Query params: x, y, z, dim (optional, default=0).
-webapi.route.ae.mes.description=List interface-terminal-visible ME interfaces in the AE network at coordinates. Query params: x, y, z, dim (optional, default=0), pattern=true to include pattern contents.
+webapi.route.ae.mes.description=List interface-terminal-visible ME interfaces in the AE network at coordinates. Query params: x, y, z, dim (optional, default=0), pattern=true to include pattern contents, load=true to include the patterns' raw input list, world=true to resolve each pattern's condensed inputs/outputs and priority.
 webapi.route.ae.me.support.description=List class names of machines visible to the ME interface terminal.
 
 # recipe

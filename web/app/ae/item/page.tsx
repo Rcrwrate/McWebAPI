@@ -39,7 +39,8 @@ import {
     gridExpandedSortedRowEntriesSelector
 } from "@mui/x-data-grid"
 import type { GridApiPro } from "@mui/x-data-grid-pro/models"
-import type { AEItemStack, AEItemsResult } from "@shirokasoke/webapi-sdk"
+import type { AECraftingJobAnalysisReason, AECraftingTaskErrorBody, AEItemStack, AEItemsResult, AEStack } from "@shirokasoke/webapi-sdk"
+import { WebApiError, analyzeAECraftingJobTree } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useRef, useState } from "react"
@@ -118,6 +119,50 @@ const columns: GridColDef<AEItemRow>[] = [
         valueGetter: (_value, row) => row.type == "item" ? row.nbt?.nbtstr ?? "" : "",
     }
 ]
+
+/** 合成失败原因的中文说明 */
+const CRAFT_FAIL_REASON_TEXT: Record<AECraftingJobAnalysisReason, string> = {
+    SIMULATED: "材料不足",
+    FAILED_TASK: "合成路径失败",
+    INCOMPLETE: "超出合成步骤上限",
+    UNRESOLVED: "存在未满足的合成请求",
+}
+
+/** 失败原因的展示优先级：主因在前，未列出的原因（如 SDK 新增）追加在末尾 */
+const CRAFT_FAIL_REASON_ORDER: AECraftingJobAnalysisReason[] = ["SIMULATED", "FAILED_TASK", "INCOMPLETE", "UNRESOLVED"]
+
+/** 缺失材料清单文本：最多展示前 limit 种，超出以“等 N 种”收尾 */
+function formatMissingStacks(missing: AEStack[], limit = 5): string {
+    if (missing.length === 0) return ""
+    const shown = missing
+        .slice(0, limit)
+        .map((s) => `${s.localizedName ?? "#" + s.id} x${formatCount(s.stackSize)}`)
+    return missing.length > limit ? `${shown.join("、")} 等 ${missing.length} 种` : shown.join("、")
+}
+
+/**
+ * 解析 AE 合成任务提交失败的原因。
+ */
+function describeCraftFailure(e: unknown): string {
+    if (!(e instanceof WebApiError)) {
+        return e instanceof Error ? e.message : "提交合成任务失败"
+    }
+    const tree = (e.body as AECraftingTaskErrorBody | undefined)?.body
+    if (!tree) return e.message
+    try {
+        const analysis = analyzeAECraftingJobTree(tree)
+        const reasons = [
+            ...CRAFT_FAIL_REASON_ORDER.filter((r) => analysis.reasons.includes(r)),
+            ...analysis.reasons.filter((r) => !CRAFT_FAIL_REASON_ORDER.includes(r)),
+        ].map((r) => CRAFT_FAIL_REASON_TEXT[r] ?? r)
+        const detail = [`合成失败：${reasons.length > 0 ? reasons.join("、") : e.message}`]
+        const missing = formatMissingStacks(analysis.missing)
+        if (missing) detail.push(`缺失：${missing}`)
+        return detail.join("，")
+    } catch {
+        return e.message
+    }
+}
 
 export default function AEItemPage() {
     const api = useAPI()
@@ -369,7 +414,7 @@ export default function AEItemPage() {
                             setRowSelectionModel({ type: "include", ids: new Set() });
                             setMousePos(null);
                         } catch (e) {
-                            enqueueSnackbar(e instanceof Error ? e.message : "提交合成任务失败", { variant: "error" });
+                            enqueueSnackbar(describeCraftFailure(e), { variant: "error" });
                         }
                     }}>提交合成任务</Button>
                 <Button size="small" variant="outlined" startIcon={<ContentCopyIcon />} color="secondary"

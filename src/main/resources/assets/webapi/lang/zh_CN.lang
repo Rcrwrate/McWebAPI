@@ -61,13 +61,13 @@ webapi.route.ae.description=AE 基础接口：校验坐标处的方块是否为 
 webapi.route.ae.nodes.description=列出 AE 网络中的所有节点
 webapi.route.ae.cpu.description=列出坐标处所有 AE 合成 CPU 及其正在执行的任务。Query 参数: x, y, z, dim（可选，默认 0）。
 webapi.route.ae.cpu.sse.description=坐标处 AE 合成 CPU 状态/任务的 SSE 推送流。Query 参数: x, y, z, dim（可选，默认 0）、interval（秒，默认 5）。
-webapi.route.ae.cpu.task.description=提交 AE 合成任务。POST body: {id, Damage?, Count, Type?（item|fluid）, tag?, cpu?}；Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.cpu.task.description=提交 AE 合成任务。POST body: {id, Damage?, Count, Type?（item|fluid）, tag?, cpu?}；Query 参数: x, y, z, dim（可选，默认 0）、detail=all|fail|none（默认 fail，控制合成树详情的返回时机）。成功时返回 bytes（字节消耗）、cpu（CPU 名称，未指定时为 auto）、output（输出物品）；detail=all 时额外返回 job 合成树（requests 请求树 + tasks 任务列表）。若材料不足或无法合成（simulation 失败）返回 500，错误 body 中附带合成树（可用于缺失材料分析），detail=none 时不附带。
 webapi.route.ae.cpu.cancel.description=取消 AE CPU 上的合成任务。DELETE body: {name}（CPU 名称）或 {id}（CPU 序号），至少之一；Query 参数: x, y, z, dim（可选，默认 0）。
 webapi.route.ae.cpu.suspend.description=暂停或恢复 AE CPU 上正在执行的合成任务。POST 暂停，DELETE 恢复。body: {name}（CPU 名称）或 {id}（CPU 序号），至少之一；Query 参数: x, y, z, dim（可选，默认 0）。返回 CPU 是否处于忙碌状态以及暂停后的状态。
 webapi.route.ae.item.description=查询坐标处 AE2 网络的物品列表（带缓存）。Query 参数: x, y, z, dim（可选，默认 0）。
 webapi.route.ae.item.sse.description=坐标处 AE2 网络物品列表的 SSE 推送流。Query 参数: x, y, z, dim（可选，默认 0）；推送间隔取自 AE2 物品配置。
-webapi.route.ae.me.description=导出坐标处 ME 接口（方块 TileInterface 或线缆 PartInterface）的样板。Query 参数: x, y, z, dim（可选，默认 0）。
-webapi.route.ae.mes.description=列出坐标处 AE 网络中接口终端可见的 ME 接口。Query 参数: x, y, z, dim（可选，默认 0），pattern=true 时包含样板内容。
+webapi.route.ae.me.description=导出坐标处 ME 接口（方块 TileInterface 或线缆总线 PartInterface）的样板。Query 参数: x, y, z, dim（可选，默认 0）。
+webapi.route.ae.mes.description=列出坐标处 AE 网络中接口终端可见的 ME 接口。Query 参数: x, y, z, dim（可选，默认 0），pattern=true 时包含样板内容，load=true 时包含样板的原始输入列表，world=true 时解析样板的浓缩输入/输出与优先级。
 webapi.route.ae.me.support.description=列出 ME 接口终端可见的机器类名。
 
 # 配方
