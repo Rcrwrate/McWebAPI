@@ -31,7 +31,7 @@ public final class BackgroundScheduler {
                 MyMod.LOG.warn("[BackgroundScheduler] 虚拟线程不可用（{}），回退为平台守护线程池", t.toString());
             }
         }
-        // 平台线程回退：仅使用 Java 8 API，保证旧 JVM 可用
+        // 平台线程回退
         AtomicInteger seq = new AtomicInteger(1);
         return Executors.newCachedThreadPool(task -> {
             Thread t = new Thread(task, "Web-BG-" + seq.getAndIncrement());

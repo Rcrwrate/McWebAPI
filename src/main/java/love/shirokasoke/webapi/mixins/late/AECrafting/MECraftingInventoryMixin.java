@@ -23,10 +23,8 @@ public class MECraftingInventoryMixin {
      */
     @Redirect(
         method = "<init>(Lappeng/api/storage/IStorageMonitorable;ZZZ)V",
-        at = @At(
-            value = "INVOKE",
-            target = "Lappeng/api/storage/data/IItemList;iterator()Ljava/util/Iterator;",
-            remap = false),
+        at = @At(value = "INVOKE", target = "Lappeng/api/storage/data/IItemList;iterator()Ljava/util/Iterator;"),
+        remap = false,
         require = 1)
     private Iterator<IAEStack<?>> webapi$safeCopyStorageList(final IItemList<IAEStack<?>> storageList) {
         // 主线程：保留

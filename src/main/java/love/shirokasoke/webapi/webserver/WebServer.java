@@ -1,7 +1,10 @@
 package love.shirokasoke.webapi.webserver;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
@@ -48,7 +51,17 @@ public class WebServer {
                     .factory();
                 server.setExecutor(Executors.newFixedThreadPool(nThreads, threadFactory));
             }
-            server.start();
+
+            try {
+                startDispatcherReflectively();
+                MyMod.LOG.info("[WebServer] HTTP-Dispatcher started via reflection (inheritThreadLocals=true)");
+            } catch (Exception e) {
+                MyMod.LOG.error(
+                    "[WebServer] Failed to start HTTP-Dispatcher via reflection, fallback to server.start(): {}",
+                    e.getMessage());
+                MyMod.LOG.trace(e);
+                server.start();
+            }
             isRunning = true;
 
             MyMod.LOG.info("[WebServer] Access at: http://localhost:{}/", port);
@@ -58,6 +71,77 @@ public class WebServer {
             MyMod.LOG.trace(e);
         }
         Compressor.checkLoader();
+    }
+
+    /**
+     * HTTP-Dispatcher 线程创建时默认不携带上下文 {@link InheritableThreadLocal}
+     * <p>
+     * 以反射方式完全替换原本的启动方式，以修复Web线程上下文丢失
+     */
+    private static void startDispatcherReflectively() throws ReflectiveOperationException {
+        final Class<?> unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
+        final Field theUnsafe = unsafeClass.getDeclaredField("theUnsafe");
+        theUnsafe.setAccessible(true);
+        final Object unsafe = theUnsafe.get(null);
+
+        final Method objectFieldOffset = unsafeClass.getMethod("objectFieldOffset", Field.class);
+        // JDK 24+ 将 getObject/putObject 更名为 getReference/putReference，取第一个可用的
+        final Method getReference = findUnsafeMethod(
+            unsafeClass,
+            List.of("getReference", "getObject"),
+            Object.class,
+            Long.TYPE);
+        final Method putReference = findUnsafeMethod(
+            unsafeClass,
+            List.of("putReference", "putObject"),
+            Object.class,
+            Long.TYPE,
+            Object.class);
+        final Method putBoolean = unsafeClass.getMethod("putBoolean", Object.class, Long.TYPE, Boolean.TYPE);
+        objectFieldOffset.setAccessible(true);
+        getReference.setAccessible(true);
+        putReference.setAccessible(true);
+        putBoolean.setAccessible(true);
+
+        // HttpServer.create() 实际返回 sun.net.httpserver.HttpServerImpl，其 server 字段才是 ServerImpl
+        final Field implField = server.getClass()
+            .getDeclaredField("server");
+        final long implOffset = (Long) objectFieldOffset.invoke(unsafe, implField);
+        final Object serverImpl = getReference.invoke(unsafe, server, implOffset);
+        final Class<?> serverImplClass = serverImpl.getClass();
+
+        // ServerImpl.dispatcher
+        final Field dispatcherField = serverImplClass.getDeclaredField("dispatcher");
+        final long dispatcherOffset = (Long) objectFieldOffset.invoke(unsafe, dispatcherField);
+        final Runnable dispatcher = (Runnable) getReference.invoke(unsafe, serverImpl, dispatcherOffset);
+
+        // 等价于 new Thread(null, dispatcher, "HTTP-Dispatcher", 0, true)，第 5 个参数 false -> true
+        final Thread dispatcherThread = Thread.ofPlatform()
+            .name("HTTP-Dispatcher")
+            .inheritInheritableThreadLocals(true)
+            .unstarted(dispatcher);
+
+        // 写回 ServerImpl 内部状态，保持与 ServerImpl.start() 一致
+        // stop() 依赖 dispatcherThread 执行 join，Exchange.run() 依赖它判断当前是否 dispatcher 线程
+        final Field dispatcherThreadField = serverImplClass.getDeclaredField("dispatcherThread");
+        final long dispatcherThreadOffset = (Long) objectFieldOffset.invoke(unsafe, dispatcherThreadField);
+        putReference.invoke(unsafe, serverImpl, dispatcherThreadOffset, dispatcherThread);
+
+        final Field startedField = serverImplClass.getDeclaredField("started");
+        final long startedOffset = (Long) objectFieldOffset.invoke(unsafe, startedField);
+        putBoolean.invoke(unsafe, serverImpl, startedOffset, Boolean.TRUE);
+
+        dispatcherThread.start();
+    }
+
+    private static Method findUnsafeMethod(Class<?> unsafeClass, List<String> names, Class<?>... parameterTypes)
+        throws NoSuchMethodException {
+        for (String name : names) {
+            try {
+                return unsafeClass.getMethod(name, parameterTypes);
+            } catch (NoSuchMethodException ignored) {}
+        }
+        throw new NoSuchMethodException("jdk.internal.misc.Unsafe has none of " + names);
     }
 
     /**
