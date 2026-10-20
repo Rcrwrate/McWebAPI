@@ -20,7 +20,13 @@ export interface ApiSuccessResponse<T> {
 export interface ApiErrorResponse {
     success: false;
     message: string;
+    /** 路由描述 */
+    desc?: string;
     stack?: string | null;
+    /**
+     * 失败时附带的业务数据
+     */
+    body?: unknown;
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;

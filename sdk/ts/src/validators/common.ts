@@ -24,7 +24,9 @@ export const ApiSuccessResponseSchema = <T>(dataSchema: Joi.Schema<T>) =>
 export const ApiErrorResponseSchema = Joi.object({
     success: Joi.valid(false).required(),
     message: Joi.string().required(),
+    desc: Joi.string().optional(),
     stack: Joi.string().allow(null).optional(),
+    body: Joi.any().optional(),
 });
 
 export const ApiResponseSchema = <T>(dataSchema: Joi.Schema<T>) =>

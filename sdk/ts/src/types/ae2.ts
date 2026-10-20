@@ -1,4 +1,4 @@
-import type { ClassInfo, Coordinates } from "./common";
+import type { ApiErrorResponse, ClassInfo } from "./common";
 import type { Fluid } from "./fluid";
 import type { ItemStack } from "./item";
 
@@ -123,10 +123,88 @@ export interface AECraftingTaskBody {
     cpu?: string;
 }
 
+/** `appeng.crafting.v2.resolvers.CraftingTask.State` 枚举名 */
+export type AECraftingTaskState = "NEEDS_MORE_WORK" | "SUCCESS" | "FAILURE";
+
+/** `appeng.crafting.v2.CraftingRequest.SubstitutionMode` 枚举名 */
+export type AECraftingSubstitutionMode = "PRECISE_FRESH" | "PRECISE" | "ACCEPT_FUZZY";
+
+/**
+ * 合成树中的单个任务
+ *
+ * `type` 为任务类名，常见取值：
+ * - `ExtractItemTask`：从 ME 网络直接提取（真实路径）
+ * - `EmitableItemTask`：发射器供给
+ * - `CraftFromPatternTask`：按样板合成（递归拆出子材料请求）
+ * - `IgnoreMissingItemTask`：IGNORE_MISSING 模式下假定稍后补齐
+ * - `ConjureItemTask`：材料不足时"无中生有"的模拟任务，**即缺失物品**
+ * - `CheckOtherResolversTask`：计算器内部调度任务
+ */
+export interface AECraftingTaskNode {
+    type: string;
+    state: AECraftingTaskState;
+    /** 是否仅为模拟（`isSimulated`）：true 表示该任务供应的物品网络中实际不存在 */
+    simulated: boolean;
+    priority: number;
+    /** `task.toString()`，如 `ConjureItemTask{fulfilled=32, ...}`，fulfilled 即缺口数量 */
+    detail: string;
+}
+
+/** 合成树中单个请求的解析器条目 */
+export interface AECraftingResolverNode {
+    type: string;
+    state: AECraftingTaskState;
+    /** 是否仅为模拟：true 表示该解析器通过"无中生有"满足请求，其 `resolved` 即缺失数量 */
+    simulated: boolean;
+    /** 任务 `toString()` */
+    detail: string;
+    /** 该解析器实际提供的数量（服务端 `entry.resolvedStack.getStackSize()`，物品为个数、流体为 mB） */
+    resolved: number;
+}
+
+/** 合成树中的单个请求节点 */
+export interface AECraftingRequestNode {
+    stack: AEStack;
+    substitutionMode: AECraftingSubstitutionMode;
+    /** `remainingToProcess`：仍未被满足的数量，>0 表示该请求仍有缺口 */
+    remaining: number;
+    byteCost: number;
+    /** `wasSimulated`：该请求（含子树）是否被模拟满足 */
+    simulated: boolean;
+    /** `incomplete`：是否因超出合成步骤上限被截断 */
+    incomplete: boolean;
+    /** `request.toString()` */
+    detail: string;
+    /** 满足该请求的任务链 */
+    resolvers: AECraftingResolverNode[];
+    children?: AECraftingRequestNode[];
+    /** 子请求超过最大递归深度(256)被截断的数量 */
+    childrenTruncated?: number;
+}
+
+/** 合成树：`requests` 为自根请求展开的请求树，`tasks` 为按执行顺序的任务列表 */
+export interface AECraftingJobTree {
+    requests: AECraftingRequestNode[];
+    tasks: AECraftingTaskNode[];
+}
+
 export interface AECraftingTaskResult {
     bytes: number;
     cpu: string;
     output: ItemStack & { stackSize: number };
+    /**
+     * 合成树
+     */
+    job?: AECraftingJobTree | null;
+}
+
+/**
+ * AE合成任务提交失败响应体
+ * 
+ * 材料不足或无法合成时，`body` 携带失败时的合成树，可配合 `analyzeAECraftingJobTree` 分析缺失物品
+ */
+export interface AECraftingTaskErrorBody extends ApiErrorResponse {
+    body?: AECraftingJobTree | null;
 }
 
 export interface AECPUCancelBody {

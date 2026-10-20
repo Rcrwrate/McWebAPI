@@ -1,5 +1,5 @@
 import Joi from "joi";
-import type { AECPU, AECPUCancelBody, AECPUCancelResult, AECraftingTaskBody, AECraftingTaskResult, AEHitResult, AEItemsResult, AEMEInterface, AENode, AECPUSuspendResult } from "../types/ae2";
+import type { AECPU, AECPUCancelBody, AECPUCancelResult, AECraftingJobTree, AECraftingRequestNode, AECraftingResolverNode, AECraftingTaskBody, AECraftingTaskErrorBody, AECraftingTaskNode, AECraftingTaskResult, AEHitResult, AEItemsResult, AEMEInterface, AENode, AECPUSuspendResult } from "../types/ae2";
 import { ClassInfoSchema } from "./common";
 import { FluidSchema } from "./fluid";
 import { ItemStackSchema } from "./item";
@@ -137,10 +137,76 @@ export const AECraftingTaskBodySchema = Joi.object<AECraftingTaskBody>({
     cpu: Joi.string().optional(),
 });
 
+/**
+ * `appeng.crafting.v2.resolvers.CraftingTask.State` 枚举名。
+ * 严格枚举校验：计算正常结束时所有已解决任务均应为 SUCCESS，FAILURE 会中止整个计算
+ */
+export const AECraftingTaskStateSchema = Joi.string()
+    .valid("NEEDS_MORE_WORK", "SUCCESS", "FAILURE")
+    .required();
+
+/** `appeng.crafting.v2.CraftingRequest.SubstitutionMode` 枚举名 */
+export const AECraftingSubstitutionModeSchema = Joi.string()
+    .valid("PRECISE_FRESH", "PRECISE", "ACCEPT_FUZZY")
+    .required();
+
+/** 合成树中的任务节点（`AECPUTaskHandler#dumpTree` 的 tasks 数组元素） */
+export const AECraftingTaskNodeSchema = Joi.object<AECraftingTaskNode>({
+    type: Joi.string().required(),
+    state: AECraftingTaskStateSchema,
+    simulated: Joi.boolean().required(),
+    priority: Joi.number().required(),
+    detail: Joi.string().required(),
+});
+
+/** 合成树中单个请求的解析器条目 */
+export const AECraftingResolverNodeSchema = Joi.object<AECraftingResolverNode>({
+    type: Joi.string().required(),
+    state: AECraftingTaskStateSchema,
+    simulated: Joi.boolean().required(),
+    detail: Joi.string().required(),
+    /** 服务端输出 `entry.resolvedStack.getStackSize()`：该解析器实际提供的数量 */
+    resolved: Joi.number().required(),
+});
+
+/**
+ * 合成树中的请求节点（递归，children 为子请求）。
+ * Joi 18 已移除 Joi.lazy，递归通过 link 引用自身 id 实现
+ */
+export const AECraftingRequestNodeSchema: Joi.ObjectSchema<AECraftingRequestNode> = Joi.object<AECraftingRequestNode>({
+    stack: AEStackSchema.required(),
+    substitutionMode: AECraftingSubstitutionModeSchema,
+    remaining: Joi.number().required(),
+    byteCost: Joi.number().required(),
+    simulated: Joi.boolean().required(),
+    incomplete: Joi.boolean().required(),
+    detail: Joi.string().required(),
+    resolvers: Joi.array().items(AECraftingResolverNodeSchema).required(),
+    children: Joi.array().items(Joi.link<AECraftingRequestNode>("#aecraftingrequest")).optional(),
+    childrenTruncated: Joi.number().optional(),
+}).id("aecraftingrequest");
+
+/** 合成树：requests 请求树 + tasks 任务列表 */
+export const AECraftingJobTreeSchema = Joi.object<AECraftingJobTree>({
+    requests: Joi.array().items(AECraftingRequestNodeSchema).required(),
+    tasks: Joi.array().items(AECraftingTaskNodeSchema).required(),
+});
+
 export const AECraftingTaskResultSchema = Joi.object<AECraftingTaskResult>({
     bytes: Joi.number().required(),
     cpu: Joi.string().required(),
     output: ItemStackSchema.append({ stackSize: Joi.number().required() }).required(),
+    /** 仅当请求带 detail=all 时输出 */
+    job: AECraftingJobTreeSchema.allow(null).optional(),
+});
+
+/** `/ae/cpu/task` 失败响应体：body 携带失败时的合成树 */
+export const AECraftingTaskErrorBodySchema = Joi.object<AECraftingTaskErrorBody>({
+    success: Joi.valid(false).required(),
+    message: Joi.string().required(),
+    desc: Joi.string().optional(),
+    stack: Joi.string().allow(null).optional(),
+    body: AECraftingJobTreeSchema.allow(null).optional(),
 });
 
 export const AECPUCancelBodySchema = Joi.object<AECPUCancelBody>({

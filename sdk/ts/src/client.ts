@@ -1,4 +1,5 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import type { analyzeAECraftingJobTree } from "./utils/ae2";
 import type {
     AE2Pattern,
     AECPU,
@@ -7,7 +8,9 @@ import type {
     AECPUSuspendBody,
     AECPUSuspendResult,
     AECraftingTaskBody,
+    AECraftingTaskErrorBody,
     AECraftingTaskResult,
+    AECraftingJobTree,
     AEHitResult,
     AEItemDefinitions,
     AEItemsResult,
@@ -780,11 +783,23 @@ export class WebApiClient {
     }
 
     /**
+     * 向 AE 合成网络提交自动合成任务
+     *
+     * 如果返回的 {@link AECraftingTaskResult} 含合成树 `job`（{@link AECraftingJobTree}），
+     * 可配合 {@link analyzeAECraftingJobTree} 判定能否合成及缺失物品
+     *
+     * 失败时抛出 {@link WebApiError}：
+     * - HTTP 500 且 message 为 "Failed to simulate job" 时，`error.body` 为
+     *   {@link AECraftingTaskErrorBody}，其 `body` 携带失败时的合成树，同样可分析缺失物品；
+     * - HTTP 500 且 message 为 "Failed to submit job to CPU" 时，为 CPU 侧问题
+     *   （无可用 CPU / 存储字节不足 / CPU 忙碌），与材料无关。
+     *
      * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/ae2/AECPUTaskHandler.java)
+     * @param params 坐标参数；`detail` 控制合成树输出：`"all"` 始终输出，`"fail"`仅失败时输出，`"none"` 不输出
      * @param body 使用 {@link AECraftingTaskBodySchema} 验证
      * @returns 使用 {@link AECraftingTaskResultSchema} 验证
      */
-    aeCraft(params: { x: number, y: number, z: number, dimension?: number }, body: AECraftingTaskBody): Promise<AECraftingTaskResult> {
+    aeCraft(params: { x: number, y: number, z: number, dimension?: number, detail?: "all" | "fail" | "none" }, body: AECraftingTaskBody): Promise<AECraftingTaskResult> {
         return this.request<AECraftingTaskResult>(`/ae/cpu/task${buildQuery(params)}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
