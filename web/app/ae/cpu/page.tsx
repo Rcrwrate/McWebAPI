@@ -301,7 +301,7 @@ export default function AECPUPage() {
                 <PersistentDataGrid
                     storageKey="ae-cpu"
                     rows={cpus}
-                    columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                    columns={columns}
                     loading={cpus.length == 0}
                     getRowId={(row) => row.id}
                     pageSizeOptions={[25, 50, 100]}

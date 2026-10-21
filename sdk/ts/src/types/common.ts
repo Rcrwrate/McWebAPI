@@ -6,9 +6,9 @@ export interface ClassInfo {
 }
 
 export interface Coordinates {
-    posX: number;
-    posY: number;
-    posZ: number;
+    x: number;
+    y: number;
+    z: number;
     dimension: number;
 }
 

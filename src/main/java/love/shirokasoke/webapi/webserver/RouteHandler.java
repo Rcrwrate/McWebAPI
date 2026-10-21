@@ -221,6 +221,8 @@ public interface RouteHandler extends HttpHandler {
                     .set("body", body)));
     }
 
+    // region Coordinates
+
     public class coordinates extends ChunkCoordinates {
 
         public int dimension;

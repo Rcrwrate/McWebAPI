@@ -304,7 +304,7 @@ export default function AEItemPage() {
                     apiRef={apiRef}
                     storageKey="ae-item"
                     rows={items}
-                    columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                    columns={columns}
                     loading={items.length === 0}
                     getRowId={(row) => row.uid}
                     pageSizeOptions={[25, 50, 100, 500]}

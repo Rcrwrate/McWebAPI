@@ -3,11 +3,9 @@ set -e
 # git pack-refs --all
 # git gc --prune=now
 
-./gradlew spotlessApply
-
 rm -rf /workspace/build/libs
 
-./gradlew build
+./gradlew spotlessApply build
 
 # 处理 git tag 引用异常导致 jar 嵌套在子目录的情况
 # (如 build/libs/webapi-refs/tags/*.jar，由 git describe 返回 refs/tags/... 引起)

@@ -27,7 +27,7 @@ public class AEBaseHandler implements RouteHandler {
     }
 
     protected Context AEinit(HttpExchange exchange) throws ApiException {
-        Context context = new Context(getCoordinates(exchange)).initServer()
+        final Context context = new Context(getCoordinates(exchange)).initServer()
             .initWorld()
             .checkblockExists()
             .initTileEntity()
@@ -36,7 +36,7 @@ public class AEBaseHandler implements RouteHandler {
     }
 
     protected Context AEinit(Map<String, String> query) throws ApiException {
-        Context context = new Context(getCoordinates(query)).initServer()
+        final Context context = new Context(getCoordinates(query)).initServer()
             .initWorld()
             .checkblockExists()
             .initTileEntity()

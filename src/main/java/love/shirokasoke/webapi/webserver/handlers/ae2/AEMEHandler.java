@@ -35,9 +35,8 @@ public class AEMEHandler extends AEBaseHandler {
         Context context = AEinit(exchange);
         TileEntity tile = context.tileEntity;
 
-        // 1) 方块形式的 ME 接口（TileInterface）
-        if (tile instanceof TileInterface) {
-            TileInterface iface = (TileInterface) tile;
+        // 方块形式的 ME 接口
+        if (tile instanceof TileInterface iface) {
             IInventory patternInv = iface.getInterfaceDuality()
                 .getPatterns();
             if (patternInv != null) {
@@ -47,7 +46,7 @@ public class AEMEHandler extends AEBaseHandler {
             throw new ApiException(404, "ME interface has no IInventory");
         }
 
-        // 2) FMP 形式的 ME 接口（PartInterface 以 CableBusPart 的面部件存在）
+        // FMP 形式的 ME 接口（PartInterface 以 CableBusPart 的面部件存在）
         TileMultipart mp = TileMultipart.getOrConvertTile(context.world, context.co.BlockCoord());
         if (mp != null) {
             Iterator<TMultiPart> it = ((scala.collection.Iterable<TMultiPart>) mp.partList()).iterator();
@@ -74,11 +73,7 @@ public class AEMEHandler extends AEBaseHandler {
     }
 
     /**
-     * 将样板库存序列化为 JSON 并返回。
-     *
-     * @param exchange   HTTP 交换上下文
-     * @param patternInv 样板物品栏
-     * @param direction  部件所在方向（FMP 形式时提供，方块形式可为 null）
+     * 样板库存序列化
      */
     private void sendPatterns(HttpExchange exchange, IInventory patternInv, String direction, WorldServer world)
         throws IOException {

@@ -12,7 +12,6 @@ import com.mitchej123.hodgepodge.util.ServerThreadLongHashMap;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import gregtech.common.pollution.Pollution;
-import love.shirokasoke.webapi.MyMod;
 import love.shirokasoke.webapi.config.SafeConfig;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.webserver.RouteHandler.ApiException;
@@ -62,7 +61,6 @@ public final class McAccessor {
         long k = ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ);
         final Chunk chunk;
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap chunkMap) {
-            MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             chunk = (Chunk) chunkMap.getValueByKey(k);
         } else if (SafeConfig.chunkSafe) {
             try {
@@ -116,7 +114,6 @@ public final class McAccessor {
     public static TileEntity getTileEntity(WorldServer world, int x, int y, int z) throws ApiException {
         final TileEntity te;
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap) {
-            MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             te = world.getTileEntity(x, y, z);
         } else if (SafeConfig.chunkSafe) {
             try {
@@ -139,7 +136,6 @@ public final class McAccessor {
      */
     public static boolean blockExists(WorldServer world, int x, int y, int z) throws ApiException {
         if (world.theChunkProviderServer.loadedChunkHashMap instanceof ServerThreadLongHashMap) {
-            MyMod.LOG.debug("ServerThreadLongHashMap Snap hit");
             return world.blockExists(x, y, z);
         } else if (SafeConfig.chunkSafe) {
             try {

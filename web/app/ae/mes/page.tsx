@@ -47,6 +47,17 @@ const columns: GridColDef<AEMESRow>[] = [
         filterable: true,
     },
     {
+        field: "location",
+        headerName: "坐标",
+        width: 200,
+        filterable: true,
+        valueGetter: (_value, row) => {
+            const loc = row.location
+            if (!loc) return "-"
+            return `(${loc.x}, ${loc.y}, ${loc.z}) [${loc.dimension}]`
+        },
+    },
+    {
         field: "active",
         headerName: "活跃",
         width: 100,
@@ -94,17 +105,6 @@ const columns: GridColDef<AEMESRow>[] = [
         width: 100,
         type: "number",
         filterable: true,
-    },
-    {
-        field: "location",
-        headerName: "坐标",
-        width: 200,
-        filterable: true,
-        valueGetter: (_value, row) => {
-            const loc = row.location
-            if (!loc) return "-"
-            return `(${loc.x}, ${loc.y}, ${loc.z}) [${loc.dimension}]`
-        },
     },
     {
         field: "patterns",
@@ -228,7 +228,7 @@ export default function AEMESPage() {
                     storageKey="ae-mes"
                     apiRef={apiRef}
                     rows={interfaces}
-                    columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                    columns={columns}
                     loading={interfaces.length == 0}
                     getRowId={(row) => row.id}
                     pageSizeOptions={[25, 50, 100]}

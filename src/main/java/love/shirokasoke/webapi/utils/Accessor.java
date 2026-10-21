@@ -168,9 +168,11 @@ public final class Accessor {
     /**
      * 访问私有字段 {@link CraftingCPUCluster#waitingFor} （已提交合成，等待产物中）
      * <p>
-     * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
+     * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} ->
+     * {@link it.unimi.dsi.fastutil.objects.ObjectOpenHashSet} 不安全
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_waitingFor}
+     * @apiNote IAEStack相关Mixin {@link love.shirokasoke.webapi.mixins.late.AEStack.IAEStackMainSafeMixin}
      */
     public static IItemList<IAEStack<?>> CraftingCPUCluster_waitingFor(CraftingCPUCluster cluster) {
         try {
@@ -190,7 +192,7 @@ public final class Accessor {
     /**
      * 访问私有字段 {@link CraftingCPUCluster#providers}
      * <p>
-     * 直接调用{@link CraftingCPUCluster#getProviders(IAEStack)}存在跨线程写入的风险，采用反射绕过
+     * 直接调用{@link CraftingCPUCluster#getProviders(IAEStack)}存在跨线程写入的风险
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_getProviders}
      */
@@ -240,9 +242,11 @@ public final class Accessor {
     /**
      * 访问私有字段 {@link CraftingCPUCluster#waitingForMissing} （等待缺失的原料，无法进行合成的任务/CPU合成卡住）
      * <p>
-     * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} (fast fail，无需关心)
+     * 相关类型 {@link appeng.util.item.IAEStackList} -> {@link java.util.IdentityHashMap} ->
+     * {@link it.unimi.dsi.fastutil.objects.ObjectOpenHashSet} 不安全
      *
      * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.AECPUMixin#CraftingCPUCluster_waitingForMissing}
+     * @apiNote IAEStack相关Mixin {@link love.shirokasoke.webapi.mixins.late.AEStack.IAEStackMainSafeMixin}
      */
     public static IItemList<IAEStack<?>> CraftingCPUCluster_waitingForMissing(CraftingCPUCluster cluster) {
         try {

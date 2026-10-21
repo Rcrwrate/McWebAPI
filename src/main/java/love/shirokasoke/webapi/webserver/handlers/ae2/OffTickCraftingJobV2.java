@@ -1,4 +1,4 @@
-package love.shirokasoke.webapi.crafting;
+package love.shirokasoke.webapi.webserver.handlers.ae2;
 
 import java.util.concurrent.Future;
 
@@ -33,9 +33,6 @@ import appeng.crafting.v2.CraftingJobV2;
  */
 public class OffTickCraftingJobV2<StackType extends IAEStack<StackType>> extends CraftingJobV2<StackType> {
 
-    /** 单次计算切片时长（毫秒） */
-    private static final int SLICE_MS = 50;
-
     public OffTickCraftingJobV2(World world, IGrid meGrid, BaseActionSource actionSource, StackType what,
         CraftingMode craftingMode, ICraftingCallback callback) {
         super(world, meGrid, actionSource, what, craftingMode, callback);
@@ -43,24 +40,11 @@ public class OffTickCraftingJobV2<StackType extends IAEStack<StackType>> extends
 
     /**
      * 不注册 {@link appeng.hooks.TickHandler}
+     * 
+     * @apiNote 需要手动控制计算
      */
     @Override
     public Future<ICraftingJob<StackType>> schedule() {
         return this;
-    }
-
-    /**
-     * 在当前线程分片驱动合成树计算，到达超时后自行取消
-     *
-     * @param timeoutMs 计算超时（毫秒）
-     */
-    public void compute(long timeoutMs) {
-        final long deadline = System.currentTimeMillis() + timeoutMs;
-        while (simulateFor(SLICE_MS) && System.currentTimeMillis() < deadline) {
-            // 每次让出 SLICE_MS，直到计算完成或超时
-        }
-        if (state == State.RUNNING) {
-            cancel(true);
-        }
     }
 }

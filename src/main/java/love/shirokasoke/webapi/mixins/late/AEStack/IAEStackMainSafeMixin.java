@@ -31,11 +31,6 @@ public class IAEStackMainSafeMixin {
 
     /**
      * 导出所有类别的物品/流体/源质
-     * 
-     * @apiNote 理论上来说，一个IAEStack只会存一类物品，可能需要后续处理
-     * 
-     * @param consumer
-     * @return
      */
     public int webapi$$forEachSafe(final Consumer<Object> consumer) {
         final Map<IAEStackType<?>, IItemList> current = this.lists;

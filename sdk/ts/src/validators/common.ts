@@ -9,9 +9,9 @@ export const ClassInfoSchema = Joi.object({
 });
 
 export const CoordinatesSchema = Joi.object({
-    posX: Joi.number().required(),
-    posY: Joi.number().required(),
-    posZ: Joi.number().required(),
+    x: Joi.number().required(),
+    y: Joi.number().required(),
+    z: Joi.number().required(),
     dimension: Joi.number().required(),
 });
 

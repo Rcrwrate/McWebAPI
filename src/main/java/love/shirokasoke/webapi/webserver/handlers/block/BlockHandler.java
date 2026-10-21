@@ -57,13 +57,7 @@ public class BlockHandler implements RouteHandler {
         b.put("isReplaceable", block.isReplaceable(world, co.posX, co.posY, co.posZ));
         b.put("isPassable", !block.getBlocksMovement(world, co.posX, co.posY, co.posZ));
 
-        data.set(
-            "coordinates",
-            mapper.createObjectNode()
-                .put("posX", co.posX)
-                .put("posY", co.posY)
-                .put("posZ", co.posZ)
-                .put("dimension", co.dimension));
+        data.set("coordinates", co.tObjectNode());
         data.put("metadata", metadata);
         data.put("isAir", block.isAir(world, co.posX, co.posY, co.posZ));
 

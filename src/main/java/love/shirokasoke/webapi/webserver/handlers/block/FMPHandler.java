@@ -19,6 +19,11 @@ public class FMPHandler implements RouteHandler {
         return "/block/fmp";
     }
 
+    /**
+     * 唯一涉及风险为
+     * {@link codechicken.multipart.MultiPartRegistry.IPartConverter#convert(net.minecraft.world.World, codechicken.lib.vec.BlockCoord)}
+     * 可能存在对world的不当访问
+     */
     @Override
     public void run(HttpExchange exchange) throws IOException {
         Context con = new Context(getCoordinates(exchange)).initServer()

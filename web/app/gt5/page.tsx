@@ -39,7 +39,7 @@ import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid-pro"
 import type { GT5MachineInfo, GT5MachineType } from "@shirokasoke/webapi-sdk"
 import { default as LinkC } from "next/link"
 import { enqueueSnackbar } from "notistack"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { SavedGT5Machine } from "./data"
 import { clearSavedMachines, getSavedMachines } from "./data"
 
@@ -230,9 +230,6 @@ export default function GT5Page() {
     const [loaded, setLoaded] = useState(false)
     const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
 
-    // 正在启停的机器 id，用于禁用开关与操作按钮
-    const [busyId, setBusyId] = useState<string | null>(null)
-    const busyRef = useRef<string | null>(null)
     useEffect(() => {
         setMachines(getSavedMachines())
         setLoaded(true)
@@ -280,9 +277,7 @@ export default function GT5Page() {
     }
 
     const doAction = async (target: GT5Row, action: "start" | "stop") => {
-        if (!api || busyRef.current !== null) return
-        busyRef.current = target.id
-        setBusyId(target.id)
+        if (!api) return
         try {
             const result = await api.setGT5MachineStatus({ x: target.x, y: target.y, z: target.z, dim: target.dimension, action })
             const verb = action === "start" ? "启动" : "暂停"
@@ -293,11 +288,31 @@ export default function GT5Page() {
             }
         } catch (e) {
             enqueueSnackbar(e instanceof Error ? e.message : "操作失败", { variant: "error" })
-        } finally {
-            busyRef.current = null
-            setBusyId(null)
-        }
+        } finally { }
     }
+
+    // 列定义必须保持引用稳定，如果每次渲染新建 columns 数组会让它用 props 重建内部列状态
+    const doActionRef = useRef(doAction)
+    doActionRef.current = doAction
+    const columns = useMemo<GridColDef<GT5Row>[]>(() => {
+        // 开关列紧随「状态」列之后
+        const cols = MACHINE_COLUMNS.map((i) => ({ ...i, align: "center" as const, headerAlign: "center" as const }))
+        const statusIndex = cols.findIndex((c) => c.field === "status")
+        cols.splice(statusIndex < 0 ? cols.length : statusIndex + 1, 0, {
+            field: "switch",
+            headerName: "开关",
+            width: 90,
+            type: "boolean",
+            align: "center",
+            headerAlign: "center",
+            valueGetter: (_v, row) => row.state.isAllowedToWork,
+            renderCell: (params) => (
+                <Switch size="small" color="success" checked={params.row.state.isAllowedToWork}
+                    onChange={() => doActionRef.current(params.row, params.row.state.isAllowedToWork ? "stop" : "start")} />
+            ),
+        })
+        return cols
+    }, [])
 
     let cleanup: (() => void)[] = []
     useEffect(() => {
@@ -321,28 +336,6 @@ export default function GT5Page() {
             </RContainer>
         )
     }
-
-    // 开关列依赖组件内的启停逻辑，故在此拼接（紧随「状态」列之后）
-    const columns: GridColDef<GT5Row>[] = MACHINE_COLUMNS.map((i) => {
-        i.align = "center"
-        i.headerAlign = "center"
-        return i
-    })
-    const statusIndex = columns.findIndex((c) => c.field === "status")
-    columns.splice(statusIndex < 0 ? columns.length : statusIndex + 1, 0, {
-        field: "switch",
-        headerName: "开关",
-        width: 90,
-        type: "boolean",
-        align: "center",
-        headerAlign: "center",
-        valueGetter: (_v, row) => row.state.isAllowedToWork,
-        renderCell: (params) => (
-            <Switch size="small" color="success" checked={params.row.state.isAllowedToWork}
-                disabled={busyId !== null}
-                onChange={() => doAction(params.row, params.row.state.isAllowedToWork ? "stop" : "start")} />
-        ),
-    })
 
     return (
         <RContainer>
@@ -479,6 +472,7 @@ export default function GT5Page() {
                             getRowId={(row) => row.id}
                             loading={liveMachines.length == 0}
                             checkboxSelection
+                            disableMemo
                             rowSelectionModel={rowSelection}
                             onRowSelectionModelChange={setRowSelection}
                             pageSizeOptions={[10, 25, 50, 100]}

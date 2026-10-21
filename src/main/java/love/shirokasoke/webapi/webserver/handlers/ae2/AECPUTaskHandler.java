@@ -31,14 +31,12 @@ import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.security.IActionHost;
 import appeng.api.networking.security.MachineSource;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.crafting.fast.CraftingJobFast;
 import appeng.crafting.v2.CraftingContext;
 import appeng.crafting.v2.CraftingJobV2;
 import appeng.crafting.v2.CraftingRequest;
 import appeng.crafting.v2.resolvers.CraftingTask;
-import love.shirokasoke.webapi.crafting.OffTickCraftingJobV2;
 import love.shirokasoke.webapi.mixins.MixinConfig;
 import love.shirokasoke.webapi.server.ServerThreadDispatcher;
 import love.shirokasoke.webapi.utils.Items;
@@ -49,15 +47,6 @@ import love.shirokasoke.webapi.webserver.Context;
 
 /**
  * 向 AE 合成网络提交自动合成任务
- *
- * <li>构造 {@link ItemStack}，再包装为 {@link IAEItemStack} 并设置合成数量</li>
- * <li>在服务器主线程调用 {@link ICraftingGrid#beginCraftingJob} 注册合成计划</li>
- * <li>被动等待计算完成：计算由 AE2 TickHandler 在主线程分时片驱动，回调通知，30 秒超时</li>
- * <li>若计算结果为 simulation（材料不足），返回失败</li>
- * <li>若指定了 CPU 名称，在可用 CPU 中查找匹配项</li>
- * <li>调用 {@link ICraftingGrid#submitJob} 将任务提交到 CPU</li>
- * <li>返回包含 bytes 消耗、CPU 名称、输出物品等信息的响应</li>
- * </ol>
  */
 public class AECPUTaskHandler extends AEBaseHandler {
 
@@ -109,7 +98,7 @@ public class AECPUTaskHandler extends AEBaseHandler {
         if (count < 0) {
             throw new ApiException(400, "invalid field 'Count'");
         }
-        IAEStack<?> craftWhat;
+        final IAEStack<?> craftWhat;
         if (isItem) {
             ItemStack stack = NBT.toItemStack(
                 id,

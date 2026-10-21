@@ -21,12 +21,12 @@ public class AEItemSSEHandler implements SSEHandler {
 
     @Override
     public void run(HttpExchange exchange, SSEClient client) throws Exception {
-        Context context = new Context(getCoordinates(exchange)).initServer()
+        final Context context = new Context(getCoordinates(exchange)).initServer()
             .initWorld()
             .checkblockExists()
             .initTileEntity()
             .initAE();
-        UUID gridId = context.grid.getId();
+        final UUID gridId = context.grid.getId();
 
         while (client.isOpen()) {
             CacheEntry entry = AEItem.getOrCreateCacheEntry(gridId, context.grid);
@@ -40,6 +40,5 @@ public class AEItemSSEHandler implements SSEHandler {
                 AEItem.CACHE.remove(gridId, entry);
             }
         }
-
     }
 }

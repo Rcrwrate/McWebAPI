@@ -11,7 +11,7 @@ import {
     type GridValidRowModel,
 } from "@mui/x-data-grid-pro"
 import type { RefObject } from "react"
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 
 const STORAGE_PREFIX = "grid-state:"
 
@@ -28,11 +28,14 @@ export interface PersistentDataGridProps<R extends GridValidRowModel = any>
     /** localStorage 存储键，不同表格需唯一 */
     storageKey: string
     /** 外部 apiRef，可选，供外部读取表格状态 */
-    apiRef?: RefObject<GridApiPro | null>
+    apiRef?: RefObject<GridApiPro | null>,
+    /** 禁用默认的列定义 memo */
+    disableMemo?: boolean
 }
 
 export default function PersistentDataGrid<R extends GridValidRowModel = any>({
     storageKey,
+    disableMemo,
     apiRef: externalApiRef,
     ...gridProps
 }: PersistentDataGridProps<R>) {
@@ -42,6 +45,12 @@ export default function PersistentDataGrid<R extends GridValidRowModel = any>({
     const snapshotApiRef = useRef<GridApiPro | null>(null)
 
     const [initialState, setInitialState] = useState<GridInitialState>()
+
+    // 列定义保持引用稳定：每次渲染新建 columns 数组会让 DataGrid 用 props 重建列状态
+    const memoizedColumns = useMemo(
+        () => gridProps.columns.map((i) => ({ ...i, align: "center" as const, headerAlign: "center" as const })),
+        []
+    )
 
     /** 导出当前状态快照并持久化 */
     const saveSnapshot = useCallback(() => {
@@ -86,6 +95,7 @@ export default function PersistentDataGrid<R extends GridValidRowModel = any>({
             showToolbar
             density="compact"
             {...gridProps}
+            columns={disableMemo ? gridProps.columns : memoizedColumns}
             apiRef={apiRef}
             initialState={{
                 ...gridProps.initialState,

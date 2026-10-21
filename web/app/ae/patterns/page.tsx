@@ -60,6 +60,17 @@ const columns: GridColDef<PatternRow>[] = [
         filterable: true,
     },
     {
+        field: "location",
+        headerName: "坐标",
+        width: 200,
+        filterable: true,
+        valueGetter: (_value, row) => {
+            const loc = row.interfaceLocation
+            if (!loc) return "-"
+            return `(${loc.x}, ${loc.y}, ${loc.z}) [${loc.dimension}]`
+        },
+    },
+    {
         field: "slot",
         headerName: "槽位",
         width: 80,
@@ -253,7 +264,7 @@ export default function AEPatternsPage() {
                 <PersistentDataGrid
                     storageKey="ae-patterns"
                     rows={patterns}
-                    columns={columns.map(i => { i.align = "center"; i.headerAlign = "center"; return i })}
+                    columns={columns}
                     loading={patterns.length === 0}
                     getRowId={(row) => row.uid}
                     pageSizeOptions={[25, 50, 100]}

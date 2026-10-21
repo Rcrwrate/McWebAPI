@@ -35,7 +35,7 @@ public class AECPUHandler extends AEBaseHandler {
 
     @Override
     public void run(HttpExchange exchange) throws IOException {
-        Context context = AEinit(exchange);
+        final Context context = AEinit(exchange);
 
         // 从网格缓存中获取合成网格接口
         ICraftingGrid craftingGrid = context.grid.getCache(ICraftingGrid.class);
@@ -85,15 +85,15 @@ public class AECPUHandler extends AEBaseHandler {
 
         final IItemList<IAEStack<?>> waitingForMissing;
         if (cpu.isMissingMode() && (waitingForMissing = Accessor.CraftingCPUCluster_waitingForMissing(cpu)) != null
-            && !waitingForMissing.isEmpty()) {
+            && !IAEStackSafe.hasAny(waitingForMissing)) {
             ArrayNode missingArray = cpuNode.putArray("waitingForMissing");
-            for (IAEStack<?> stack : waitingForMissing) {
-                if (stack == null) continue;
+            IAEStackSafe.forEach(waitingForMissing, stack -> {
+                if (stack == null) return;
                 ObjectNode itemNode = Pattern.dumpAEStack(stack);
                 if (itemNode != null) {
                     missingArray.add(itemNode);
                 }
-            }
+            });
         }
 
         // 若 CPU 正在合成，导出最终产物信息

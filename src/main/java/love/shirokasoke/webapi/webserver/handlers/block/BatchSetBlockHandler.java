@@ -53,7 +53,7 @@ public class BatchSetBlockHandler implements RouteHandler {
             throw new ApiException(400, "Request body must be a JSON array");
         }
 
-        int size = root.size();
+        final int size = root.size();
         if (size == 0) {
             throw new ApiException(400, "Task array is empty");
         }
