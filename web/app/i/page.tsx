@@ -36,6 +36,16 @@ import "react-resizable/css/styles.css"
 const STORAGE_KEY = "dashboard-config-v1"
 const DRAG_HANDLE = "panel-drag-handle"
 
+/** 网格列数自适应：单个 cell 的目标像素宽度 */
+const GRID_CELL_WIDTH = 30
+/** 列数下限 / 上限 */
+const GRID_COLS_MIN = 4
+
+/** 根据容器宽度计算列数，保证不同视图下 cell 实际宽度接近一致 */
+function calcCols(width: number): number {
+    return Math.max(GRID_COLS_MIN, Math.floor(width / GRID_CELL_WIDTH))
+}
+
 /** 剪贴板导入格式：指定面板类型与对应的请求参数 */
 interface PanelClipboardSpec {
     /** 面板 ID（对应 PANEL_REGISTRY 中的 id） */
@@ -92,26 +102,47 @@ function PanelCardInner({ def, item, editMode, onRemove, }: {
     if (!editMode) return error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data, item.requestData)
     return <Card sx={{
         height: "100%",
-        display: "flex",
-        flexDirection: "column",
+        position: "relative",
         overflow: "hidden",
-        border: "1px dashed",
-        borderColor: "primary.main",
+        // 用 outline 代替 border，不占据布局空间，避免内容区被内缩产生变形
+        outline: "1px dashed",
+        outlineOffset: "-1px",
+        outlineColor: "primary.main",
     }}>
-        <Box className={DRAG_HANDLE} sx={{
+        <CardContent sx={{ height: "100%", overflow: "auto", p: 0, "&:last-child": { pb: 0 } }}>
+            {loading ? <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                <CircularProgress size={28} />
+            </Box>
+                : error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data, item.requestData)}
+        </CardContent>
+        {/* 控制栏以浮层悬浮在内容上方，不挤占内容空间 */}
+        <Box sx={(theme) => ({
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1,
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between",
-            px: 1.5,
-            py: 0.75,
-            cursor: "grab",
+            px: 0.75,
+            py: 0.25,
             borderBottom: 1,
             borderColor: "divider",
-            bgcolor: "action.hover",
-            userSelect: "none",
-        }}>
-            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 0.5 }}>
+            bgcolor: theme.palette.mode === "light" ? "rgba(250, 250, 250, 0.85)" : "rgba(31, 31, 31, 0.85)",
+            boxShadow: 1,
+        })}>
+            <Box className={DRAG_HANDLE} sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 0.5,
+                flex: 1,
+                minWidth: 0,
+                px: 0.75,
+                cursor: "grab",
+                userSelect: "none",
+            }}>
                 <DragIndicatorIcon fontSize="small" color="action" />
                 <Typography variant="subtitle2" noWrap>{def.title}</Typography>
             </Box>
@@ -121,12 +152,6 @@ function PanelCardInner({ def, item, editMode, onRemove, }: {
                 </IconButton>
             </Tooltip>
         </Box>
-        <CardContent sx={{ flex: 1, overflow: "auto", p: 1.5, "&:last-child": { pb: 1.5 } }}>
-            {loading ? <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                <CircularProgress size={28} />
-            </Box>
-                : error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : def.panel.Render(data, item.requestData)}
-        </CardContent>
     </Card>
 }
 
@@ -202,6 +227,8 @@ function Dashboard() {
     }
 
     const layout = useMemo(() => config.map(({ panelId: _p, requestData: _r, ...rest }) => rest), [config])
+    // 列数随容器宽度自适应
+    const cols = useMemo(() => calcCols(width), [width])
 
     return <Box>
         <Stack direction="row" useFlexGap sx={{ mb: 2, alignItems: "center", justifyContent: "center", flexWrap: 'wrap' }} spacing={2}>
@@ -247,7 +274,7 @@ function Dashboard() {
                 layout={layout}
                 width={width}
                 compactor={getCompactor(null, true)}
-                gridConfig={{ cols: 12, rowHeight: 30, margin: [8, 8] }}
+                gridConfig={{ cols, rowHeight: 30, margin: [8, 8] }}
                 dragConfig={{ enabled: editMode, handle: `.${DRAG_HANDLE}` }}
                 resizeConfig={{ enabled: editMode, handles: ["w", "s", "e", "n", "sw", "nw", "se", "ne"] }}
                 onLayoutChange={onLayoutChange}>

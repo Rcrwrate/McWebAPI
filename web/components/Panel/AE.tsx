@@ -26,7 +26,7 @@ export const AEItemStorge: Panel<AEItemsResult, coord> = {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,
-    size: { w: 6, h: 2 },
+    size: { h: 3, w: 10, minH: 3, minW: 10 },
     Render: function (data: AEItemsResult): React.ReactElement {
         const storagePercent = data.totalBytes > 0 ? (data.usedBytes / data.totalBytes) * 100 : 0;
         return <Percent percent={storagePercent} title="物品存储占用" subtitle={data ? `${formatBytes(data.usedBytes)} / ${formatBytes(data.totalBytes)}` : "-"} />
@@ -40,7 +40,7 @@ export const AEItemType: Panel<AEItemsResult, coord> = {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,
-    size: { w: 6, h: 2 },
+    size: { h: 3, w: 10, minH: 3, minW: 10 },
     Render: function (data: AEItemsResult): React.ReactElement {
         const typePercent = data.totalTypes > 0 ? (data.usedTypes / data.totalTypes) * 100 : 0;
         return <Percent percent={typePercent} title="物品类型占用" subtitle={data ? `${formatCount(data.usedTypes)} / ${formatCount(data.totalTypes)}` : "-"} />
@@ -54,7 +54,7 @@ export const AEFluidStorage: Panel<AEItemsResult, coord> = {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,
-    size: { w: 6, h: 2 },
+    size: { h: 3, w: 10, minH: 3, minW: 10 },
     Render: function (data: AEItemsResult): React.ReactElement {
         const storagePercent = data.fluidTotalBytes > 0 ? (data.fluidUsedBytes / data.fluidTotalBytes) * 100 : 0;
         return <Percent percent={storagePercent} title="流体存储占用" subtitle={data ? `${formatBytes(data.fluidUsedBytes)} / ${formatBytes(data.fluidTotalBytes)}` : "-"} />
@@ -68,7 +68,7 @@ export const AEFluidType: Panel<AEItemsResult, coord> = {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,
-    size: { w: 6, h: 2 },
+    size: { h: 3, w: 10, minH: 3, minW: 10 },
     Render: function (data: AEItemsResult): React.ReactElement {
         const typePercent = data.fluidTotalTypes > 0 ? (data.fluidUsedTypes / data.fluidTotalTypes) * 100 : 0;
         return <Percent percent={typePercent} title="流体类型占用" subtitle={data ? `${formatCount(data.fluidUsedTypes)} / ${formatCount(data.fluidTotalTypes)}` : "-"} />
@@ -82,7 +82,7 @@ export const AEItem: Panel<AEItemsResult, AEItemReq> = {
         return requestData ? `aeItems-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeItems"
     },
     dafaultData: item,
-    size: { w: 3, h: 3 },
+    size: { h: 2, w: 8, minH: 2, minW: 4 },
     Render: function (data: AEItemsResult, req): React.ReactElement {
         return <AEItemContent data={data} req={req} />
     }
@@ -95,7 +95,7 @@ export const AECPUStatus: Panel<AECPU[], coord> = {
         return requestData ? `aeCPUs-${requestData.x}-${requestData.y}-${requestData.z}-${requestData.dimension}` : "aeCPUs"
     },
     dafaultData: [],
-    size: { w: 6, h: 3 },
+    size: { h: 2, w: 8, minH: 2, minW: 4 },
     Render: function (data: AECPU[]): React.ReactElement {
         const busyCount = data.filter(c => c.busy).length;
         return <Percent percent={busyCount / data.length * 100} title="CPU" subtitle={`${busyCount}忙碌中/${data.length - busyCount}空闲`} />

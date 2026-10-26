@@ -181,7 +181,7 @@ export default function AEItemPage() {
 
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>({ type: "include", ids: new Set() })
     const [mousePos, setMousePos] = useState<{ left: number; top: number } | null>(null)
-    const [craftCount, setCraftCount] = useState<number>(1)
+    const [craftCount, setCraftCount] = useState<string>()
 
     useEffect(() => {
         if (!api || !x) return
@@ -390,21 +390,19 @@ export default function AEItemPage() {
                 transformOrigin={{ vertical: "top", horizontal: "center" }}
                 slotProps={{ paper: { sx: { p: 1, display: "flex", flexDirection: "column", gap: 1, minWidth: 180 } } }}
             >
-                <TextField size="small" type="number" label="合成数量" value={craftCount} onChange={(e) => {
-                    setCraftCount(Math.max(1, parseInt(e.target.value) || 1))
-                }} />
+                <TextField size="small" type="number" label="合成数量" value={craftCount} onChange={(e) => setCraftCount(e.target.value)} error={isNaN(parseInt(craftCount ?? ""))} />
                 <Button size="small" variant="outlined" startIcon={<SendIcon />} color="secondary"
                     onClick={async () => {
                         const uid = Array.from(rowSelectionModel.ids)[0] as string;
                         const item = items.find((it) => it.uid === uid);
-                        if (!item || !x) return;
+                        if (!item || !x || !craftCount || isNaN(parseInt(craftCount))) return;
                         if (!item.Craftable) return enqueueSnackbar("此物品无合成配方", { variant: "warning" })
                         try {
                             const result = await api.aeCraft(
                                 { x, y, z, dimension },
                                 {
                                     id: item.id,
-                                    Count: craftCount,
+                                    Count: parseInt(craftCount),
                                     Type: item.type,
                                     Damage: item.type == "item" ? item.damage : undefined,
                                     tag: item.type == "item" ? item.nbt?.nbtWrite : undefined,
