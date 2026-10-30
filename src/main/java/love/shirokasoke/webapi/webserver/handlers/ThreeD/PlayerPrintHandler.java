@@ -69,8 +69,8 @@ public class PlayerPrintHandler implements RouteHandler {
 
         PrintUtils.checkImage(imageData);
 
-        String label = params.getOrDefault("label", "3d-print %d,%d");
-        String tooltip = params.getOrDefault("tooltip", "created by love.shirokasoke.webapi");
+        String label = params.getOrDefault("label", "%d,%d");
+        String tooltip = params.getOrDefault("tooltip", "");
 
         // 图片解码与形状生成为纯 CPU 操作，在 HTTP 线程完成，不占用主线程 tick。
         final List<ItemStack> prints = PrintUtils.createPrints(imageData, label, tooltip);

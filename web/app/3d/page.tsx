@@ -498,7 +498,7 @@ export default function ThreeDPrintPage() {
                                     label="名称 (label)"
                                     fullWidth
                                     value={label}
-                                    placeholder="3d-print %d,%d"
+                                    placeholder="%d,%d"
                                     onChange={(e) => setLabel(e.target.value)}
                                     slotProps={{ htmlInput: { maxLength: 24 } }}
                                     helperText="最长 24 字符"

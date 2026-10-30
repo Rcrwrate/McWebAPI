@@ -41,8 +41,8 @@ public class PrintSizeHandler implements RouteHandler {
 
         PrintUtils.checkImage(imageData);
         Map<String, String> params = parseQueryParams(exchange);
-        String label = params.getOrDefault("label", "3d-print %d,%d");
-        String tooltip = params.getOrDefault("tooltip", "created by love.shirokasoke.webapi");
+        String label = params.getOrDefault("label", "%d,%d");
+        String tooltip = params.getOrDefault("tooltip", "");
         final List<ItemStack> prints = PrintUtils.createPrints(imageData, label, tooltip);
 
         ByteBuf tmpBuf = Unpooled.buffer();

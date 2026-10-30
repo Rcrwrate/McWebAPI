@@ -89,8 +89,8 @@ public class WorldPrintHandler implements RouteHandler {
             throw new ApiException(400, "Image's height is to large: " + checked[1]);
         }
 
-        String label = params.getOrDefault("label", "3d-print %d,%d");
-        String tooltip = params.getOrDefault("tooltip", "created by webapi");
+        String label = params.getOrDefault("label", "%d,%d");
+        String tooltip = params.getOrDefault("tooltip", "");
 
         // 图片解码与形状/NBT 生成为纯 CPU 操作，在 HTTP 线程完成；慢队列任务只做 setBlock
         final BufferedImage img = PrintUtils.padToBlocks(PrintUtils.loadImage(imageData));
