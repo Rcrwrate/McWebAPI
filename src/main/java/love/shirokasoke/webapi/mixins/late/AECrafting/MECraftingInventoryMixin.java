@@ -14,6 +14,8 @@ import love.shirokasoke.webapi.utils.IAEStackSafe;
 
 /**
  * 修正 {@link MECraftingInventory} 构造时拷贝网络库存的方式，使其可被非主线程安全构造
+ * 
+ * @apiNote 用于AE合成树计算 {@link love.shirokasoke.webapi.webserver.handlers.ae2.OffTickCraftingJobV2}
  */
 @Mixin(MECraftingInventory.class)
 public class MECraftingInventoryMixin {

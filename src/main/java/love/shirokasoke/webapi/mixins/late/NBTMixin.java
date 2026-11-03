@@ -22,6 +22,7 @@ public class NBTMixin {
      * @reason 替代反射
      * @return
      */
+    @SuppressWarnings("unchecked")
     @org.spongepowered.asm.mixin.Overwrite(remap = false)
     public static List<NBTBase> NBTTagList_tagList(NBTTagList tagList) {
         return ((NBTListAccess) tagList).$getTagList();

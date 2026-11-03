@@ -44,8 +44,8 @@
 | GTNH版本    | 状态     | 最后版本             |
 | ----------- | -------- | -------------------- |
 | 2.8.4       | 停止维护 | 2.8.4-0.5-pre        |
-| 2.9.0-beta2 | 维护中   | 2.9.0-beta2-0.11-pre |
-| 2.9.0-beta3 | 维护中   | 2.9.0-beta3-0.14-pre |
+| 2.9.0-beta2 | 停止维护 | 2.9.0-beta2-0.11-pre |
+| 2.9.0-beta3 | 维护中   | 2.9.0-beta3-0.17-pre |
 
 ## 其他mod
 
@@ -64,7 +64,7 @@
 > [!TIP]
 > 推荐安装，速度和性能比Gzip优秀
 
-[zstd-jni-1.5.7-16.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-16/zstd-jni-1.5.7-16.jar)
+[zstd-jni-1.5.7-25.jar](https://repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.7-25/zstd-jni-1.5.7-25.jar)
 
 ### brotli4j
 
@@ -74,11 +74,11 @@
 > [!CAUTION]
 > br压缩率较高，但是延迟**极大**，不推荐使用
 
-- [brotli4j-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/brotli4j/1.23.0/brotli4j-1.23.0.jar) — 主入口，包含 `Brotli4jLoader`
-- [service-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/service/1.23.0/service-1.23.0.jar) — ServiceLoader 接口 `BrotliNativeProvider`
+- [brotli4j-1.24.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/brotli4j/1.24.0/brotli4j-1.24.0.jar) — 主入口，包含 `Brotli4jLoader`
+- [service-1.24.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/service/1.24.0/service-1.24.0.jar) — ServiceLoader 接口 `BrotliNativeProvider`
 - 平台原生库（按服务器架构选择）：
-  - Linux x86_64: [native-linux-x86_64-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-linux-x86_64/1.23.0/native-linux-x86_64-1.23.0.jar)
-  - Windows x86_64: [native-windows-x86_64-1.23.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-windows-x86_64/1.23.0/native-windows-x86_64-1.23.0.jar)
+  - Linux x86_64: [native-linux-x86_64-1.24.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-linux-x86_64/1.24.0/native-linux-x86_64-1.24.0.jar)
+  - Windows x86_64: [native-windows-x86_64-1.24.0.jar](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/native-windows-x86_64/1.24.0/native-windows-x86_64-1.24.0.jar)
   - 其他架构见 [brotli4j 仓库索引](https://repo1.maven.org/maven2/com/aayushatharva/brotli4j/)
 
 ## 图片素材

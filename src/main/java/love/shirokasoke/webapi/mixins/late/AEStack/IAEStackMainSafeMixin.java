@@ -33,6 +33,7 @@ public class IAEStackMainSafeMixin {
      * 导出所有类别的物品/流体/源质
      */
     public int webapi$$forEachSafe(final Consumer<Object> consumer) {
+        @SuppressWarnings("rawtypes")
         final Map<IAEStackType<?>, IItemList> current = this.lists;
         if (current == null || current.isEmpty()) {
             return 0;
