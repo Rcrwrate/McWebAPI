@@ -2,7 +2,6 @@ package love.shirokasoke.webapi.webserver;
 
 import static love.shirokasoke.webapi.Constant.mapper;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
@@ -40,7 +39,6 @@ public final class JqFilter {
     private static final LoadingCache<String, JsonQuery> CACHE = Caffeine.newBuilder()
         .softValues()
         .maximumSize(64)
-        .expireAfterAccess(Duration.ofMinutes(30))
         .build(key -> JsonQuery.compile(key, Versions.JQ_1_7));
 
     static {

@@ -45,7 +45,8 @@
 | ----------- | -------- | -------------------- |
 | 2.8.4       | 停止维护 | 2.8.4-0.5-pre        |
 | 2.9.0-beta2 | 停止维护 | 2.9.0-beta2-0.11-pre |
-| 2.9.0-beta3 | 维护中   | 2.9.0-beta3-0.17-pre |
+| 2.9.0-beta3 | 停止维护 | 2.9.0-beta3-0.17-pre |
+| 2.9.0       | 维护中   | 2.9.0-1.1            |
 
 ## 其他mod
 
@@ -93,6 +94,8 @@
 [2.8.4.7z](https://cnb.cool/Cool_Sapphire/file/-/releases/download/2.8.4/2.8.4.dumps.6.18.7z)
 
 [2.9.0-beta2.7z](https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.9.0-beta2-0.11-pre/290beta2-915.dump.7z)
+
+[2.9.0.7z](https://cnb.cool/shirokasoke/McWebAPI/-/releases/download/2.9.0-1.0/2.9.0.dumps.7z)
 
 README更新不一定即时，可以在下方两个仓库中寻找预导出的压缩包
 
