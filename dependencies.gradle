@@ -56,10 +56,16 @@ dependencies {
     compileOnly("maven.modrinth:immibis-microblocks:59.1.2")
     compileOnly("maven.modrinth:redlogic:59.1.13")
 
-    // Jackson for JSON processing
-    shadowImplementation rfg.deobf("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+    // 不再shadowImplementation rfg.deobf()，改由 FalsePatternLib DepLoader 在运行时下载
+    devOnlyNonPublishable("com.fasterxml.jackson.core:jackson-databind:2.22.4")
+    devOnlyNonPublishable("com.fasterxml.jackson.core:jackson-core:2.22.4")
+    devOnlyNonPublishable("com.fasterxml.jackson.core:jackson-annotations:2.22")
+    devOnlyNonPublishable("com.github.ben-manes.caffeine:caffeine:3.3.1")
+    devOnlyNonPublishable("net.thisptr:jackson-jq:1.6.5")
+    // jackson-jq 的正则实现依赖
+    devOnlyNonPublishable("org.jruby.joni:joni:2.2.6")
+    devOnlyNonPublishable("org.jruby.jcodings:jcodings:1.0.63")
+
     api("com.github.luben:zstd-jni:1.5.7-25")
-    runtimeOnly("com.github.luben:zstd-jni:1.5.7-25")
     api("com.aayushatharva.brotli4j:brotli4j:1.24.0")
-    runtimeOnly("com.aayushatharva.brotli4j:brotli4j:1.24.0")
 }

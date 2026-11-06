@@ -1,0 +1,25 @@
+{
+    "identifier": "falsepatternlib_dependencies",
+    "repositories": [
+        "https://maven.cnb.cool/shirokasoke/love/-/packages/",
+        "https://repo1.maven.org/maven2/",
+        "https://maven.gaytnh.com/gtnh-public",
+        "https://maven.aliyun.com/repository/public"
+    ],
+    "dependencies": {
+        "always": {
+            "common": [
+                "com.fasterxml.jackson.core:jackson-databind:2.22.4",
+                "com.fasterxml.jackson.core:jackson-core:2.22.4",
+                "com.fasterxml.jackson.core:jackson-annotations:2.22"
+            ],
+            "client": [],
+            "server": [
+                "com.github.ben-manes.caffeine:caffeine:3.3.1",
+                "net.thisptr:jackson-jq:1.6.5",
+                "org.jruby.joni:joni:2.2.6",
+                "org.jruby.jcodings:jcodings:1.0.63"
+            ]
+        }
+    }
+}

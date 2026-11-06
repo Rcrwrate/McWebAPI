@@ -20,4 +20,7 @@ public class ServerConfig {
 
     @Config.Comment("Use SSE instead of polling (requires virtual threads; the payload cannot be compressed, so it costs more bandwidth)")
     public static boolean useServerSideEvent = true;
+
+    @Config.Comment("Enable jq filtering of responses via the 'Filter' request header (client-supplied expressions may cost CPU/memory)")
+    public static boolean enableJQfilter = false;
 }

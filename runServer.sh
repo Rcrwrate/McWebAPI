@@ -23,6 +23,9 @@ do
     echo "$line"
     rm "/workspace/GTNH-server/mods/$line"
 done
+set +e
+rm /workspace/GTNH-server/logs/falsepattern_tmp/.depscan_cache
+set -e
 
 cp "/workspace/build/libs/$target" "/workspace/GTNH-server/mods/$target"
 

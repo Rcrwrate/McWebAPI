@@ -26,6 +26,7 @@ import com.sun.net.httpserver.HttpHandler;
 import codechicken.lib.vec.BlockCoord;
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.MyMod;
+import love.shirokasoke.webapi.config.ServerConfig;
 import love.shirokasoke.webapi.utils.Logs;
 import love.shirokasoke.webapi.webserver.Auth.Auth;
 
@@ -124,7 +125,7 @@ public interface RouteHandler extends HttpHandler {
         exchange.getResponseHeaders()
             .set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         exchange.getResponseHeaders()
-            .set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+            .set("Access-Control-Allow-Headers", "Content-Type, Authorization, Filter");
         exchange.getResponseHeaders()
             .set("Access-Control-Max-Age", "86400");
         exchange.getResponseHeaders()
@@ -178,27 +179,26 @@ public interface RouteHandler extends HttpHandler {
     }
 
     default void sendResponse(HttpExchange exchange, ObjectNode json) throws IOException {
-        exchange.getResponseHeaders()
-            .set("Content-Type", "application/json");
-        sendResponse(
-            exchange,
-            200,
-            mapper.writeValueAsBytes(
-                mapper.createObjectNode()
-                    .put("success", true)
-                    .set("data", json)));
+        sendEnvelope(exchange, json);
     }
 
     default void sendResponse(HttpExchange exchange, ArrayNode json) throws IOException {
+        sendEnvelope(exchange, json);
+    }
+
+    static final boolean enableJQfilter = ServerConfig.enableJQfilter;
+
+    private void sendEnvelope(HttpExchange exchange, JsonNode data) throws IOException {
         exchange.getResponseHeaders()
             .set("Content-Type", "application/json");
+        final JsonNode payload = RouteHandler.enableJQfilter ? JqFilter.filter(exchange, data) : data;
         sendResponse(
             exchange,
             200,
             mapper.writeValueAsBytes(
                 mapper.createObjectNode()
                     .put("success", true)
-                    .set("data", json)));
+                    .set("data", payload)));
     }
 
     default void sendResponse(HttpExchange exchange, byte[] data) throws IOException {
