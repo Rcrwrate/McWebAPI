@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -21,6 +20,8 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import love.shirokasoke.webapi.Constant;
 import love.shirokasoke.webapi.config.RecipeConfig;
@@ -314,8 +315,12 @@ public final class Recipes {
         return node;
     }
 
-    /** 工作台配方序列化结果缓存（按 {@link IRecipe} 对象身份缓存，常见实现未实现 equals/hashCode） */
-    private static final Map<IRecipe, ObjectNode> CRAFTING_RECIPE_CACHE = new ConcurrentHashMap<>();
+    /**
+     * 工作台配方序列化结果缓存（按 {@link IRecipe} 对象身份缓存，但其未实现 equals/hashCode）
+     */
+    private static final Cache<IRecipe, ObjectNode> CRAFTING_RECIPE_CACHE = Caffeine.newBuilder()
+        .softValues()
+        .build();
 
     /**
      * 将工作台配方序列化为 JSON DTO（带缓存，可用 {@code server.recipe.cacheRecipes} 关闭）。
@@ -328,7 +333,7 @@ public final class Recipes {
         if (!RecipeConfig.cacheRecipes) {
             return dumpCraftingRecipe(recipe);
         }
-        return CRAFTING_RECIPE_CACHE.computeIfAbsent(recipe, Recipes::dumpCraftingRecipe);
+        return CRAFTING_RECIPE_CACHE.get(recipe, Recipes::dumpCraftingRecipe);
     }
 
     private static void dumpShaped(int width, int height, Object[] items, ObjectNode node) {

@@ -7,8 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
 
@@ -17,6 +17,8 @@ import net.minecraft.world.chunk.Chunk;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sun.net.httpserver.HttpExchange;
 
 import love.shirokasoke.webapi.MyMod;
@@ -41,8 +43,12 @@ public class ChunkMapHandler extends ChunkHandler {
 
     /** (registryName + ":" + meta) → 预导出 PNG 文件名（不含扩展名） */
     private final Map<String, String> blockTileMap;
-    /** 文件名 → 缓存的 BufferedImage */
-    private final Map<String, BufferedImage> tileCache = new ConcurrentHashMap<>();
+    /** 文件名 → 缓存的 BufferedImage（加载开销大，有上限且空闲淘汰） */
+    private final Cache<String, BufferedImage> tileCache = Caffeine.newBuilder()
+        .softValues()
+        .maximumSize(65535)
+        .expireAfterAccess(Duration.ofMinutes(30))
+        .build();
     /** 缺失纹理的占位图（透明） */
     private volatile BufferedImage missingTile;
     /** block_tiles 目录 */
@@ -204,39 +210,43 @@ public class ChunkMapHandler extends ChunkHandler {
             return getMissingTile();
         }
 
-        // 缓存查找
-        BufferedImage cached = tileCache.get(fileName);
-        if (cached != null) {
-            return cached;
-        }
+        // 由 Caffeine 串行加载，避免同一纹理被并发解码
+        BufferedImage img = tileCache.get(fileName, this::loadTile);
+        return img != null ? img : getMissingTile();
+    }
 
-        // 从磁盘加载
+    /**
+     * 从 block_tiles 目录加载并预缩放纹理
+     *
+     * @apiNote 文件缺失或读取失败返回 {@code null}（null 不写入缓存）
+     */
+    private BufferedImage loadTile(String fileName) {
         MyMod.LOG.info("Cache Miss {}", fileName);
         File tileFile = new File(blockTileDir, fileName + ".png");
         if (!tileFile.exists()) {
-            return getMissingTile();
+            return null;
         }
 
         try {
             BufferedImage img = ImageIO.read(tileFile);
-            if (img != null) {
-                // 预缩放到统一尺寸，后续渲染可直接拼接而不带缩放参数
-                if (img.getWidth() != tileSize || img.getHeight() != tileSize) {
-                    BufferedImage scaled = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g = scaled.createGraphics();
-                    try {
-                        g.drawImage(img, 0, 0, tileSize, tileSize, null);
-                    } finally {
-                        g.dispose();
-                    }
-                    img = scaled;
-                }
-                tileCache.put(fileName, img);
+            if (img == null) {
+                return null;
             }
-            return img != null ? img : getMissingTile();
+            // 预缩放到统一尺寸，后续渲染可直接拼接而不带缩放参数
+            if (img.getWidth() != tileSize || img.getHeight() != tileSize) {
+                BufferedImage scaled = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g = scaled.createGraphics();
+                try {
+                    g.drawImage(img, 0, 0, tileSize, tileSize, null);
+                } finally {
+                    g.dispose();
+                }
+                return scaled;
+            }
+            return img;
         } catch (IOException e) {
             MyMod.LOG.warn("读取方块纹理失败: {}", tileFile);
-            return getMissingTile();
+            return null;
         }
     }
 

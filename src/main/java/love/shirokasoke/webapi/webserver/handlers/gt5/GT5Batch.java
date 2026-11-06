@@ -2,6 +2,7 @@ package love.shirokasoke.webapi.webserver.handlers.gt5;
 
 import static love.shirokasoke.webapi.Constant.mapper;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,8 @@ import net.minecraft.world.WorldServer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
@@ -32,7 +35,10 @@ import love.shirokasoke.webapi.webserver.RouteHandler.coordinates;
 public final class GT5Batch {
 
     public static final ConcurrentHashMap<String, BatchJob> JOBS = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<coordinates, CacheEntry> CACHE = new ConcurrentHashMap<>();
+    private static final Cache<coordinates, CacheEntry> CACHE = Caffeine.newBuilder()
+        .maximumSize(65536)
+        .expireAfterAccess(Duration.ofMinutes(10))
+        .build();
 
     private static record CacheEntry(MetaTileEntity mte, IGregTechTileEntity igte) {}
 
@@ -201,23 +207,39 @@ public final class GT5Batch {
     }
 
     /**
+     * 现场解析坐标处的机器句柄
+     *
+     * @apiNote 主线程运行，无需关心线程安全
+     */
+    private static CacheEntry resolveMachine(MinecraftServer server, coordinates coord) {
+        MyMod.LOG.debug("GT5 Cache miss {}", coord);
+        WorldServer world = server.worldServerForDimension(coord.dimension);
+        if (world == null) {
+            return null;
+        }
+        TileEntity te = world.getTileEntity(coord.posX, coord.posY, coord.posZ);
+        MetaTileEntity mte = GT5Utils.extractValidMTE(te);
+        return mte == null ? null : new CacheEntry(mte, (IGregTechTileEntity) te);
+    }
+
+    /**
      * 获取单个机器的完整信息，
      * 
      * @apiNote 主线程运行，无需关心线程安全
      */
     public static void fetchMachine(MinecraftServer server, BatchJob job, coordinates coord) {
-        CacheEntry data = CACHE.compute(coord, (key, entry) -> {
-            if (entry != null && isAlive(entry)) return entry;
+        CacheEntry data = CACHE.getIfPresent(coord);
+        if (data != null && !isAlive(data)) {
             // 缓存失效
-            MyMod.LOG.debug("GT5 Cache miss {}", coord);
-            WorldServer world = server.worldServerForDimension(coord.dimension);
-            if (world == null) {
-                return null;
+            CACHE.invalidate(coord);
+            data = null;
+        }
+        if (data == null) {
+            data = resolveMachine(server, coord);
+            if (data != null) {
+                CACHE.put(coord, data);
             }
-            TileEntity te = world.getTileEntity(coord.posX, coord.posY, coord.posZ);
-            MetaTileEntity mte = GT5Utils.extractValidMTE(te);
-            return mte == null ? null : new CacheEntry(mte, (IGregTechTileEntity) te);
-        });
+        }
 
         if (data == null) {
             // 非 GT5 机器（或机器已失效且现场无法解析），计入失败

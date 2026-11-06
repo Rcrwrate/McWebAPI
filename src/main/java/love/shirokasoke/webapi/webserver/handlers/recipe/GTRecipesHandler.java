@@ -16,6 +16,8 @@ import net.minecraftforge.fluids.FluidStack;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sun.net.httpserver.HttpExchange;
 
 import gregtech.api.recipe.RecipeMap;
@@ -41,8 +43,12 @@ public class GTRecipesHandler implements RouteHandler {
     /** 配方表快照缓存：map unlocalizedName -> 配方列表（只读） */
     private static final ConcurrentMap<String, List<GTRecipe>> RECIPES_CACHE = new ConcurrentHashMap<>();
 
-    /** 配方序列化结果缓存（按 {@link GTRecipe} 对象身份缓存，但是它未实现 equals/hashCode） */
-    private static final Map<GTRecipe, ObjectNode> SERIALIZED_CACHE = new ConcurrentHashMap<>();
+    /**
+     * 配方序列化结果缓存（按 {@link GTRecipe} 对象身份缓存，但是它未实现 equals/hashCode）
+     */
+    private static final Cache<GTRecipe, ObjectNode> SERIALIZED_CACHE = Caffeine.newBuilder()
+        .softValues()
+        .build();
 
     @Override
     public String getPath() {
@@ -242,13 +248,7 @@ public class GTRecipesHandler implements RouteHandler {
         if (!RecipeConfig.cacheRecipes) {
             return dumpRecipe(map, recipe);
         }
-        ObjectNode cached = SERIALIZED_CACHE.get(recipe);
-        if (cached != null) {
-            return cached;
-        }
-        ObjectNode node = dumpRecipe(map, recipe);
-        SERIALIZED_CACHE.put(recipe, node);
-        return node;
+        return SERIALIZED_CACHE.get(recipe, key -> dumpRecipe(map, key));
     }
 
     /** 序列化一条 GT 配方 */
