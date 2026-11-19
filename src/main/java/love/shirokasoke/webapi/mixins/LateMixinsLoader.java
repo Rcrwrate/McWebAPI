@@ -61,6 +61,11 @@ public class LateMixinsLoader implements ILateMixinLoader {
             }
         }
 
+        if (MixinConfig.late.enableVPWorldCacheAccess) {
+            mixins.add("WorldCacheAccess");
+            mixins.add("VisualProspectingMixin");
+        }
+
         if (MixinConfig.late.enableServerThreadLongHashMapBypass) {
             mixins.add("ServerThreadLongHashMapBypass");
         }

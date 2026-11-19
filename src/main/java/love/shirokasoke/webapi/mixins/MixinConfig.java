@@ -82,5 +82,9 @@ public class MixinConfig {
         @Config.Comment("MECraftingInventoryMixin: allow AE crafting jobs to be computed off the server thread")
         @Config.DefaultBoolean(true)
         public boolean enableAECraftJoboffThread;
+
+        @Config.Comment("VisualProspecting world cache: replace reflection with Mixin accessors (WorldCache#dimensions)")
+        @Config.DefaultBoolean(true)
+        public boolean enableVPWorldCacheAccess;
     }
 }

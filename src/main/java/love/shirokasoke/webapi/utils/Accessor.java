@@ -16,6 +16,9 @@ import net.minecraft.nbt.NBTSizeTracker;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import com.sinthoras.visualprospecting.database.DimensionCache;
+import com.sinthoras.visualprospecting.database.WorldCache;
+
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
@@ -26,6 +29,7 @@ import appeng.util.ScheduledReason;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import gregtech.api.metatileentity.implementations.MTEMultiBlockBase;
 import gregtech.common.tileentities.machines.ISmartInputHatch;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 /**
  * 统一反射管理单元
@@ -325,6 +329,29 @@ public final class Accessor {
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
             Logs.e(e);
             return false;
+        }
+    }
+
+    /** 缓存私有字段 {@link WorldCache#dimensions} */
+    private static Field worldCacheDimensions = null;
+
+    /**
+     * 访问私有字段 {@link WorldCache#dimensions}（维度 id -> 该维度的矿脉/流体缓存）
+     * <p>
+     * 类型 {@link Int2ObjectMap}（fastutil，非线程安全）
+     *
+     * @apiNote 相关Mixin {@link love.shirokasoke.webapi.mixins.late.VisualProspectingMixin#WorldCache_dimensions}
+     */
+    public static Int2ObjectMap<DimensionCache> WorldCache_dimensions(WorldCache cache) {
+        try {
+            if (worldCacheDimensions == null) {
+                worldCacheDimensions = WorldCache.class.getDeclaredField("dimensions");
+                worldCacheDimensions.setAccessible(true);
+            }
+            return (Int2ObjectMap<DimensionCache>) worldCacheDimensions.get(cache);
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            Logs.e(e);
+            return null;
         }
     }
 }

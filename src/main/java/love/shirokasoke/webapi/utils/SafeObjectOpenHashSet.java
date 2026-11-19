@@ -45,6 +45,8 @@ public class SafeObjectOpenHashSet<T> extends ObjectOpenHashSet<T> {
 
     /**
      * 转换成 {@link SafeObjectOpenHashSet} 实例
+     * 
+     * @apiNote 转换后不可写入
      */
     public static <T> SafeObjectOpenHashSet<T> convert(final ObjectOpenHashSet<T> set) {
         if (set instanceof SafeObjectOpenHashSet<T>o) {
@@ -53,6 +55,6 @@ public class SafeObjectOpenHashSet<T> extends ObjectOpenHashSet<T> {
         if (set == null) {
             return new SafeObjectOpenHashSet<T>();
         }
-        return new SafeObjectOpenHashSet<T>(set);
+        return new SafeObjectOpenHashSet<T>(set.clone());
     }
 }
