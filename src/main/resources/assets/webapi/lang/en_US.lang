@@ -55,6 +55,9 @@ webapi.route.gt5.batch.description=Batch query GT5 machine info. POST with JSON 
 webapi.route.gt5.batch.sse.description=SSE stream that repeatedly batch-queries GT5 machines. POST with JSON array body [{x,y,z,dim},...]; each completed round is pushed as a 'gt5' event and re-run every interval seconds (default 5).
 webapi.route.gt5.scan.description=Async scan all GT5 machines in a chunk (split into 256 cell sub-tasks). POST with chunkX & chunkZ (or x & z), dim to submit; GET with id to query.
 webapi.route.gt5.status.description=Control a single GT5 machine (enable/disable, same as a soft mallet). POST with query params x, y, z, dim (optional, default=0) and action=start|stop. Returns whether the state changed.
+webapi.route.gt5.vein.description=Find the nearest known GT5 ore vein from the VisualProspecting server cache. Query params: x, y, z, dim (optional, default=0), vein (ore mix name, optional; only checked against the GT registry, a valid type with no hit returns an empty list), radius (blocks, default 2048), limit (default 1), excludeDepleted (default true). Returns chunk/block position, distance, depletion state and ores.
+webapi.route.gt5.veins.description=List every generated GT5 ore vein in a dimension from the VisualProspecting server cache, with chunk/block position, type, depletion state, source and ores. Query param: dim (required, 400 when missing).
+webapi.route.gt5.veindefs.description=List GT ore vein definitions per dimension (name, weight, size, density, chance and Y range within that dimension, ores). Query param: dim (optional; when omitted, all loaded dimensions are walked and grouped by dimension id under dimensions).
 
 # AE2
 webapi.route.ae.description=AE base endpoint: validates that the block at coordinates is an AE grid host. Query params: x, y, z, dim (optional, default=0).

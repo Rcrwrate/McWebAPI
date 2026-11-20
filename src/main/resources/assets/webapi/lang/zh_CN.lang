@@ -55,6 +55,9 @@ webapi.route.gt5.batch.description=批量查询 GT5 机器信息。POST JSON 数
 webapi.route.gt5.batch.sse.description=反复批量查询 GT5 机器的 SSE 推送流。POST JSON 数组 body [{x,y,z,dim},...]；每轮完成后作为 'gt5' 事件推送，并按 interval 秒（默认 5）重新执行。
 webapi.route.gt5.scan.description=异步扫描区块内的所有 GT5 机器（拆分为 256 格子的子任务）。POST 带 chunkX & chunkZ（或 x & z）、dim 提交；GET 带 id 查询。
 webapi.route.gt5.status.description=控制单个 GT5 机器（启停，等同于软锤）。POST 带 Query 参数 x, y, z, dim（可选，默认 0）与 action=start|stop。返回状态是否发生变化。
+webapi.route.gt5.vein.description=从旅行地图（VisualProspecting）服务端缓存查询最近的已知 GT5 矿脉。Query 参数: x, y, z, dim（可选，默认 0）、vein（矿脉注册名，可选；只校验是否已注册，合法但没命中时返回空列表）、radius（方块，默认 2048）、limit（默认 1）、excludeDepleted（默认 true）。返回区块/方块坐标、距离、枯竭状态与矿石组成。
+webapi.route.gt5.veins.description=列出指定维度中所有已生成的 GT5 矿脉（旅行地图服务端缓存），返回区块/方块坐标、脉型、枯竭状态、来源与矿石组成。Query 参数: dim（必填，缺失返回 400）。
+webapi.route.gt5.veindefs.description=按维度列出可生成的 GT 矿脉定义（名称、权重、尺寸、密度、该维度下的概率与 Y 范围、矿石组成）。Query 参数: dim（可选；省略时遍历所有已加载维度，按维度 id 组织成 dimensions 对象）。
 
 # AE2
 webapi.route.ae.description=AE 基础接口：校验坐标处的方块是否为 AE 网络宿主。Query 参数: x, y, z, dim（可选，默认 0）。

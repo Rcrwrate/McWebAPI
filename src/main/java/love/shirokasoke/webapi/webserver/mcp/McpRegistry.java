@@ -213,6 +213,45 @@ public final class McpRegistry {
                 coord));
         add(
             new McpTool(
+                "get_gt5_vein",
+                "Find the nearest known GT5 ore vein of a given type, read from the VisualProspecting server cache. "
+                    + "Omit vein to search any type. excludeDepleted (default true) skips veins marked depleted.",
+                "/gt5/vein",
+                "GET",
+                false,
+                list("x", "y", "z", "dim", "vein", "radius", "limit", "excludeDepleted"),
+                list(),
+                Map.of(
+                    "x",
+                    p("integer", true, "Block X"),
+                    "y",
+                    p("integer", true, "Block Y"),
+                    "z",
+                    p("integer", true, "Block Z"),
+                    "dim",
+                    p("integer", false, "Dimension id, default 0"),
+                    "vein",
+                    p("string", false, "Ore mix name, e.g. ore.mix.diamond (see list_gt5_veins)"),
+                    "radius",
+                    p("integer", false, "Search radius in blocks, default 2048, max 8192"),
+                    "limit",
+                    p("integer", false, "Max results, default 1, max 32"),
+                    "excludeDepleted",
+                    p("boolean", false, "Skip veins the server cache marks as depleted, default true"))));
+        add(
+            new McpTool(
+                "list_gt5_veins",
+                "List every generated GT5 ore vein in a dimension, from the VisualProspecting server cache "
+                    + "(chunk/block position, type, depletion state, source). Type definitions with weight, size "
+                    + "and Y range are available from /gt5/veindefs.",
+                "/gt5/veins",
+                "GET",
+                false,
+                list("dim"),
+                list(),
+                Map.of("dim", p("integer", true, "Dimension id, required"))));
+        add(
+            new McpTool(
                 "get_ae_items",
                 "Query AE2 network item list at coordinates.",
                 "/ae/item",
