@@ -236,3 +236,101 @@ export interface GT5ScanJobResult {
     errorsTruncated?: number;
     result?: GT5ScanResult;
 }
+
+// ========== GT5 Vein ==========
+
+/** VisualProspecting 缓存记录的矿脉来源 */
+export type GT5VeinSource = "UNKNOWN" | "RESCAN" | "API" | "GENERATED" | "ADMIN";
+
+/**
+ * 矿脉各矿石角色的名称，键按 {@link GT5VeinOres}（本地化名）/ {@link GT5Vein.oreIds}（内部名）同构。
+ * 某个角色缺失表示该矿脉没有对应矿石。
+ */
+export interface GT5VeinOres {
+    primary?: string;
+    secondary?: string;
+    between?: string;
+    sporadic?: string;
+}
+
+/** 已生成的矿脉（读取 VisualProspecting 服务端缓存） */
+export interface GT5Vein {
+    /** 矿脉注册名，如 `ore.mix.diamond` */
+    vein: string;
+    localizedName: string;
+    /** 矿脉中心区块坐标 */
+    chunkX: number;
+    chunkZ: number;
+    /** 矿脉中心方块坐标 */
+    x: number;
+    z: number;
+    blockSize: number;
+    depleted: boolean;
+    source: GT5VeinSource;
+    /** 本地化矿石名 */
+    ores: GT5VeinOres;
+    /** 矿石内部名 */
+    oreIds: GT5VeinOres;
+}
+
+/** GET /gt5/veins 返回的维度矿脉列表，按区块坐标排序 */
+export interface GT5VeinListResult {
+    dimension: number;
+    dimensionName: string;
+    veins: GT5Vein[];
+}
+
+/** GET /gt5/vein 返回的矿脉，附带与查询坐标的平面距离 */
+export interface GT5VeinWithDistance extends GT5Vein {
+    /** 到查询坐标的平面距离（方块） */
+    distance: number;
+}
+
+/** GET /gt5/vein 查询结果 */
+export interface GT5VeinQueryResult {
+    x: number;
+    y: number;
+    z: number;
+    dimension: number;
+    dimensionName: string;
+    /** 按 `vein` 过滤的矿脉注册名，未指定时为 null */
+    target: string | null;
+    radius: number;
+    radiusChunks: number;
+    limit: number;
+    excludeDepleted: boolean;
+    /** 过滤后的匹配总数，可能大于 `veins` 长度 */
+    matched: number;
+    elapsedMs: number;
+    /** 按距离升序，最多 `limit` 条 */
+    veins: GT5VeinWithDistance[];
+}
+
+/** 矿脉定义（GT `WorldgenGTOreLayer`） */
+export interface GT5VeinDefinition {
+    /** 矿脉注册名，如 `ore.mix.diamond` */
+    vein: string;
+    localizedName: string;
+    weight: number;
+    /** 在本维度候选表中的抽取权重占比（0~1） */
+    chance: number;
+    size: number;
+    density: number;
+    minY: number;
+    maxY: number;
+    /** 本地化矿石名 */
+    ores: GT5VeinOres;
+    /** 矿石内部名 */
+    oreIds: GT5VeinOres;
+}
+
+export interface GT5VeinDefDimension {
+    dimension: number;
+    dimensionName: string;
+    veins: GT5VeinDefinition[];
+}
+
+/** GET /gt5/veindefs 返回结果，`dimensions` 键为维度 ID 字符串 */
+export interface GT5VeinDefsResult {
+    dimensions: Record<string, GT5VeinDefDimension>;
+}

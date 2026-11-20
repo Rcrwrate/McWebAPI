@@ -9,6 +9,7 @@ import MapIcon from '@mui/icons-material/Map';
 import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { AppBar, Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Slide, SwipeableDrawer, Toolbar, Typography, useScrollTrigger } from '@mui/material';
@@ -25,6 +26,7 @@ const LINKS = [
     { text: 'Blocks', href: '/blocks', icon: ViewModuleIcon },
     { text: 'Items', href: '/items', icon: Inventory2Icon },
     { text: 'Map', href: '/map', icon: MapIcon },
+    { text: 'Veins', href: '/vein', icon: TravelExploreIcon },
     { text: 'AE', href: '/ae', icon: StorageIcon },
     { text: 'GT5', href: '/gt5', icon: FactoryIcon },
     { text: '3D Print', href: '/3d', icon: ViewInArIcon },

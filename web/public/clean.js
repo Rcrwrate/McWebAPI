@@ -16,6 +16,7 @@
         "grid-state:",         // PersistentDataGrid 表格状态
         "gt5_machines",        // GT5 已保存机器
         "ae_coords",           // AE 坐标
+        "vein",                // 矿脉
         "dashboard-config-v1", // 仪表盘布局
         "dark", "darkm", "lightm", // 主题设置
         "url", "auth",         // API 设置

@@ -6,6 +6,12 @@ import type {
     GT5MachineInfo,
     GT5ScanJobResult,
     GT5StatusResult,
+    GT5Vein,
+    GT5VeinDefDimension,
+    GT5VeinDefsResult,
+    GT5VeinDefinition,
+    GT5VeinListResult,
+    GT5VeinQueryResult,
 } from "../types/gt5";
 import { ClassInfoSchema } from "./common";
 import { FluidSchema } from "./fluid";
@@ -222,4 +228,78 @@ export const GT5ScanJobResultSchema = Joi.object<GT5ScanJobResult>({
     errors: Joi.array().items(Joi.string()).optional(),
     errorsTruncated: Joi.number().optional(),
     result: GT5ScanResultSchema.optional(),
+});
+
+// ========== GT5 Vein ==========
+
+export const GT5VeinSourceSchema = Joi.string().valid("UNKNOWN", "RESCAN", "API", "GENERATED", "ADMIN");
+
+export const GT5VeinOresSchema = Joi.object({
+    primary: Joi.string().optional(),
+    secondary: Joi.string().optional(),
+    between: Joi.string().optional(),
+    sporadic: Joi.string().optional(),
+});
+
+export const GT5VeinSchema = Joi.object<GT5Vein>({
+    vein: Joi.string().required(),
+    localizedName: Joi.string().allow("").required(),
+    chunkX: Joi.number().required(),
+    chunkZ: Joi.number().required(),
+    x: Joi.number().required(),
+    z: Joi.number().required(),
+    blockSize: Joi.number().required(),
+    depleted: Joi.boolean().required(),
+    source: GT5VeinSourceSchema.required(),
+    ores: GT5VeinOresSchema.required(),
+    oreIds: GT5VeinOresSchema.required(),
+});
+
+export const GT5VeinWithDistanceSchema = GT5VeinSchema.concat(
+    Joi.object({ distance: Joi.number().required() })
+);
+
+export const GT5VeinListResultSchema = Joi.object<GT5VeinListResult>({
+    dimension: Joi.number().required(),
+    dimensionName: Joi.string().required(),
+    veins: Joi.array().items(GT5VeinSchema).required(),
+});
+
+export const GT5VeinQueryResultSchema = Joi.object<GT5VeinQueryResult>({
+    x: Joi.number().required(),
+    y: Joi.number().required(),
+    z: Joi.number().required(),
+    dimension: Joi.number().required(),
+    dimensionName: Joi.string().required(),
+    target: Joi.string().allow(null).required(),
+    radius: Joi.number().required(),
+    radiusChunks: Joi.number().required(),
+    limit: Joi.number().required(),
+    excludeDepleted: Joi.boolean().required(),
+    matched: Joi.number().required(),
+    elapsedMs: Joi.number().required(),
+    veins: Joi.array().items(GT5VeinWithDistanceSchema).required(),
+});
+
+export const GT5VeinDefinitionSchema = Joi.object<GT5VeinDefinition>({
+    vein: Joi.string().required(),
+    localizedName: Joi.string().allow("").required(),
+    weight: Joi.number().required(),
+    chance: Joi.number().required(),
+    size: Joi.number().required(),
+    density: Joi.number().required(),
+    minY: Joi.number().required(),
+    maxY: Joi.number().required(),
+    ores: GT5VeinOresSchema.required(),
+    oreIds: GT5VeinOresSchema.required(),
+});
+
+export const GT5VeinDefDimensionSchema = Joi.object<GT5VeinDefDimension>({
+    dimension: Joi.number().required(),
+    dimensionName: Joi.string().required(),
+    veins: Joi.array().items(GT5VeinDefinitionSchema).required(),
+});
+
+export const GT5VeinDefsResultSchema = Joi.object<GT5VeinDefsResult>({
+    dimensions: Joi.object().pattern(Joi.string(), GT5VeinDefDimensionSchema).required(),
 });

@@ -21,7 +21,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
  * <p>
  * {@link DimensionCache#oreChunks} -> {@link it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap}
  * <p>
- *  部分只读情况下安全
+ * 部分只读情况下安全
  */
 public final class VeinProspection {
 

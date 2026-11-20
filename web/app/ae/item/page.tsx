@@ -39,7 +39,7 @@ import {
     gridExpandedSortedRowEntriesSelector
 } from "@mui/x-data-grid"
 import type { GridApiPro } from "@mui/x-data-grid-pro/models"
-import type { AECraftingJobAnalysisReason, AECraftingTaskErrorBody, AEItemStack, AEItemsResult, AEStack } from "@shirokasoke/webapi-sdk"
+import type { AECraftingJobAnalysisReason, AECraftingRequestNode, AECraftingTaskErrorBody, AEItemStack, AEItemsResult, AEStack } from "@shirokasoke/webapi-sdk"
 import { WebApiError, analyzeAECraftingJobTree } from "@shirokasoke/webapi-sdk"
 import { useSearchParams } from "next/navigation"
 import { enqueueSnackbar } from "notistack"
@@ -141,6 +141,19 @@ function formatMissingStacks(missing: AEStack[], limit = 5): string {
 }
 
 /**
+ * 收集原材料请求：只保留没有子请求的叶节点。
+ *
+ * 中间产物（如合金锭、合金粉）会被样板展开成子请求，它们的缺口已经由更底层的原材料体现，
+ * 因此统计缺失材料时需要跳过，避免把中间产物当成缺少的原材料。
+ */
+function rawMaterialRequests(nodes: AECraftingRequestNode[]): AECraftingRequestNode[] {
+    return nodes.flatMap((node) => {
+        const expanded = (node.children?.length ?? 0) > 0 || (node.childrenTruncated ?? 0) > 0
+        return expanded ? rawMaterialRequests(node.children ?? []) : [node]
+    })
+}
+
+/**
  * 解析 AE 合成任务提交失败的原因。
  */
 function describeCraftFailure(e: unknown): string {
@@ -156,7 +169,9 @@ function describeCraftFailure(e: unknown): string {
             ...analysis.reasons.filter((r) => !CRAFT_FAIL_REASON_ORDER.includes(r)),
         ].map((r) => CRAFT_FAIL_REASON_TEXT[r] ?? r)
         const detail = [`合成失败：${reasons.length > 0 ? reasons.join("、") : e.message}`]
-        const missing = formatMissingStacks(analysis.missing)
+        // 只用叶节点分析缺失量，避免把中间产物一并提示出来
+        const rawMissing = analyzeAECraftingJobTree({ requests: rawMaterialRequests(tree.requests), tasks: [] }).missing
+        const missing = formatMissingStacks(rawMissing)
         if (missing) detail.push(`缺失：${missing}`)
         return detail.join("，")
     } catch {

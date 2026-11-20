@@ -215,7 +215,9 @@ public final class McpRegistry {
             new McpTool(
                 "get_gt5_vein",
                 "Find the nearest known GT5 ore vein of a given type, read from the VisualProspecting server cache. "
-                    + "Omit vein to search any type. excludeDepleted (default true) skips veins marked depleted.",
+                    + "Omit vein to search any type; a name is only checked against the GT registry (case-insensitive), "
+                    + "so a valid type with no hit returns an empty list instead of an error. "
+                    + "excludeDepleted (default true) skips veins marked depleted.",
                 "/gt5/vein",
                 "GET",
                 false,
@@ -231,7 +233,10 @@ public final class McpRegistry {
                     "dim",
                     p("integer", false, "Dimension id, default 0"),
                     "vein",
-                    p("string", false, "Ore mix name, e.g. ore.mix.diamond (see list_gt5_veins)"),
+                    p(
+                        "string",
+                        false,
+                        "Ore mix name, case-insensitive, e.g. ore.mix.diamond (see list_gt5_veins)"),
                     "radius",
                     p("integer", false, "Search radius in blocks, default 2048, max 8192"),
                     "limit",
@@ -242,8 +247,8 @@ public final class McpRegistry {
             new McpTool(
                 "list_gt5_veins",
                 "List every generated GT5 ore vein in a dimension, from the VisualProspecting server cache "
-                    + "(chunk/block position, type, depletion state, source). Type definitions with weight, size "
-                    + "and Y range are available from /gt5/veindefs.",
+                    + "(chunk/block position, type, depletion state, source, ores/oreIds). Type definitions with "
+                    + "weight, size and Y range are available from /gt5/veindefs.",
                 "/gt5/veins",
                 "GET",
                 false,

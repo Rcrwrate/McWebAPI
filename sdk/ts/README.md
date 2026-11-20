@@ -40,7 +40,7 @@ const icon = await client.getItemIcon({ id: 4 });         // ArrayBuffer
 | 区块 | `getChunks` `getChunk` `getChunkMap` `getChunkForceList` `loadChunk` `unloadChunk` |
 | 实体 | `getEntities` `getEntity` |
 | 流体 | `getFluids` `getFluidContainers` `getFluidIcon` |
-| GT5 | `getGT5Machine` `setGT5MachineStatus` `submitGT5Batch` `getGT5BatchJob` `rerunGT5Batch` `waitForGT5BatchJob` `submitGT5ChunkScan` `getGT5ScanJob` `waitForGT5ScanJob` |
+| GT5 | `getGT5Machine` `setGT5MachineStatus` `submitGT5Batch` `getGT5BatchJob` `rerunGT5Batch` `waitForGT5BatchJob` `submitGT5ChunkScan` `getGT5ScanJob` `waitForGT5ScanJob` `getGT5Vein` `getGT5Veins` `getGT5VeinDefs` |
 | AE2 | `aeHit` `aeNodes` `aeCPUs` `aeME` `aeMEs` `aeMESupport` `aeItems` `aeCraft` `aeCancel` `aeSuspend` |
 | 配方 | `getCraftingRecipes` `getFurnaceRecipes` `getGTRecipes` `getGTRecipeMaps` |
 | 3D 打印 | `printToPlayer` `submitWorldPrint` `getWorldPrintJob` `waitForWorldPrintJob` `getPrintSize` |

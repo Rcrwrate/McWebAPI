@@ -41,6 +41,9 @@ import type {
     GT5ScanJobResult,
     GT5ScanSubmitResult,
     GT5StatusResult,
+    GT5VeinDefsResult,
+    GT5VeinListResult,
+    GT5VeinQueryResult,
     Item,
     ItemDetail,
     LagAnalyzerData,
@@ -98,6 +101,9 @@ import type {
     GT5ScanJobResultSchema,
     GT5ScanSubmitResultSchema,
     GT5StatusResultSchema,
+    GT5VeinDefsResultSchema,
+    GT5VeinListResultSchema,
+    GT5VeinQueryResultSchema,
     ItemDetailSchema,
     ItemSchema,
     LagAnalyzerDataSchema,
@@ -717,6 +723,51 @@ export class WebApiClient {
             },
             { method: "POST", body: JSON.stringify(machines) }
         );
+    }
+
+    /**
+     * 查询坐标附近已知的 GT5 矿脉（读取 VisualProspecting 服务端缓存），按平面距离升序返回。
+     *
+     * `matched` 是过滤后的匹配总数，`veins` 只保留最近的 `limit` 条。
+     * @param params.vein 只保留该注册名的矿脉（大小写不敏感，如 `ore.mix.diamond`），未知名返回 404
+     * @param params.radius 搜索半径（方块），默认 2048，范围 16~8192
+     * @param params.limit 最大返回条数，默认 32，范围 1~512
+     * @param params.excludeDepleted 是否跳过已枯竭矿脉，默认 true
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5VeinHandler.java)
+     * @returns 使用 {@link GT5VeinQueryResultSchema} 验证
+     */
+    getGT5Vein(params: {
+        x: number;
+        y: number;
+        z: number;
+        dim?: number;
+        dimension?: number;
+        vein?: string;
+        radius?: number;
+        limit?: number;
+        excludeDepleted?: boolean;
+    }): Promise<GT5VeinQueryResult> {
+        return this.request<GT5VeinQueryResult>(`/gt5/vein${buildQuery(params)}`);
+    }
+
+    /**
+     * 列出指定维度全部已生成的 GT5 矿脉（读取 VisualProspecting 服务端缓存），按区块坐标排序。
+     *
+     * 矿脉定义（权重、规模、高度范围等）见 {@link getGT5VeinDefs}。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5VeinListHandler.java)
+     * @returns 使用 {@link GT5VeinListResultSchema} 验证
+     */
+    getGT5Veins(params: { dim: number } | { dimension: number }): Promise<GT5VeinListResult> {
+        return this.request<GT5VeinListResult>(`/gt5/veins${buildQuery(params)}`);
+    }
+
+    /**
+     * 列出各维度可生成的 GT5 矿脉定义（权重、抽取占比、规模、密度、高度范围与矿石构成）。
+     * @java [java](../../../src/main/java/love/shirokasoke/webapi/webserver/handlers/gt5/GT5VeinDefHandler.java)
+     * @returns 使用 {@link GT5VeinDefsResultSchema} 验证
+     */
+    getGT5VeinDefs(): Promise<GT5VeinDefsResult> {
+        return this.request<GT5VeinDefsResult>("/gt5/veindefs");
     }
 
     // region AE2

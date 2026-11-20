@@ -64,6 +64,61 @@ describe("normal", () => {
     })
 })
 
+describe("gt5 vein", () => {
+    it("veindefs", async () => {
+        const r = await api.getGT5VeinDefs()
+        assert.ok(v.GT5VeinDefsResultSchema.validate(r).error == undefined)
+
+        const overworld = r.dimensions["0"]
+        assert.ok(overworld)
+        assert.ok(overworld.dimension == 0)
+        assert.ok(overworld.veins.length > 0)
+        for (const vein of overworld.veins) {
+            assert.ok(vein.weight > 0, `${vein.vein} weight`)
+            assert.ok(vein.chance > 0 && vein.chance <= 1, `${vein.vein} chance`)
+            assert.ok(vein.minY <= vein.maxY, `${vein.vein} y range`)
+            assert.ok(Object.keys(vein.ores).length > 0, `${vein.vein} ores`)
+        }
+    })
+    it("veins", async () => {
+        const r = await api.getGT5Veins({ dim: 0 })
+        assert.ok(v.GT5VeinListResultSchema.validate(r).error == undefined)
+
+        assert.ok(r.dimension == 0)
+        assert.ok(r.veins.length > 0)
+        // 服务端按区块坐标排序，输出应稳定
+        const sorted = [...r.veins].sort((a, b) => a.chunkX - b.chunkX || a.chunkZ - b.chunkZ)
+        assert.deepStrictEqual(
+            r.veins.map(i => [i.chunkX, i.chunkZ]),
+            sorted.map(i => [i.chunkX, i.chunkZ])
+        )
+    })
+    it("nearest", async () => {
+        const r = await api.getGT5Vein({
+            x: 0, y: 64, z: 0,
+            vein: "ore.mix.diamond",
+            radius: 512,
+            limit: 4,
+        })
+        assert.ok(v.GT5VeinQueryResultSchema.validate(r).error == undefined)
+
+        assert.ok(r.target == "ore.mix.diamond")
+        assert.ok(r.radiusChunks == 32)
+        assert.ok(r.matched >= r.veins.length)
+        assert.ok(r.veins.length > 0 && r.veins.length <= 4)
+        assert.ok(r.veins.every(i => i.vein == r.target))
+        // 按距离升序
+        const distances = r.veins.map(i => i.distance)
+        assert.deepStrictEqual(distances, [...distances].sort((a, b) => a - b))
+    })
+    it("unknownVein", async () => {
+        await assert.rejects(
+            () => api.getGT5Vein({ x: 0, y: 64, z: 0, vein: "ore.mix.not_exist" }),
+            { name: "WebApiError", status: 404 }
+        )
+    })
+})
+
 describe("chunks", () => {
     it("getChunks", async () => {
         const r = await api.getChunks()
